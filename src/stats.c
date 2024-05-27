@@ -1018,6 +1018,7 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
   if(dens < -BIG)
     {
       PhyML_Printf("\n. dens=%f -- x=%f mean=%f sd=%f\n",dens,x,mean,sd);
+      Print_Trace();
       *err = 1;
     }
 

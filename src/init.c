@@ -892,7 +892,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r          = 1.E-1;
   rates->min_clock        = 1.E-8;
   rates->max_clock        = 1.E+2;
-
+  rates->init_clock_r     = NO;
+  
   rates->clock_r_has_prior  = NO;
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
@@ -3604,8 +3605,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
-  t->min_veloc         = -1.E+3;
-  t->max_veloc         = +1.E+3;
+  t->min_veloc         = -1.E+5;
+  t->max_veloc         = +1.E+5;
  
   t->omega             = 1.E-3;
   t->min_omega         = 0.0;

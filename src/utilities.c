@@ -11715,7 +11715,7 @@ t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree)
     {
       var = 0.0;
       for(i=0;i<tree->mmod->n_dim;++i) var += VELOC_Velocity_Variance_Along_Edge(d,i,tree);
-      if(var < 1.E-1) return NULL;
+      if(var < 1.E-2) return NULL;
     }
   
   list = NULL;
@@ -11742,7 +11742,7 @@ void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree)
   var = 0.0;
   for(i=0;i<tree->mmod->n_dim;++i) var += VELOC_Velocity_Variance_Along_Edge(d,i,tree);
 
-  if(var < 1.E-1) Push_Bottom_Linked_List(d,list,NO);
+  if(var < 1.E-2) Push_Bottom_Linked_List(d,list,NO);
   else return;
   
   if(d->tax == YES) return;

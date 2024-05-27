@@ -123,10 +123,26 @@ void IBM_Integrated_Location_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down
   logr -= log(fabs(bro_a*son_a));
   logr += Log_Dnorm((son_mu_down-son_b)/son_a,(bro_mu_down-bro_b)/bro_a,sqrt((son_var_down+son_var)/pow(son_a,2)+(bro_var_down+bro_var)/pow(bro_a,2)),&err);
 
+  if(err == YES)
+    {
+      PhyML_Printf("\n. son_mu_down: %f son_b: %f son_a: %f bro_mu_down: %f  bro_b: %f bro_a: %f son_var_down: %f son_var: %f bro_var_down: %f bro_var: %f",
+                   son_mu_down,
+                   son_b,
+                   son_a,
+                   bro_mu_down,
+                   bro_b,
+                   bro_a,
+                   son_var_down,
+                   son_var,
+                   bro_var_down,
+                   bro_var);
+      assert(false);
+    }
+
   if((son_var + son_var_down > 1.E-7) && (bro_var + bro_var_down > 1.E-7)) // Standard case
     {
       v = pow(son_a,2)/(son_var_down + son_var) + pow(bro_a,2)/(bro_var_down + bro_var);
-      v = 1/v;
+      v = 1./v;
 
       m = (son_a*(son_mu_down-son_b)/(son_var_down + son_var) + bro_a*(bro_mu_down-bro_b)/(bro_var_down + bro_var)) * v;
     }
@@ -169,6 +185,20 @@ void IBM_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_
   logr  = dad_logrem_up + bro_logrem_down;
   logr -= log(fabs(bro_a));
   logr += Log_Dnorm((bro_mu_down-bro_b)/bro_a,dad_mu_up,sqrt((bro_var_down+bro_var)/(bro_a*bro_a)+dad_var_up),&err);
+
+  if(err == YES)
+    {
+      PhyML_Printf("\n. bro_mu_down: %f bro_b: %f bro_a: %f dad_mu_up: %f  bro_var_down: %f bro_var: %f dad_var_up: %f",
+                   bro_mu_down,
+                   bro_b,
+                   bro_a,
+                   dad_mu_up,
+                   bro_var_down,
+                   bro_var,
+                   dad_var_up);
+      assert(false);
+    }
+
   
   if((bro_var_down + bro_var) > 1.E-7 && dad_var_up > 1.E-7) // Standard case
     {
@@ -184,7 +214,7 @@ void IBM_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_
   else if(dad_var_up > 1.E-7) // Null variance along bro
     {
       v = son_var;
-      m = son_a * (bro_mu_down - bro_b) / bro_a + son_b;
+      m = son_a * bro_mu_down / bro_a + son_b;
     }
   else if((bro_var_down + bro_var) > 1.E-7) // Null variance along dad
     {
@@ -194,7 +224,8 @@ void IBM_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_
   else
     {
       v = son_var;
-      m = son_b;
+      m = son_a * bro_mu_down / bro_a + son_b;
+      /* m = son_b; */
     }
 
 

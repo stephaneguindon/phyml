@@ -1610,8 +1610,10 @@ typedef struct __T_Rate {
   phydbl clock_r_prior_mean;
   phydbl clock_r_prior_var;
   short int clock_r_has_prior;
+  short int init_clock_r; /* Set to YES if user gives initial value of clock rate */  
   phydbl min_clock;
   phydbl max_clock;
+  
   phydbl lbda_nu;
   phydbl min_dt;
   phydbl step_rate;

@@ -6839,8 +6839,14 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","sample");
           PhyML_Fprintf(fp_stats,"%s\t","lnPost");
           PhyML_Fprintf(fp_stats,"%s\t","lnLAlgn");
-          PhyML_Fprintf(fp_stats,"%s\t","lnLSpac");
-          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","lnLVeloc");
+          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+            {
+              PhyML_Fprintf(fp_stats,"%s\t","lnLPIV");
+              PhyML_Fprintf(fp_stats,"%s\t","lnLVeloc");
+              PhyML_Fprintf(fp_stats,"%s\t","lnLSpac");
+            }
+          else PhyML_Fprintf(fp_stats,"%s\t","lnLSpac");
+
           PhyML_Fprintf(fp_stats,"%s\t","lnLRate");
           PhyML_Fprintf(fp_stats,"%s\t","lnLTime");
           PhyML_Fprintf(fp_stats,"%s\t","lnPSpac");
@@ -6902,7 +6908,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","accRatesShrink");
           PhyML_Fprintf(fp_stats,"%s\t","accSigsq"); 
           PhyML_Fprintf(fp_stats,"%s\t","accSigsqScale");
-          PhyML_Fprintf(fp_stats,"%s\t","accVeloc");          
+          PhyML_Fprintf(fp_stats,"%s\t","accNodeVeloc");          
+          PhyML_Fprintf(fp_stats,"%s\t","accScaleVeloc");          
           PhyML_Fprintf(fp_stats,"%s\t","tuneRatesShrink");
           PhyML_Fprintf(fp_stats,"%s\t","tuneVeloc");
           /* PhyML_Fprintf(fp_stats,"%s\t","accLdskTipToRoot"); */
@@ -7006,14 +7013,25 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
   if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
 
+      if(tree->eval_glnL == YES) LOCATION_Lk(NULL,tree); // Required in order to have contmod->lnL up-to-date
+      if(tree->eval_tlnL == YES) TIMES_Lk(tree);      
+      if(tree->eval_alnL == YES) Lk(NULL,tree);
+      if(tree->eval_rlnL == YES)  RATES_Lk(tree);
+
       time(&(tree->mcmc->time_end));
  
       PhyML_Fprintf(fp_stats,"\n");
       PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
       PhyML_Fprintf(fp_stats,"%.2f\t",PHYREX_Get_Posterior(tree));
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->c_lnL);
-      PhyML_Fprintf(fp_stats,"%.2f\t",tree->mmod->c_lnL);
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%.2f\t",tree->contmod->combined_lnL);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+        {
+          PhyML_Fprintf(fp_stats,"%.2f\t",tree->mmod->c_lnL);
+          PhyML_Fprintf(fp_stats,"%.2f\t",tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+0]+tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+1]);
+          PhyML_Fprintf(fp_stats,"%.2f\t",tree->contmod->lnL[LOCATION*tree->mmod->n_dim+0]+tree->contmod->lnL[LOCATION*tree->mmod->n_dim+1]);
+        }
+      else PhyML_Fprintf(fp_stats,"%.2f\t",tree->mmod->c_lnL);
+
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->rates->c_lnL);
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->c_lnP);
@@ -7072,6 +7090,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq_scale]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_node_veloc]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_all_veloc]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_rates_shrink]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_node_veloc]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);       */
@@ -7128,7 +7147,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /*     PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Degrees_To_Km(tree->a_nodes[i+tree->n_otu]->ldsk->veloc->deriv[1])); */
           /*   } */
 
-          /* !!!!!!!!!!!!!!!!!!!!!!!!!! */
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[0]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[1]);
 

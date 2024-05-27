@@ -727,7 +727,7 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
 
   /* root_var = 1.0; */
   root_var = tree->mmod->rw_root_var;
-  root_mean = -BIG;
+  root_mean = tree->mmod->rw_root_mean;;
 
   RRW_Update_Normalization_Factor(tree);
 
@@ -741,8 +741,6 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
 
       start = Contmod_Start(LOCATION,i,tree);
 
-      /* root_mean = 0.0; */
-      root_mean = LOCATION_Mean_Lonlat(i,tree);      
       lnL += tree->contmod->logrem_down[start+tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[start+tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[start+tree->n_root->num]),&err);
     }
@@ -849,7 +847,7 @@ void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree
         {
           tree->contmod->var_down[start+d->num] = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
           tree->contmod->var_down[start+d->num] = 1./tree->contmod->var_down[start+d->num];      
-          tree->contmod->mu_down[start+d->num] = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * tree->contmod->var_down[d->num];
+          tree->contmod->mu_down[start+d->num] = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * tree->contmod->var_down[start+d->num];
         }
       else if(dv1var + v1var > 1.E-7) // Null variance along d - v2
         {

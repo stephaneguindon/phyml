@@ -1567,9 +1567,14 @@ void MCMC_Root_Time(t_tree *tree, int print)
           
           if(tree->eval_glnL == YES)
             {
-#ifdef PHYREX
-              new_lnL_loc = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0;
-#endif
+              if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+                {
+                  VELOC_Update_Lk_Velocity_Down(NULL,tree->n_root,tree);
+                  VELOC_Update_Lk_Location_Down(NULL,tree->n_root,tree);
+                  new_lnL_loc = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree->n_root,tree) : 0.0;
+                }
+              else
+                new_lnL_loc = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0;
             }
 
           if(tree->eval_tlnL == YES) new_lnL_time = TIMES_Lk(tree);              
@@ -3513,7 +3518,7 @@ void MCMC_Randomize_Veloc(t_tree *tree)
       for(j=0;j<tree->mmod->n_dim;++j)
         {
           mean = 0.0;          
-          var = 0.1;
+          var = 10.;
           
           tree->n_root->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
           
@@ -3543,10 +3548,10 @@ void MCMC_Randomize_Veloc_Pre(t_node *a, t_node *d, t_tree *tree)
       mean = VELOC_Velocity_Mean_Along_Edge(d,j,tree);          
       var = VELOC_Velocity_Variance_Along_Edge(d,j,tree);
                    
-      d->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
+      d->ldsk->veloc->deriv[j] = Rnorm(mean,5.*sqrt(var));
       
-      assert(d->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
-      assert(d->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
+      if(d->ldsk->veloc->deriv[j] < tree->mmod->min_veloc) d->ldsk->veloc->deriv[j] = tree->mmod->min_veloc;
+      if(d->ldsk->veloc->deriv[j] > tree->mmod->max_veloc) d->ldsk->veloc->deriv[j] = tree->mmod->max_veloc;
     }
 
   if(d->tax) return;
@@ -3630,8 +3635,8 @@ void MCMC_Randomize_Clock_Rate(t_tree *tree)
   phydbl mean,sd;
   int iter;
   
-  if(tree->mod->s_opt->opt_clock_r == YES)
-    {          
+  if(tree->mod->s_opt->opt_clock_r == YES && tree->rates->init_clock_r == NO)
+    {
       mean = tree->rates->clock_r_prior_mean;
       sd = sqrt(tree->rates->clock_r_prior_var);
       
@@ -6791,10 +6796,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_add_remove_jump]       = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 6.0;
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tips]             = 0.0;
-  mcmc->move_prob[mcmc->num_move_phyrex_node_times]            = 7.0;
-  mcmc->move_prob[mcmc->num_move_phyrex_node_veloc]            = 4.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_node_times]            = 4.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_node_veloc]            = 3.0;
   mcmc->move_prob[mcmc->num_move_phyrex_correlated_node_veloc] = 1.0;
-  mcmc->move_prob[mcmc->num_move_phyrex_all_veloc]             = 0.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_all_veloc]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_shuffle_node_times]    = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1.0;
@@ -7021,7 +7026,7 @@ void MCMC_Run_Core(t_tree *tree)
   if(!strcmp(tree->mcmc->move_name[move],"updown_t_br")) MCMC_Updown_T_Br(tree);
   if(!strcmp(tree->mcmc->move_name[move],"observational_var")) MCMC_Obs_Var(tree);
 
-  
+
   if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
     {
       PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
@@ -9307,13 +9312,21 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
 
   if(tree->eval_tlnL == NO) return;
   
+  MCMC_Root_Time(tree, print);
+
   if(tree->eval_alnL == YES)
     {
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
     }
 
-  MCMC_Root_Time(tree, print);
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->eval_glnL == YES)
+    {
+      tree->contmod->both_sides[LOCATION] = YES;
+      tree->contmod->both_sides[VELOCITY] = YES;
+      LOCATION_Lk(NULL,tree);
+    }
+  
   
   assert(tree->n_root->ldsk->n_next == 2);
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[0],tree,print);
@@ -9321,6 +9334,13 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
   if(tree->eval_alnL == YES) Update_Partial_Lk(tree,
                                                tree->e_root,
                                                tree->n_root->ldsk->next[0]->nd);
+
+  if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES) 
+    {
+      VELOC_Update_Lk_Velocity_Up(tree->n_root,tree->n_root->ldsk->next[1]->nd,tree);
+      VELOC_Update_Lk_Location_Up(tree->n_root,tree->n_root->ldsk->next[1]->nd,tree);
+    }
+
   
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[1],tree,print);
 
@@ -9332,7 +9352,13 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree); /* Required in order to rescale all branch rates */
     }
-  
+
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->eval_glnL == YES)
+    {
+      tree->contmod->both_sides[LOCATION] = NO;
+      tree->contmod->both_sides[VELOCITY] = NO;
+    }
+
 #ifdef PHYREX
   /* if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree); */
 #endif
@@ -9419,6 +9445,34 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
     }
       
+  if(tree->eval_glnL == YES)
+    {
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+        {
+          if(d_ldsk->nd->anc != NULL)
+            {
+              VELOC_Update_Lk_Velocity_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
+              VELOC_Update_Lk_Location_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
+            }
+          
+          if(d_ldsk->nd->tax == NO)
+            {
+              VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+              VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+            }
+          
+          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(d_ldsk->nd,tree) : 0.0;
+          /* new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0; /\* !!!!!!!!!!!!!!!!!! *\/ */
+        }
+      else
+        {
+          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0; 
+        }
+      
+      if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
+    }
+
+
   if(tree->eval_tlnL == YES) new_tlnL = TIMES_Lk(tree);
   if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
 
@@ -9436,7 +9490,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       Update_Partial_Lk(tree,bp,d_ldsk->nd);
       new_alnL = Lk(bp,tree);
     }
-  
+
   ratio = 0.0;
   if(tree->eval_alnL == YES) ratio += (new_alnL - cur_alnL);
   if(tree->eval_rlnL == YES) ratio += (new_rlnL - cur_rlnL);
@@ -9479,6 +9533,20 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       d_ldsk->disk->time = cur_t;
       tree->times->nd_t[d_ldsk->nd->num] = cur_t; // Ok only if tree is binary
         
+      if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+        {
+          if(d_ldsk->nd->anc != NULL)
+            {
+              VELOC_Update_Lk_Velocity_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
+              VELOC_Update_Lk_Location_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
+            }
+          if(d_ldsk->nd->tax == NO)
+            {
+              VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+              VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+            }
+        }
+
       if(tree->eval_alnL == YES)
         {
           t_edge *bp,*bc;
@@ -9494,7 +9562,6 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
           Update_Partial_Lk(tree,bp,d_ldsk->nd);
         }
 
-      
       PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,d_ldsk->prev->disk,tree);
       Reset_Lk(tree);
     }
@@ -9516,12 +9583,24 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   for(i=0;i<d_ldsk->n_next;i++)
     {
       if(tree->eval_alnL == YES) Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree),d_ldsk->nd);
+
+      if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+        {
+          VELOC_Update_Lk_Velocity_Up(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
+          VELOC_Update_Lk_Location_Up(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
+        }
+      
       MCMC_PHYREX_Node_Times_Pre(d_ldsk,d_ldsk->next[i],tree,print);
     }
   
   if(tree->eval_alnL == YES && d_ldsk->nd->anc != tree->n_root)
     Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree),d_ldsk->nd);
 
+  if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+    {
+      VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+      VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
+    }
 }
 
 #endif
@@ -13902,7 +13981,7 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       cur_vel = d->ldsk->veloc->deriv[i];
-      
+
       /* new_vel = Rnorm(cur_vel,1.E-0); */
       /* hr -= Log_Dnorm(new_vel,cur_vel,1.E-0,&err); */
       /* hr += Log_Dnorm(cur_vel,new_vel,1.E-0,&err); */
@@ -13951,11 +14030,19 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
               var = 0.0;
               mu = mu_bro;
             }
+          else
+            {
+              var = 0.0;
+              mu = mu_dad;
+            }
         }
       
-      new_vel = Rnorm(mu,sqrt(var));
-      hr -= Log_Dnorm(new_vel,mu,sqrt(var),&err);
-      hr += Log_Dnorm(cur_vel,mu,sqrt(var),&err);
+      if(isnan(mu)) assert(false);
+      if(isnan(var)) assert(false);
+      
+      new_vel = Rnorm(mu,sqrt(2.*var));
+      hr -= Log_Dnorm(new_vel,mu,sqrt(2.*var),&err);
+      hr += Log_Dnorm(cur_vel,mu,sqrt(2.*var),&err);
       
       d->ldsk->veloc->deriv[i] = new_vel;
     }
@@ -13973,12 +14060,14 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
     }
 
   new_glnL = LOCATION_Lk(d,tree);
-  
-  /* PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f", */
+  /* new_glnL = LOCATION_Lk(NULL,tree); /\* !!!!!!!!!!!!!!!!! *\/ */
+
+  /* PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f", */
   /*              a?a->num:-1,d->num, */
   /*              d == tree->n_root ? 1 : 0, */
   /*              d == tree->n_root->v[1] ? 1 : 0, */
   /*              d == tree->n_root->v[2] ? 1 : 0, */
+  /*              hr, */
   /*              cur_glnL,new_glnL, */
   /*              d->ldsk->veloc->deriv[0], */
   /*              d->ldsk->veloc->deriv[1], */
@@ -14034,6 +14123,8 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
       for(i=0;i<3;++i)
         if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           {
+            VELOC_Update_Lk_Velocity_Up(d,d->v[i],tree);
+            VELOC_Update_Lk_Location_Up(d,d->v[i],tree);
             MCMC_PHYREX_Node_Velocity_Pre(d,d->v[i],tree);
           }
     }
@@ -14070,7 +14161,7 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
   phydbl cur_glnL, new_glnL;
   phydbl *cur_vel, *new_vel;
   phydbl hr,u,alpha,ratio;
-  int i,j,err,tgt_len;
+  int i,j,err;
   t_node *dad,*son,*bro,*n;
   phydbl var_dad,var_son,var_bro;
   phydbl mu_dad,mu_son,mu_bro;
@@ -14080,12 +14171,6 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
   cur_glnL = tree->mmod->c_lnL;
   new_glnL = UNLIKELY;
                   
-  if(a != NULL)
-    {
-      VELOC_Update_Lk_Velocity_Up(a,d,tree);
-      VELOC_Update_Lk_Location_Up(a,d,tree);
-    }
-
   if(d->tax == YES) return;
 
   hr = 0.0;
@@ -14121,6 +14206,8 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
         {
           var = VELOC_Velocity_Variance_Along_Edge(dad,i,tree);
           cur_vel[i] = dad->ldsk->veloc->deriv[i];
+          if(isnan(dad->anc->ldsk->veloc->deriv[i])) assert(false);
+          if(isnan(var)) assert(false);          
           new_vel[i] = Rnorm(dad->anc->ldsk->veloc->deriv[i],sqrt(var));
           hr -= Log_Dnorm(new_vel[i],dad->anc->ldsk->veloc->deriv[i],sqrt(var),&err);
           hr += Log_Dnorm(cur_vel[i],dad->anc->ldsk->veloc->deriv[i],sqrt(var),&err);
@@ -14129,11 +14216,11 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
 
   tgt = NULL;
   tgt = Get_Velocity_Targets(a,d,tree);
-  tgt_len = Linked_List_Len(tgt);
 
-  
-  if(tgt_len > 0)
+  if(tgt != NULL)
     {
+      PHYREX_Store_All_Veloc(tree);
+
       n = (t_node *)(tgt->head->v);
       
       assert((t_node *)tgt->head->v == d);
@@ -14146,7 +14233,7 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
       do
         {
           n = (t_node *)x->v;              
-          for(i=0;i<tree->mmod->n_dim;++i) n->ldsk->veloc->deriv[i] = new_vel[i];
+          for(i=0;i<tree->mmod->n_dim;++i) n->ldsk->veloc->deriv[i] += (new_vel[i]-cur_vel[i]);
           x = x->next;
         }
       while(x);
@@ -14169,6 +14256,7 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
         }
 
       new_glnL = LOCATION_Lk(d,tree);
+      /* new_glnL = LOCATION_Lk(NULL,tree); /\* !!!!!!!!!!!!!!!!!!!! *\/ */
     
       ratio = 0.0;
       ratio += (new_glnL - cur_glnL);
@@ -14186,16 +14274,8 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
 
       if(u > alpha) /* Reject */
         {
-          x = tgt->head;
-          do
-            {
-              n = (t_node *)x->v;              
-              /* for(i=0;i<tree->mmod->n_dim;++i) n->ldsk->veloc->deriv[i] -= (new_vel[i]-cur_vel[i]); */
-              for(i=0;i<tree->mmod->n_dim;++i) n->ldsk->veloc->deriv[i] = cur_vel[i];
-              x = x->next;
-            }
-          while(x);
-
+          PHYREX_Restore_All_Veloc(tree);
+          
           tree->mmod->c_lnL = cur_glnL;
           
           x = tgt->tail;
@@ -14207,12 +14287,6 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
               x = x->prev;
             }
           while(x);
-          
-          if(a != NULL)
-            {
-              VELOC_Update_Lk_Velocity_Up(a,d,tree);
-              VELOC_Update_Lk_Location_Up(a,d,tree);
-            }
         }
       else
         {
@@ -14231,8 +14305,11 @@ void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree
 
   for(i=0;i<3;++i)
     if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
-      MCMC_PHYREX_Correlated_Node_Velocity_Pre(d,d->v[i],tree);
-      
+      {
+        VELOC_Update_Lk_Velocity_Up(d,d->v[i],tree);
+        VELOC_Update_Lk_Location_Up(d,d->v[i],tree);
+        MCMC_PHYREX_Correlated_Node_Velocity_Pre(d,d->v[i],tree);
+      }
 
   VELOC_Update_Lk_Velocity_Down(a,d,tree);
   VELOC_Update_Lk_Location_Down(a,d,tree);
@@ -14251,15 +14328,14 @@ void MCMC_PHYREX_All_Velocities(t_tree *tree)
   
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == NO) return;
   
-  int *permut,i,j,err,iter,n_nodes;
+  int i,j,err,iter,n_nodes;
   phydbl u,alpha,ratio,hr,mult;
   phydbl cur_glnL, new_glnL;
   t_node *n;
   phydbl cur,new;
-  
+  phydbl cur_sigsq,new_sigsq;
   
   /* Scale all velocities */
-  permut = Permutate(tree->n_otu-1);
   
   for(i=0;i<tree->n_otu-1;++i)
     {
@@ -14271,40 +14347,42 @@ void MCMC_PHYREX_All_Velocities(t_tree *tree)
      
           cur_glnL = tree->mmod->c_lnL;
           new_glnL = UNLIKELY;
+
+          cur_sigsq = tree->mmod->sigsq[j];
           
           hr = 0.0;
           
-          n = tree->a_nodes[tree->n_otu+permut[i]];
-                    
-          cur = n->ldsk->veloc->deriv[j];
-          new = Rnorm(cur,1.E-0);
-          hr -= Log_Dnorm(new,cur,1.E-0,&err);
-          hr += Log_Dnorm(cur,new,1.E-0,&err);
-          
-          /* u = Uni(); */
-          /* mult = exp((u-0.5)); */
+          n = tree->n_root;
+                              
+          u = Uni();
+          mult = exp((u-0.5));
           
           n_nodes = 0;
-          /* Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree); */
-          Add_Subtree_Veloc(n,new-cur,&n_nodes,j,tree);
-        
+          Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree);
+          /* Add_Subtree_Veloc(n,new-cur,&n_nodes,j,tree); */
+
+          new_sigsq = cur_sigsq * mult;
+          tree->mmod->sigsq[j] = new_sigsq;
 
           new_glnL = LOCATION_Lk(NULL,tree);
           
           ratio = 0.0;
           ratio += (new_glnL - cur_glnL);
-          /* ratio += n_nodes*log(mult); */
-          ratio += hr;
+          ratio += n_nodes*log(mult);
+          ratio += log(mult);
+
           
           ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
+          /* PhyML_Printf("\n. lnL: %f->%f scale: %f alpha: %f",cur_glnL,new_glnL,mult,alpha); */
           
           u = Uni();
           
           if(u > alpha) /* Reject */
             {
               PHYREX_Restore_All_Veloc(tree);
+              tree->mmod->sigsq[j] = cur_sigsq;
               tree->mmod->c_lnL = cur_glnL;
             }
           else
@@ -14320,7 +14398,6 @@ void MCMC_PHYREX_All_Velocities(t_tree *tree)
         }
     }
 
-  Free(permut);
     
 }
 #endif

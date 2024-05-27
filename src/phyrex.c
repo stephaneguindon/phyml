@@ -614,6 +614,7 @@ void PHYREX_XML(char *xml_filename)
       init_value = XML_Get_Attribute_Value(xnd,"init.value");
       if(init_value != NULL)
         {
+          mixt_tree->rates->init_clock_r = YES;
           mixt_tree->rates->clock_r = String_To_Dbl(init_value);
           if(mixt_tree->rates->clock_r < 0.0)
             {
@@ -899,7 +900,6 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(YES,mixt_tree->mod);
   RATES_Update_Edge_Lengths(mixt_tree);
 
-  Init_Contmod_Locations(mixt_tree);
   MCMC_Randomize_Veloc(mixt_tree);
   mixt_tree->contmod->both_sides[LOCATION] = NO;
   mixt_tree->contmod->both_sides[VELOCITY] = NO;
