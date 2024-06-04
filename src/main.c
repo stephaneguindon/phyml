@@ -731,269 +731,269 @@ int main(int argc, char **argv)
  
   
   
-  /* /\* Select samples in the 801 sequence WNV data set within a user defined date range ./test --xml=../WNV_RRW_tree_1.xml 2000 1990 1.0 *\/ */
-  /* option *io; */
-  /* xml_node *beast_root,*beast_taxa,*beast_taxon,*beast_date,*beast_loc,*beast_seq,**valid_taxa; */
-  /* xml_node *phyrex_root,*nd,*ndnd; */
-  /* int i,n_selected,n_selected_max,r_seed; */
-  /* FILE *fp_xml,*fp_coord,*fp_seq; */
-  /* char *filename,*dum,*xml_filename; */
-  /* phydbl date_recent, date_f; */
-  /* int *permut; */
-  /* phydbl *select_proba,sum; */
-    
-  /* valid_taxa = (xml_node **)mCalloc(800,sizeof(xml_node *)); */
-  /* select_proba = (phydbl *)mCalloc(800,sizeof(phydbl)); */
-  
-  /* filename = (char *)mCalloc(100,sizeof(char)); */
-  /* xml_filename = (char *)mCalloc(100,sizeof(char)); */
-  /* r_seed = time(NULL); */
-  /* PhyML_Printf("\n seed: %d",r_seed); */
-  /* srand(r_seed); */
-
-  /* io = (option *)Get_Input(argc,argv); */
-  /* if(!io) return(0); */
-
-  /* date_recent = atof(argv[2]); */
-  /* n_selected_max = atoi(argv[3]); */
-
-  
-  /* dum = (char *)mCalloc(100,sizeof(char)); */
-  /* sprintf(dum,"%s%d%s","wnv_config_",r_seed,".xml"); */
-  /* strcpy(xml_filename,dum); */
-  /* Free(dum); */
-  
-  /* PhyML_Printf("\n. Upper limit of time: %f",date_recent); */
-
-  /* strcpy(filename,"coord.txt"); */
-  /* fp_coord = Openfile(filename,WRITE); */
-
-  /* PhyML_Fprintf(fp_coord,"traits lat long\n"); */
-  /* PhyML_Fprintf(fp_coord,"|NorthEast| 1000 1000\n"); */
-  /* PhyML_Fprintf(fp_coord,"|SouthWest| -1000 -1000"); */
-
-  
-  /* strcpy(filename,"seq.txt"); */
-  /* fp_seq = Openfile(filename,WRITE); */
-
-  /* dum = (char *)mCalloc(100,sizeof(char)); */
-  /* sprintf(dum,"%s%d","wnv_predict_",r_seed); */
-  /* phyrex_root = Generate_PhyREX_XMLObj("ibm",dum,"seq.txt","coord.txt"); */
-  /* Free(dum); */
-    
-  /* beast_root = XML_Load_File(io->fp_in_xml); */
-  
-  /* beast_taxa = XML_Search_Node_Name("taxa",NO,beast_root); */
-
-  
-  /* i = 1; */
-  /* n_selected = 0; */
-  /* beast_taxon = beast_taxa->child; */
-  /* do */
-  /*   { */
-  /*     beast_date = XML_Search_Node_Name("date",NO,beast_taxon); */
-  /*     assert(beast_date); */
-
-  /*     date_f = atof(XML_Get_Attribute_Value(beast_date,"value")); */
-
-      
-  /*     if(date_f < date_recent) */
-  /*       { */
-  /*         valid_taxa[n_selected] = beast_taxon; */
-  /*         select_proba[n_selected] = exp(-fabs(date_f-date_recent)); */
-  /*         n_selected++; */
-  /*       } */
-          
-  /*     beast_taxon = beast_taxon->next; */
-  /*   } */
-  /* while(beast_taxon); */
-
-  /* PhyML_Fprintf(fp_seq,"%d 10302\n",MIN(n_selected,n_selected_max)); */
-  /* permut = Permutate(MIN(n_selected,n_selected_max)); */
-
-
-  /* sum = 0.0; */
-  /* for(i=0;i<n_selected;++i) sum += select_proba[i]; */
-  /* for(i=0;i<n_selected;++i) select_proba[i] /= sum; */
-
-  /* for(i=0;i<n_selected;++i) PhyML_Printf("\n. Target %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[i],"id"),i,select_proba[i]); */
-  
-  /* for(i=0;i<MIN(n_selected,n_selected_max);++i) */
-  /*   { */
-  /*     permut[i] = Sample_i_With_Proba_pi(select_proba,n_selected); */
-
-
-  /*     beast_date = XML_Search_Node_Name("date",NO,valid_taxa[permut[i]]); */
-  /*     assert(beast_date); */
-  /*     date_f = atof(XML_Get_Attribute_Value(beast_date,"value")); */
-      
-  /*     nd = XML_Add_Node(phyrex_root,"clade"); */
-  /*     dum = (char *)mCalloc(100,sizeof(char)); */
-  /*     sprintf(dum,"%s%d","clad",i+1); */
-  /*     nd->attr = XML_Make_Attribute(NULL,"id",dum); */
-  /*     ndnd = XML_Add_Node(nd,"taxon"); */
-  /*     ndnd->attr = XML_Make_Attribute(NULL,"value",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id")); */
-      
-  /*     nd = XML_Add_Node(phyrex_root,"calibration"); */
-  /*     dum = (char *)mCalloc(100,sizeof(char)); */
-  /*     sprintf(dum,"%s%d","cal",i+1); */
-  /*     nd->attr = XML_Make_Attribute(NULL,"id",dum); */
-  /*     Free(dum); */
-      
-  /*     ndnd = XML_Add_Node(nd,"lower"); */
-  /*     XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value")); */
-      
-  /*     ndnd = XML_Add_Node(nd,"upper"); */
-  /*     XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value")); */
-      
-  /*     ndnd = XML_Add_Node(nd,"appliesto"); */
-  /*     dum = (char *)mCalloc(100,sizeof(char)); */
-  /*     sprintf(dum,"%s%d","clad",i+1); */
-  /*     ndnd->attr = XML_Make_Attribute(NULL,"clade.id",dum); */
-  /*     Free(dum); */
-            
-  /*     PhyML_Fprintf(fp_coord,"\n"); */
-  /*     PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id")); */
-      
-  /*     beast_loc = XML_Search_Node_Generic("attr","name","latitude",NO,valid_taxa[permut[i]]); */
-  /*     assert(beast_loc); */
-  /*     PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value); */
-      
-  /*     beast_loc = XML_Search_Node_Generic("attr","name","longitude",NO,valid_taxa[permut[i]]); */
-  /*     assert(beast_loc); */
-  /*     PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value); */
-      
-      
-  /*     beast_seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),NO,beast_root); */
-  /*     assert(beast_seq); */
-  /*     PhyML_Printf("\n. Found match with %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),permut[i],select_proba[permut[i]]); */
-  /*     PhyML_Fprintf(fp_seq,"%s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id")); */
-  /*     PhyML_Fprintf(fp_seq,"\t\t%s\n",beast_seq->value); */
-
-
-  /*     select_proba[permut[i]] = 0.0; */
-  /*     sum = 0.0; */
-  /*     for(int i=0;i<n_selected;++i) sum += select_proba[i]; */
-  /*     for(int i=0;i<n_selected;++i) select_proba[i] /= sum; */
-
-  /*   } */
-
-  /* PhyML_Printf("\n. Number of selected sequences: %d",MIN(n_selected,n_selected_max)); */
-
-  /* fp_xml = Openfile(xml_filename,WRITE); */
-  /* XML_Write_XML_Graph(fp_xml,phyrex_root); */
-  /* fclose(fp_xml); */
-
-
-
-
-  /* fclose(fp_coord); */
-  /* fclose(fp_seq); */
-
-
-
-
-
-
-
-
-
+  /* Select samples in the 801 sequence WNV data set within a user defined date range ./test --xml=../WNV_RRW_tree_1.xml 2000 1990 1.0 */
   option *io;
-  int i;
-  char *year,*lat,*lon;
-  t_tree *tree;
+  xml_node *beast_root,*beast_taxa,*beast_taxon,*beast_date,*beast_loc,*beast_seq,**valid_taxa;
+  xml_node *phyrex_root,*nd,*ndnd;
+  int i,n_selected,n_selected_max,r_seed;
+  FILE *fp_xml,*fp_coord,*fp_seq;
+  char *filename,*dum,*xml_filename;
+  phydbl date_recent, date_f;
+  int *permut;
+  phydbl *select_proba,sum;
+    
+  valid_taxa = (xml_node **)mCalloc(800,sizeof(xml_node *));
+  select_proba = (phydbl *)mCalloc(800,sizeof(phydbl));
   
+  filename = (char *)mCalloc(100,sizeof(char));
+  xml_filename = (char *)mCalloc(100,sizeof(char));
+  r_seed = time(NULL);
+  PhyML_Printf("\n seed: %d",r_seed);
+  srand(r_seed);
+
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
 
-  tree = Read_User_Tree(NULL,NULL,io);
+  date_recent = atof(argv[2]);
+  n_selected_max = atoi(argv[3]);
 
-  PhyML_Printf("\n. n_otus: %d",tree->n_otu);
-  for(i=0;i<tree->n_otu;++i)
-    {
-      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
-      PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name);
-      PhyML_Printf("\n</clade>");
-      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>-%f</lower>",atof(strrchr(tree->a_nodes[i]->name,'|')+1));
-      PhyML_Printf("\n\t<upper>-%f</upper>",atof(strrchr(tree->a_nodes[i]->name,'|')+1));
-      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-      PhyML_Printf("\n</calibration>");
-    }
-
-  PhyML_Printf("\n\n%d\t 4",tree->n_otu);
-  for(i=0;i<tree->n_otu;++i)
-    {
-      PhyML_Printf("\n%s\tATGC",tree->a_nodes[i]->name);
-    }
-  Exit("\n");
   
-  Get_Seq(io);
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%d%s","wnv_config_",r_seed,".xml");
+  strcpy(xml_filename,dum);
+  Free(dum);
+  
+  PhyML_Printf("\n. Upper limit of time: %f",date_recent);
+
+  strcpy(filename,"coord.txt");
+  fp_coord = Openfile(filename,WRITE);
+
+  PhyML_Fprintf(fp_coord,"traits lat long\n");
+  PhyML_Fprintf(fp_coord,"|NorthEast| 1000 1000\n");
+  PhyML_Fprintf(fp_coord,"|SouthWest| -1000 -1000");
+
+  
+  strcpy(filename,"seq.txt");
+  fp_seq = Openfile(filename,WRITE);
+
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%d","wnv_predict_",r_seed);
+  phyrex_root = Generate_PhyREX_XMLObj("ibm",dum,"seq.txt","coord.txt");
+  Free(dum);
+    
+  beast_root = XML_Load_File(io->fp_in_xml);
+  
+  beast_taxa = XML_Search_Node_Name("taxa",NO,beast_root);
+
+  
+  i = 1;
+  n_selected = 0;
+  beast_taxon = beast_taxa->child;
+  do
+    {
+      beast_date = XML_Search_Node_Name("date",NO,beast_taxon);
+      assert(beast_date);
+
+      date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
+
+      
+      if(date_f < date_recent)
+        {
+          valid_taxa[n_selected] = beast_taxon;
+          select_proba[n_selected] = exp(-fabs(date_f-date_recent));
+          n_selected++;
+        }
+          
+      beast_taxon = beast_taxon->next;
+    }
+  while(beast_taxon);
+
+  PhyML_Fprintf(fp_seq,"%d 10302\n",MIN(n_selected,n_selected_max));
+  permut = Permutate(MIN(n_selected,n_selected_max));
+
+
+  sum = 0.0;
+  for(i=0;i<n_selected;++i) sum += select_proba[i];
+  for(i=0;i<n_selected;++i) select_proba[i] /= sum;
+
+  for(i=0;i<n_selected;++i) PhyML_Printf("\n. Target %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[i],"id"),i,select_proba[i]);
+  
+  for(i=0;i<MIN(n_selected,n_selected_max);++i)
+    {
+      permut[i] = Sample_i_With_Proba_pi(select_proba,n_selected);
+
+
+      beast_date = XML_Search_Node_Name("date",NO,valid_taxa[permut[i]]);
+      assert(beast_date);
+      date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
+      
+      nd = XML_Add_Node(phyrex_root,"clade");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","clad",i+1);
+      nd->attr = XML_Make_Attribute(NULL,"id",dum);
+      ndnd = XML_Add_Node(nd,"taxon");
+      ndnd->attr = XML_Make_Attribute(NULL,"value",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+      
+      nd = XML_Add_Node(phyrex_root,"calibration");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","cal",i+1);
+      nd->attr = XML_Make_Attribute(NULL,"id",dum);
+      Free(dum);
+      
+      ndnd = XML_Add_Node(nd,"lower");
+      XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
+      
+      ndnd = XML_Add_Node(nd,"upper");
+      XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
+      
+      ndnd = XML_Add_Node(nd,"appliesto");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","clad",i+1);
+      ndnd->attr = XML_Make_Attribute(NULL,"clade.id",dum);
+      Free(dum);
+            
+      PhyML_Fprintf(fp_coord,"\n");
+      PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+      
+      beast_loc = XML_Search_Node_Generic("attr","name","latitude",NO,valid_taxa[permut[i]]);
+      assert(beast_loc);
+      PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
+      
+      beast_loc = XML_Search_Node_Generic("attr","name","longitude",NO,valid_taxa[permut[i]]);
+      assert(beast_loc);
+      PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
+      
+      
+      beast_seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),NO,beast_root);
+      assert(beast_seq);
+      PhyML_Printf("\n. Found match with %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),permut[i],select_proba[permut[i]]);
+      PhyML_Fprintf(fp_seq,"%s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+      PhyML_Fprintf(fp_seq,"\t\t%s\n",beast_seq->value);
+
+
+      select_proba[permut[i]] = 0.0;
+      sum = 0.0;
+      for(int i=0;i<n_selected;++i) sum += select_proba[i];
+      for(int i=0;i<n_selected;++i) select_proba[i] /= sum;
+
+    }
+
+  PhyML_Printf("\n. Number of selected sequences: %d",MIN(n_selected,n_selected_max));
+
+  fp_xml = Openfile(xml_filename,WRITE);
+  XML_Write_XML_Graph(fp_xml,phyrex_root);
+  fclose(fp_xml);
+
+
+
+
+  fclose(fp_coord);
+  fclose(fp_seq);
+
+
+
+
+
+
+
+
+
+  /* option *io; */
+  /* int i; */
+  /* char *year,*lat,*lon; */
+  /* t_tree *tree; */
+  
+  /* io = (option *)Get_Input(argc,argv); */
+  /* if(!io) return(0); */
+
+  /* tree = Read_User_Tree(NULL,NULL,io); */
+
+  /* PhyML_Printf("\n. n_otus: %d",tree->n_otu); */
+  /* for(i=0;i<tree->n_otu;++i) */
+  /*   { */
+  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name); */
+  /*     PhyML_Printf("\n</clade>"); */
+  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<lower>-%f</lower>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); */
+  /*     PhyML_Printf("\n\t<upper>-%f</upper>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); */
+  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
+  /*     PhyML_Printf("\n</calibration>"); */
+  /*   } */
+
+  /* PhyML_Printf("\n\n%d\t 4",tree->n_otu); */
+  /* for(i=0;i<tree->n_otu;++i) */
+  /*   { */
+  /*     PhyML_Printf("\n%s\tATGC",tree->a_nodes[i]->name); */
+  /*   } */
+  /* Exit("\n"); */
+  
+  /* Get_Seq(io); */
+
+  /* /\* for(i=0;i<io->n_otu;i++) *\/ */
+  /* /\*   { *\/ */
+  /* /\*     sscanf(io->data[i]->name,"%d",&year); *\/ */
+  /* /\*     PhyML_Printf("\n%s\t%d",io->data[i]->name,year); *\/ */
+  /* /\*   } *\/ */
 
   /* for(i=0;i<io->n_otu;i++) */
   /*   { */
-  /*     sscanf(io->data[i]->name,"%d",&year); */
-  /*     PhyML_Printf("\n%s\t%d",io->data[i]->name,year); */
-  /*   } */
-
-  for(i=0;i<io->n_otu;i++)
-    {
-      /* sscanf(io->data[i]->name,"%[^_]_%[^_]_%lf",a,b,&year); */
-      /* PhyML_Printf("\n. a: %s b: %s",a,b); */
-      strtok(io->data[i]->name,"_");
-      char *a = strtok(NULL,"_");
-      year = strtok(NULL,"_");
-      lat = strtok(NULL,"_");
-      lon = strtok(NULL,"_");
+  /*     /\* sscanf(io->data[i]->name,"%[^_]_%[^_]_%lf",a,b,&year); *\/ */
+  /*     /\* PhyML_Printf("\n. a: %s b: %s",a,b); *\/ */
+  /*     strtok(io->data[i]->name,"_"); */
+  /*     char *a = strtok(NULL,"_"); */
+  /*     year = strtok(NULL,"_"); */
+  /*     lat = strtok(NULL,"_"); */
+  /*     lon = strtok(NULL,"_"); */
 
 
-      PhyML_Printf("\n\t <taxon id=\"%s_%s_%s\">",io->data[i]->name,a,year);
-      PhyML_Printf("\n\t\t <date value=\"%s\" direction=\"forwards\" units=\"years\"/>",year);
-      PhyML_Printf("\n\t\t <attr name=\"lat\">");
-      PhyML_Printf("\n\t\t\t %s",lat);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t\t <attr name=\"lon\">");
-      PhyML_Printf("\n\t\t\t %s",lon);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t\t <attr name=\"location\">");
-      PhyML_Printf("\n\t\t\t %s %s",lat,lon);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t </taxon>");
+  /*     PhyML_Printf("\n\t <taxon id=\"%s_%s_%s\">",io->data[i]->name,a,year); */
+  /*     PhyML_Printf("\n\t\t <date value=\"%s\" direction=\"forwards\" units=\"years\"/>",year); */
+  /*     PhyML_Printf("\n\t\t <attr name=\"lat\">"); */
+  /*     PhyML_Printf("\n\t\t\t %s",lat); */
+  /*     PhyML_Printf("\n\t\t </attr>"); */
+  /*     PhyML_Printf("\n\t\t <attr name=\"lon\">"); */
+  /*     PhyML_Printf("\n\t\t\t %s",lon); */
+  /*     PhyML_Printf("\n\t\t </attr>"); */
+  /*     PhyML_Printf("\n\t\t <attr name=\"location\">"); */
+  /*     PhyML_Printf("\n\t\t\t %s %s",lat,lon); */
+  /*     PhyML_Printf("\n\t\t </attr>"); */
+  /*     PhyML_Printf("\n\t </taxon>"); */
       
-      /* PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-      /* PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); */
-      /* PhyML_Printf("\n</clade>"); */
-      /* PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-      /* PhyML_Printf("\n\t<lower>%d</lower>",year); */
-      /* PhyML_Printf("\n\t<upper>%d</upper>",year); */
-      /* PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-      /* PhyML_Printf("\n</calibration>"); */
-    }
-
-  /* FILE *fp; */
-  /* char *name,*date; */
-  /* int i; */
-  
-  /* name = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
-  /* date = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
-
-  /* i = 0; */
-  /* fp = Openfile(argv[1],READ); */
-  /* do */
-  /*   { */
-  /*     if(fscanf(fp,"%s",name) == EOF) break; */
-  /*     if(fscanf(fp,"%s",date) == EOF) break; */
-  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",name); */
-  /*     PhyML_Printf("\n</clade>"); */
-  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<lower>%s</lower>",date); */
-  /*     PhyML_Printf("\n\t<upper>%s</upper>",date); */
-  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-  /*     PhyML_Printf("\n</calibration>"); */
-  /*     ++i; */
+  /*     /\* PhyML_Printf("\n<clade id=\"clad%d\">",i+1); *\/ */
+  /*     /\* PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); *\/ */
+  /*     /\* PhyML_Printf("\n</clade>"); *\/ */
+  /*     /\* PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); *\/ */
+  /*     /\* PhyML_Printf("\n\t<lower>%d</lower>",year); *\/ */
+  /*     /\* PhyML_Printf("\n\t<upper>%d</upper>",year); *\/ */
+  /*     /\* PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); *\/ */
+  /*     /\* PhyML_Printf("\n</calibration>"); *\/ */
   /*   } */
-  /* while(1); */
+
+  /* /\* FILE *fp; *\/ */
+  /* /\* char *name,*date; *\/ */
+  /* /\* int i; *\/ */
+  
+  /* /\* name = (char *)mCalloc(T_MAX_NAME,sizeof(char)); *\/ */
+  /* /\* date = (char *)mCalloc(T_MAX_NAME,sizeof(char)); *\/ */
+
+  /* /\* i = 0; *\/ */
+  /* /\* fp = Openfile(argv[1],READ); *\/ */
+  /* /\* do *\/ */
+  /* /\*   { *\/ */
+  /* /\*     if(fscanf(fp,"%s",name) == EOF) break; *\/ */
+  /* /\*     if(fscanf(fp,"%s",date) == EOF) break; *\/ */
+  /* /\*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); *\/ */
+  /* /\*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",name); *\/ */
+  /* /\*     PhyML_Printf("\n</clade>"); *\/ */
+  /* /\*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); *\/ */
+  /* /\*     PhyML_Printf("\n\t<lower>%s</lower>",date); *\/ */
+  /* /\*     PhyML_Printf("\n\t<upper>%s</upper>",date); *\/ */
+  /* /\*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); *\/ */
+  /* /\*     PhyML_Printf("\n</calibration>"); *\/ */
+  /* /\*     ++i; *\/ */
+  /* /\*   } *\/ */
+  /* /\* while(1); *\/ */
 
 
   
