@@ -924,10 +924,10 @@ void PHYREX_XML(char *xml_filename)
 
 
   
-  /* MCMC_Crossvalidate_Locations(mixt_tree); */
+  MCMC_Crossvalidate_Locations(mixt_tree);
 
-  res = PHYREX_MCMC(mixt_tree);
-  Free(res);
+  /* res = PHYREX_MCMC(mixt_tree); */
+  /* Free(res); */
   
   // Cleaning up...
   PHYREX_Free_Ldsk_Struct(mixt_tree);
