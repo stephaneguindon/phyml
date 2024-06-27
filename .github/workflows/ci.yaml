@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push: 
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  build:
+    name: Linux x86_64
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Build
+      run: |
+        set -xe
+        sh ./autogen.sh
+        autoupdate
+        ./configure \
+          --prefix=/tmp/phyml \
+          --disable-dependency-tracking \
+          --enable-phyml
+        make -j2 CFLAGS="-O3 -fomit-frame-pointer -funroll-loops -msse4.1"
+        make install
+        file /tmp/phyml/bin/phyml | grep x86-64
+
+  build-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build on Linux ARM64
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu22.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/phyml"
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y make autoconf automake libtool file
+          run: |
+            set -xe
+            cd /phyml
+            sh ./autogen.sh
+            autoupdate
+            ./configure \
+              --prefix="/tmp/phyml" \
+              --disable-dependency-tracking \
+              --enable-phyml
+              make -j2 CFLAGS="-O3 -fomit-frame-pointer -funroll-loops"
+              make install
+              file /tmp/phyml/bin/phyml | grep aarch64
+
+  build-macos-m:
+    name: Mac OS ARM64
+    runs-on: macos-14
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: brew install make autoconf automake libtool
+
+    - name: Build
+      run: |
+        set -xe
+        sh ./autogen.sh
+        autoupdate
+        ./configure \
+          --prefix="/tmp/phyml" \
+          --disable-dependency-tracking \
+          --enable-phyml
+          make -j2 CFLAGS="-O3 -fomit-frame-pointer -funroll-loops"
+          make install
+          file /tmp/phyml/bin/phyml | grep arm64
