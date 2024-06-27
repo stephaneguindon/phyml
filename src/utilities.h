@@ -39,6 +39,8 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 #include <immintrin.h>
+#elif defined(__ARM_NEON)
+#include "sse2neon.h"
 #elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
 #include <emmintrin.h>
 #include <pmmintrin.h>
@@ -134,7 +136,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #if (defined __AVX__ || defined __AVX2__)
 #define BYTE_ALIGN 32
-#elif (defined(__SSE__) || defined(__SSE2__) ||  defined __SSE3__)
+#elif (defined(__SSE__) || defined(__SSE2__) ||  defined(__SSE3__) || defined(__ARM_NEON))
 #define BYTE_ALIGN 16
 #else
 #define BYTE_ALIGN 1
@@ -796,7 +798,7 @@ typedef struct __Tree{
   
 #if (defined(__AVX__) || defined(__AVX2__))
   __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_l_ev,*_r_ev,*_prod_left,*_prod_rght;
-#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__) || defined(__ARM_NEON))
   __m128d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_l_ev,*_r_ev,*_prod_left,*_prod_rght;
 #endif
 
@@ -2694,7 +2696,7 @@ void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 
 #if (defined(__AVX__) || defined(__AVX2__))
 #include "avx.h"
-#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__) || defined(__ARM_NEON))
 #include "sse.h"
 #endif
 

@@ -21,8 +21,11 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "free.h"
 #include "times.h"
 #include "mixt.h"
+#ifdef __ARM_NEON
+#include "sse2neon.h"
+#endif
 
-#if (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#if (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__) || defined(__ARM_NEON))
 
 void SSE_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
