@@ -12,11 +12,14 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "assert.h"
 #include "sse.h"
+#ifdef __ARM_NEON
+#include "sse2neon.h"
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)) && !((defined __AVX__ || defined __AVX2__))) && !defined(DISABLE_NATIVE))
+#if (((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__) || defined(__ARM_NEON)) && !((defined __AVX__ || defined __AVX2__))) && !defined(DISABLE_NATIVE))
 
 void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
