@@ -626,7 +626,7 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   
   Set_Update_Eigen_Lr(NO,tree);
   Set_Use_Eigen_Lr(YES,tree);
-    
+
   Br_Len_Spline(l,b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,tree);
   
   Update_PMat_At_Given_Edge(b,tree);
@@ -634,7 +634,6 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   Set_Update_Eigen_Lr(NO,tree);
   Set_Use_Eigen_Lr(NO,tree);
   
-
   /* lk_begin = Lk(b,tree); */
   /* tree->n_tot_bl_opt += Generic_Brent_Lk(l, */
   /*                                        tree->mod->l_min, */
@@ -643,12 +642,13 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   /*                                        tree->mod->s_opt->brent_it_max, */
   /*                                        tree->mod->s_opt->quickdirty, */
   /*                                        Wrap_Lk_At_Given_Edge, */
-  /*                                        b,tree,NULL,NO); */
+  /*                                        b,tree,NULL,NO,NO); */
 
   /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
 
   /* lk_end = Lk(b,tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
+
   lk_end = tree->c_lnL;
   
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)

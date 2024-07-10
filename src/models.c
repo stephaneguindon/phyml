@@ -245,7 +245,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij)
+void PMat_Empirical(phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij)
 {
   const unsigned int ns = mod->ns;
   unsigned int i, j, k;
@@ -253,14 +253,14 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
   phydbl *expt;
   phydbl *uexpt;
   phydbl sum;
-
+  
   assert(Pij);
   
   expt  = mod->eigen->e_val_im;
   uexpt = mod->eigen->r_e_vect_im;
   U     = mod->eigen->r_e_vect;
   V     = mod->eigen->l_e_vect;
-  R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
+  R     = mod->eigen->e_val;
 
   for(k=0;k<ns;++k)  expt[k] = exp(R[k]*l);
 
@@ -281,6 +281,7 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
             }
           if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }
+      /* Below is required ? */
       sum = 0.0;
       for(j=0;j<ns;++j) sum += Pij[j];
       for(j=0;j<ns;++j) Pij[j] /= sum;
@@ -300,89 +301,21 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
             }
         }
     }
+
+  /* PhyML_Printf("\n. Pmat len: %f",l); */
+  /* for(i=0;i<ns;i++) */
+  /*   { */
+  /*     PhyML_Printf("\n"); */
+  /*     for(j=0;j<ns;j++) */
+  /*       { */
+  /*         PhyML_Printf("%12f ",Pij[i*ns+j]); */
+  /*       } */
+  /*   } */
+  /* Exit("\n"); */
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
-{
-  int n;
-  int i, j, k;
-  phydbl *U,*V,*R;
-  phydbl *expt;
-  phydbl *uexpt;
-  phydbl shape;
-
-
-  n     = mod->ns;
-  expt  = mod->eigen->e_val_im;
-  uexpt = mod->eigen->r_e_vect_im;
-  U     = mod->eigen->r_e_vect;
-  V     = mod->eigen->l_e_vect;
-  R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
-
-  if(mod->ras->n_catg == 1) shape = 1.E+4;
-  else                 shape = mod->ras->alpha->v;
-
-
-  for(i=0;i<n;i++) for(k=0;k<n;k++) Pij[pos+mod->ns*i+k] = .0;
-
-  if(shape < 1.E-10)
-    {
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-
-  /* Formula 13.42, page 220 of Felsenstein's book ``Inferring Phylogenies'' */
-  for(k=0;k<n;k++) expt[k] = POW(shape/(shape-log(R[k])*l),shape);
-
-  /* multiply Vr*expt*Vi into Pij */
-  for(i=0;i<n;i++) for(k=0;k<n;k++) uexpt[i*n+k] = U[i*n+k] * expt[k];
-
-  For (i,n)
-    {
-      For (j,n)
-    {
-      for(k=0;k<n;k++)
-        {
-          Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
-        }
-      if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
-    }
-
-#ifdef DEBUG
-      phydbl sum;
-      sum = .0;
-      For (j,n) sum += Pij[pos+mod->ns*i+j];
-      if((sum > 1.+.0001) || (sum < 1.-.0001))
-    {
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Q\n");
-      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n. U\n");
-      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. V\n");
-      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Eigen\n");
-      for(i=0;i<n;i++)  PhyML_Printf("%E ",expt[i]);
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Pij\n");
-      for(i=0;i<n;i++) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n. sum = %f",sum);
-      PhyML_Fprintf(stderr,"\n. l=%f",l);
-      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-#endif
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
 {
@@ -901,7 +834,7 @@ int Update_Eigen(t_mod *mod)
   
   if(mod->update_eigen == YES)
     {
-      //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
+      //Update the Q-matrix first before computing the eigen decomposition (because eigen values/vectors is computed based on the Q-matrix)
       if(mod->io->datatype == NT)
         {
           if(mod->whichmodel == GTR)
@@ -1032,55 +965,60 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod)
+void PMat_MGF_Gamma(phydbl mu, phydbl sigsq, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij)
 {
-  int dim;
-  int i,j,k;
+  const unsigned int ns = mod->ns;
+  unsigned int i,j,k;
   phydbl *uexpt,*imbd;
+  
+  Pij = Pij + pos;
+  if(tPij != NULL) tPij = tPij + pos;
 
-  dim = mod->eigen->size;
   uexpt = mod->eigen->r_e_vect_im;
   imbd  = mod->eigen->e_val_im;
 
-  /* Get the eigenvalues of Q (not the exponentials) */
-  for(i=0;i<dim;i++) imbd[i]  = log(mod->eigen->e_val[i]);
+  for(i=0;i<ns;i++) imbd[i]  = POW(1. - mod->eigen->e_val[i] * sigsq / mu, -mu*mu / sigsq);
+  for(i=0;i<ns;i++) for(k=0;k<ns;k++) uexpt[i*ns+k] = mod->eigen->r_e_vect[i*ns+k] * imbd[k];
 
-  /* Multiply them by the scaling factor */
-  for(i=0;i<dim;i++) imbd[i]  *= scaling_fact;
+  for(i=0;i<ns;i++) for(k=0;k<ns;k++) Pij[ns*i+k] = .0;
 
-  for(i=0;i<dim;i++) imbd[i] *= -scale;
-  for(i=0;i<dim;i++) imbd[i] += 1.0;
-  for(i=0;i<dim;i++) imbd[i]  = POW(imbd[i],-shape);
-
-  for(i=0;i<dim;i++) for(k=0;k<dim;k++) uexpt[i*dim+k] = mod->eigen->r_e_vect[i*dim+k] * imbd[k];
-
-  for(i=0;i<dim;i++) for(k=0;k<dim;k++) Pij[dim*i+k] = .0;
-
-  for(i=0;i<dim;i++)
+  for(i=0;i<ns;i++)
     {
-      for(j=0;j<dim;j++)
+      for(j=0;j<ns;j++)
 	{
-	  for(k=0;k<dim;k++)
+	  for(k=0;k<ns;k++)
 	    {
-	      Pij[dim*i+j] += (uexpt[i*dim+k] * mod->eigen->l_e_vect[k*dim+j]);
+	      Pij[j] += (uexpt[i*ns+k] * mod->eigen->l_e_vect[k*ns+j]);
 	    }
-	  if(Pij[dim*i+j] < SMALL_PIJ) Pij[dim*i+j] = SMALL_PIJ;
+	  if(Pij[j] < SMALL_PIJ) Pij[ns*i+j] = SMALL_PIJ;
 	}
+      Pij += ns;
     }
 
-  /* printf("\n. shape = %G scale = %G %f",shape,scale,Pij[1]); */
-  /* printf("\n. Pij: %f",Pij[1]); */
+  Pij -= ns*ns;
+  
+  if(tPij != NULL)
+    {
+      for(i=0;i<ns;++i)
+        {
+          for(j=0;j<ns;++j)
+            {
+              tPij[ns*i+j] = Pij[ns*j+i];
+            }
+        }
+    }
 
-  /* printf("\n. Pmat"); */
-  /* for(i=0;i<dim;i++) */
+  /* PhyML_Printf("\n. MGF Pmat"); */
+  /* for(i=0;i<ns;i++) */
   /*   { */
-  /*     printf("\n"); */
-  /*     for(j=0;j<dim;j++) */
-  /* 	{ */
-  /* 	  printf("%12f ",Pij[i*dim+j]); */
-  /* 	} */
+  /*     PhyML_Printf("\n"); */
+  /*     for(j=0;j<ns;j++) */
+  /*       { */
+  /*         PhyML_Printf("%12f ",Pij[i*ns+j]); */
+  /*       } */
   /*   } */
   /* Exit("\n"); */
+
 }
 
 //////////////////////////////////////////////////////////////

@@ -396,10 +396,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 66:
 	  {
-            PhyML_Printf("\n. Integrated edge length model needs additional work.");
-            PhyML_Printf("\n. Please send me an email at guindon@lirmm.fr if you are");
-            PhyML_Printf("\n. really keen on using this model.");
-            assert(false);
+            /* PhyML_Printf("\n. Integrated edge length model needs additional work."); */
+            /* PhyML_Printf("\n. Please send me an email at guindon@lirmm.fr if you are"); */
+            /* PhyML_Printf("\n. really keen on using this model."); */
+            /* assert(false); */
 	    io->mod->gamma_mgf_bl = YES;
 	    io->mod->s_opt->opt_gamma_br_len = YES;
 	    break;

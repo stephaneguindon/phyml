@@ -24,7 +24,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij);
 void  PMat_K80(phydbl l,phydbl kappa, int pos, phydbl *Pij);
 void  PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij);
-void  PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij);
+void  PMat_Empirical(phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij);
 void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij);
 void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij);
 int GetDaa (phydbl *daa, phydbl *pi, char *file_name);
@@ -42,7 +42,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa);
 int Update_Eigen(t_mod *mod);
 int Update_RAS(t_mod *mod);
 int Update_Efrq(t_mod *mod);
-void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod);
+void PMat_MGF_Gamma(phydbl mu, phydbl sigsq, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij);
 int Update_Boundaries(t_mod *mod);
 void Update_Qmat_TN93(phydbl kappa, phydbl lambda, phydbl *pi, phydbl *qmat);
 

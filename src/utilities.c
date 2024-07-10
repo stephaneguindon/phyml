@@ -10476,10 +10476,6 @@ phydbl *Dist_Btw_Tips(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Best_Root_Position_IL_Model(t_tree *tree)
 {
 
@@ -10502,15 +10498,15 @@ void Best_Root_Position_IL_Model(t_tree *tree)
 
       best_edge = NULL;
       best_lnL  = UNLIKELY;
-      For(i,2*tree->n_otu-3)
+      for(i=0;i<2*tree->n_otu-3;++i)
         {
           PhyML_Printf("\n. Positionning root node on edge %4d",tree->a_edges[i]->num);
           Add_Root(tree->a_edges[i],tree);
           tree->ignore_root = NO;
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-
           /* Optimize_Br_Len_Serie(2,tree); */
+          PhyML_Printf("\n HERE");
 
           Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
           Br_Len_Opt(&(tree->n_root->b[1]->l->v),tree->n_root->b[1],tree);
@@ -10549,22 +10545,23 @@ void Set_Br_Len_Var(t_edge *b, t_tree *tree)
 
   if(tree->rates == NO && tree->mod->gamma_mgf_bl == YES)
     {
-
       phydbl len;
       if(b == NULL)
         {
           int i;
           
-          For(i,2*tree->n_otu-1)
+          for(i=0;i<2*tree->n_otu-1;++i)
             {
               len = MAX(0.0,tree->a_edges[i]->l->v);
-              tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
+              /* tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
+              tree->a_edges[i]->l_var->v = tree->mod->l_var_sigma;
             }
         }
       else
         {
           len = MAX(0.0,b->l->v);
-          b->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
+          /* b->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
+          b->l_var->v = tree->mod->l_var_sigma;
         }
     }
 }

@@ -598,7 +598,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
           if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)pow(tree->mod->eigen->e_val[state],len);
+          for(state=0;state<ns;++state) expl[catg*ns+state] = exp(tree->mod->eigen->e_val[state]*len);
         }
     }
 
@@ -655,7 +655,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
   unsigned int catg,state,site;
-  phydbl len,rr;
+  phydbl len,rr,var;
   phydbl lk,dlk,dlnlk,lnlk;
   phydbl ev,expevlen;
    
@@ -691,7 +691,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       rr *=  tree->mod->br_len_mult->v;      
 
       len = (*l) * rr;
-            
+      var = tree->mod->l_var_sigma * rr*rr;
+      
       if(isinf(len) || isnan(len)) 
         {
           PhyML_Fprintf(stderr,"\n. len=%f rr=%f l=%f",len,rr,*l);
@@ -709,8 +710,17 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           ev = tree->mod->eigen->e_val[state];
           expevlen = exp(ev*len);
 
-          expl[catg*2*ns + 2*state] = expevlen;
-          expl[catg*2*ns + 2*state + 1] = expevlen*ev*rr;
+          if(tree->io->mod->gamma_mgf_bl == YES)
+            {
+              expl[catg*2*ns + 2*state]      = POW(1. - ev*var/len,-len*len/var); 
+              expl[catg*2*ns + 2*state + 1]  = expl[catg*2*ns + 2*state];
+              expl[catg*2*ns + 2*state + 1] *= -(ev/(1.-ev*var/len) + 2.*len*LOG(1.-ev*var/len)/var);              
+            }
+          else
+            {
+              expl[catg*2*ns + 2*state]     = expevlen;
+              expl[catg*2*ns + 2*state + 1] = expevlen*ev*rr;
+            }
         }
     }
     
@@ -2163,7 +2173,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   int i;
   phydbl len;
   phydbl l_min, l_max;
-  phydbl shape, scale, mean, var;
+  phydbl mean, var;
   
   assert(b_fcus);
   assert(tree);
@@ -2223,7 +2233,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           else if(len > l_max) len = l_max;
           
           mean = len;
-          var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
+          /* var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2); */
+          var  = tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
           if(tree->mixt_tree) var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
 
           /* var = 1.E-10; */
@@ -2247,9 +2258,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
             Warn_And_Exit(TODO_BEAGLE);
 #endif
 
-            shape = mean*mean/var;
-            scale = var/mean;
-            PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,shape,scale,1.0,tree->mod);
+            /* PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,shape,scale,1.0,tree->mod); */
+            PMat_MGF_Gamma(mean,var,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
     }
 
@@ -2719,6 +2729,11 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
             
             tree->fact_sum_scale[site] = sum_scale_left + sum_scale_rght;
 
+            break;
+          }
+        default :
+          {
+            assert(FALSE);
             break;
           }
         }

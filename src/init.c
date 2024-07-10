@@ -148,7 +148,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
   tree->eval_tlnL                 = YES;
-  tree->scaling_method            = NO;
+  tree->scaling_method            = SCALE_FAST;
   tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
   tree->n_edges_traversed         = 0;
@@ -682,7 +682,7 @@ void Set_Defaults_Model(t_mod *mod)
   
   mod->kappa->v                = 4.0;
   mod->lambda->v               = 1.0;
-  mod->l_var_sigma             = 1.E-2;
+  mod->l_var_sigma             = 1.E-1;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 

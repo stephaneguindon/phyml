@@ -252,7 +252,7 @@ int main(int argc, char **argv)
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
-                  
+                    
                   if(tree->mod->s_opt->opt_topo)
 		    {
                       Global_Spr_Search(tree);                      
