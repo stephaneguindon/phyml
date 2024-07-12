@@ -929,6 +929,7 @@ typedef struct __Tree{
 
   int n_edges_traversed;
   int n_tot_bl_opt;
+
 }t_tree;
 
 /*!********************************************************/

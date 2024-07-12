@@ -10506,7 +10506,6 @@ void Best_Root_Position_IL_Model(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           /* Optimize_Br_Len_Serie(2,tree); */
-          PhyML_Printf("\n HERE");
 
           Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
           Br_Len_Opt(&(tree->n_root->b[1]->l->v),tree->n_root->b[1],tree);

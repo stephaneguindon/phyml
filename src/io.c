@@ -2373,8 +2373,13 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     }
   else
     {
-      fprintf(fp_out,"\n. Substitution model: \t\t\t%s",tree->mod->modelname->s);
+      PhyML_Fprintf(fp_out,"\n. Substitution model: \t\t%s",tree->mod->modelname->s);
     }
+
+  PhyML_Fprintf(fp_out,"\n. Integrated length (IL) model: \t%s",(tree->io->mod->gamma_mgf_bl == YES)?"yes":"no");
+
+  if(tree->io->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of IL model: \t\t%.5f",tree->mod->l_var_sigma);
+
   
   PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
   
@@ -3125,7 +3130,7 @@ void Print_Banner(FILE *fp)
   PhyML_Fprintf(fp,"    A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood    \n");
   PhyML_Fprintf(fp,"                            Stephane Guindon & Olivier Gascuel                                      \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
-  PhyML_Fprintf(fp,"                           http://www.atgc-montpellier.fr/phyml                                          \n");
+  PhyML_Fprintf(fp,"                    https://github.com/stephaneguindon/phyml/tree/master                          \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
   PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier                                  \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
@@ -3141,7 +3146,7 @@ void Print_Banner_Small(FILE *fp)
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
   PhyML_Fprintf(fp,"                                  ---  PhyML %s  ---                                             \n",VERSION);
-  PhyML_Fprintf(fp,"                              http://www.atgc-montpellier.fr/phyml                                          \n");
+  PhyML_Fprintf(fp,"                       https://github.com/stephaneguindon/phyml/tree/master                      \n");
   PhyML_Fprintf(fp,"                             Copyright CNRS - Universite Montpellier                                 \n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }

@@ -267,7 +267,7 @@ int main(int argc, char **argv)
                     }
 
                   
-                  if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);
+                  /* if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree); */
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
@@ -280,8 +280,7 @@ int main(int argc, char **argv)
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
-                  
-                  
+                                    
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");

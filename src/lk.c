@@ -691,7 +691,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       rr *=  tree->mod->br_len_mult->v;      
 
       len = (*l) * rr;
-      var = tree->mod->l_var_sigma * rr*rr;
+      /* var = tree->mod->l_var_sigma * rr*rr; */
+      var = (*l) * tree->mod->l_var_sigma * rr*rr;
       
       if(isinf(len) || isnan(len)) 
         {
@@ -2234,7 +2235,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           
           mean = len;
           /* var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2); */
-          var  = tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
+          /* var  = tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2); */
+          var  = MAX(0.0,b_fcus->l->v) * tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
           if(tree->mixt_tree) var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
 
           /* var = 1.E-10; */
