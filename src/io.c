@@ -2376,9 +2376,9 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       PhyML_Fprintf(fp_out,"\n. Substitution model: \t\t%s",tree->mod->modelname->s);
     }
 
-  PhyML_Fprintf(fp_out,"\n. Integrated length (IL) model: \t%s",(tree->io->mod->gamma_mgf_bl == YES)?"yes":"no");
+  PhyML_Fprintf(fp_out,"\n. Integrated length (IL) model: \t%s",(tree->mod->gamma_mgf_bl == YES)?"yes":"no");
 
-  if(tree->io->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of IL model: \t\t%.5f",tree->mod->l_var_sigma);
+  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of IL model: \t\t%f",tree->mod->l_var_sigma->v);
 
   
   PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
@@ -2421,8 +2421,6 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   
   if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
   
-  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
-
 
   /*was before Discrete gamma model ; moved here FLT*/
   if((tree->mod->whichmodel == K80)   ||
@@ -3130,9 +3128,9 @@ void Print_Banner(FILE *fp)
   PhyML_Fprintf(fp,"    A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood    \n");
   PhyML_Fprintf(fp,"                            Stephane Guindon & Olivier Gascuel                                      \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
-  PhyML_Fprintf(fp,"                    https://github.com/stephaneguindon/phyml/tree/master                          \n");
+  PhyML_Fprintf(fp,"                           https://github.com/stephaneguindon/phyml/                          \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
-  PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier                                  \n");
+  PhyML_Fprintf(fp,"                            Copyright CNRS - Universite Montpellier                                  \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
@@ -3146,7 +3144,7 @@ void Print_Banner_Small(FILE *fp)
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
   PhyML_Fprintf(fp,"                                  ---  PhyML %s  ---                                             \n",VERSION);
-  PhyML_Fprintf(fp,"                       https://github.com/stephaneguindon/phyml/tree/master                      \n");
+  PhyML_Fprintf(fp,"                            https://github.com/stephaneguindon/phyml/                      \n");
   PhyML_Fprintf(fp,"                             Copyright CNRS - Universite Montpellier                                 \n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
@@ -4289,6 +4287,10 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
       PhyML_Fprintf(fp,"\n   Equ. freq. weight:\t\t%20f",tree->mod->e_frq_weight->v / e_frq_weight_sum);
 
+      PhyML_Fprintf(fp,"\n   Integrated length (IL) model:%20s",(tree->mod->gamma_mgf_bl == YES)?"yes":"no");
+
+      if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp,"\n   Variance of IL model:\t%20.2g",tree->mod->l_var_sigma->v);
+
       class++;
 
       tree = tree->next;
@@ -5073,6 +5075,22 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       mod->s_opt->opt_rmat_weight = NO;
     }
+
+
+  char *il_model = NULL;
+  il_model = XML_Get_Attribute_Value(instance,"integrated.lens");
+                              
+  if(il_model)
+    {
+      if(!strcmp(il_model,"yes") || !strcmp(il_model,"true"))
+        {
+          mod->gamma_mgf_bl = YES;
+        }
+      else
+        {
+          mod->gamma_mgf_bl = NO;
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -5214,7 +5232,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
   // Estimate tree topology
   char *optimise = NULL;
 
-  optimise = XML_Get_Attribute_Value(instance,"optimise.tree");
+  optimise = XML_Get_Attribute_Value(instance,"optimise.topology");
 
   if(optimise)
     {

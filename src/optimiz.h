@@ -177,6 +177,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose);
 void Optimize_Br_Len_Multiplier(t_tree *tree, int verbose);
 phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,int n_iter_max,phydbl (*obj_func)(t_tree *),t_tree *tree);
 void Least_Square_Node_Ages(t_tree *tree);
+void Optimize_Lvar(t_tree *mixt_tree, int verbose);
 
 #endif
 

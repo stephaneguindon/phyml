@@ -1202,7 +1202,7 @@ typedef struct __Model {
   phydbl                    l_min; /*! Minimum branch length !*/
   phydbl                    l_max; /*! Maximum branch length !*/
 
-  phydbl              l_var_sigma; /*! For any edge b we have b->l_var->v = l_var_sigma * (b->l->v)^2 */
+  scalar_dbl         *l_var_sigma; /*! For any edge b we have b->l_var->v = l_var_sigma * (b->l->v)^2 */
   phydbl                l_var_min; /*! Min of variance of branch lengths (used in conjunction with gamma_mgf_bl == YES) */
   phydbl                l_var_max; /*! Max of variance of branch lengths (used in conjunction with gamma_mgf_bl == YES) */
 

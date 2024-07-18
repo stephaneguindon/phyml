@@ -703,6 +703,21 @@ t_tree *XML_Process_Base(char *xml_filename)
                               ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (t_string *)mod->aa_rate_mat_file;                              
+
+                              /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_rmat_weight */
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->s_opt->opt_rmat_weight);
+
+                              /*! Create and connect the data structure n->ds->next to mod->gamma_mgf_bl */
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->gamma_mgf_bl);                              
+
+                              /*! Create and connect the data structure n->ds->next to mod->l_var_sigma */
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (scalar_dbl *)(mod->l_var_sigma);
                             }
                           else
                             {
@@ -745,6 +760,15 @@ t_tree *XML_Process_Base(char *xml_filename)
                               Free_String(mod->aa_rate_mat_file);
                               mod->aa_rate_mat_file = (t_string *)ds->obj;
 
+                              ds = ds->next;
+                              mod->s_opt->opt_rmat_weight = *((int *)ds->obj);
+
+                              ds = ds->next;
+                              mod->gamma_mgf_bl = *((int *)ds->obj);
+
+                              ds = ds->next;
+                              Free_Scalar_Dbl(mod->l_var_sigma);
+                              mod->l_var_sigma = (scalar_dbl *)ds->obj;
                             }
                         }
                       
@@ -1000,7 +1024,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                                     {
                                       iomod->s_opt->opt_bl = NO;
                                     }
-                                }
+                                }                              
                               
                               ds = instance->ds;
                               

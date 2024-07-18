@@ -688,11 +688,12 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   for(catg=0;catg<ncatg;catg++)
     {
       rr = tree->mod->ras->gamma_rr->v[catg];
-      rr *=  tree->mod->br_len_mult->v;      
+      if(tree->mixt_tree) rr = tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+      rr *=  tree->mod->br_len_mult->v;
 
       len = (*l) * rr;
       /* var = tree->mod->l_var_sigma * rr*rr; */
-      var = (*l) * tree->mod->l_var_sigma * rr*rr;
+      var = (*l) * tree->mod->l_var_sigma->v * rr*rr;
       
       if(isinf(len) || isnan(len)) 
         {
@@ -711,11 +712,11 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           ev = tree->mod->eigen->e_val[state];
           expevlen = exp(ev*len);
 
-          if(tree->io->mod->gamma_mgf_bl == YES)
+          if(tree->mod->gamma_mgf_bl == YES)
             {
               expl[catg*2*ns + 2*state]      = POW(1. - ev*var/len,-len*len/var); 
               expl[catg*2*ns + 2*state + 1]  = expl[catg*2*ns + 2*state];
-              expl[catg*2*ns + 2*state + 1] *= -(ev/(1.-ev*var/len) + 2.*len*LOG(1.-ev*var/len)/var);              
+              expl[catg*2*ns + 2*state + 1] *= -(ev * rr/(1.-ev*var/len) + 2.*len*rr*LOG(1.-ev*var/len)/var);              
             }
           else
             {
@@ -2202,7 +2203,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   if(tree->mixt_tree != NULL) assert(tree->mod->ras->n_catg == 1);
   
-  if(tree->io->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
+  if(tree->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
 
   l_min = tree->mod->l_min;
   l_max = tree->mod->l_max;
@@ -2236,13 +2237,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           mean = len;
           /* var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2); */
           /* var  = tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2); */
-          var  = MAX(0.0,b_fcus->l->v) * tree->mod->l_var_sigma * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
+          var  = MAX(0.0,b_fcus->l->v) * tree->mod->l_var_sigma->v * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
           if(tree->mixt_tree) var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
-
-          /* var = 1.E-10; */
-
-          if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
-          if(var < tree->mod->l_var_min) var = tree->mod->l_var_min;
         }
 
       //Update the transition prob. matrix
@@ -2260,7 +2256,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
             Warn_And_Exit(TODO_BEAGLE);
 #endif
 
-            /* PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,shape,scale,1.0,tree->mod); */
             PMat_MGF_Gamma(mean,var,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
     }

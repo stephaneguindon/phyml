@@ -252,7 +252,10 @@ int main(int argc, char **argv)
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
-                    
+                  
+
+                  PhyML_Printf("\n. Init log-likelihood: %f",tree->c_lnL);
+
                   if(tree->mod->s_opt->opt_topo)
 		    {
                       Global_Spr_Search(tree);                      
@@ -280,7 +283,8 @@ int main(int argc, char **argv)
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
-                                    
+                  
+                  
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");

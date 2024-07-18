@@ -2844,7 +2844,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   phydbl log_site_lk,inv_site_lk;
   int num_prec_issue;
   phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
-  phydbl len;
+  phydbl len,var;
   phydbl *expl,*dot_prod;
   phydbl rr;
   phydbl ev,expevlen;
@@ -2860,10 +2860,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   cpy_mixt_b    = mixt_b;
   len           = -1.;
   
-  if(mixt_tree->update_eigen_lr == YES)
-    {
-      MIXT_Update_Eigen_Lr(mixt_b,mixt_tree);
-    }
+  if(mixt_tree->update_eigen_lr == YES) MIXT_Update_Eigen_Lr(mixt_b,mixt_tree);
+    
 
   /*! Make sure that l is one of the lengths of mixt_b */
   b = mixt_b;
@@ -2951,7 +2949,12 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
             {
               len = 0.0;
             }
-          
+
+          if(length_found == YES)
+            var = (*l) * tree->mod->l_var_sigma->v * rr*rr;
+          else
+            var = b->l->v * tree->mod->l_var_sigma->v * rr*rr;
+
           
           expl = mixt_tree->expl;
           
@@ -2959,9 +2962,18 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
             {
               ev = tree->mod->eigen->e_val[state];
               expevlen = exp(ev*len);
-              
-              expl[class*2*ns + 2*state]     = expevlen;
-              expl[class*2*ns + 2*state + 1] = expevlen*ev*rr;
+
+              if(tree->mod->gamma_mgf_bl == YES)
+                {
+                  expl[class*2*ns + 2*state]      = POW(1. - ev*var/len,-len*len/var);
+                  expl[class*2*ns + 2*state + 1]  = expl[class*2*ns + 2*state];
+                  expl[class*2*ns + 2*state + 1] *= -(ev * rr/(1.-ev*var/len) + 2.*len*rr*LOG(1.-ev*var/len)/var);
+                }
+              else
+                {                  
+                  expl[class*2*ns + 2*state]     = expevlen;
+                  expl[class*2*ns + 2*state + 1] = expevlen*ev*rr;
+                }
             }
           
           class++;

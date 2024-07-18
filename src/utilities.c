@@ -3736,12 +3736,13 @@ t_mod *Copy_Model(t_mod *ori)
 {
   t_mod *cpy;
 
-  cpy              = Make_Model_Basic();
+  cpy               = Make_Model_Basic();
 
-  cpy->ns          = ori->ns;
-  cpy->ras->n_catg = ori->ras->n_catg;
-  cpy->whichmodel  = ori->whichmodel;
-  cpy->io          = ori->io;
+  cpy->ns           = ori->ns;
+  cpy->ras->n_catg  = ori->ras->n_catg;
+  cpy->whichmodel   = ori->whichmodel;
+  cpy->io           = ori->io;
+  cpy->gamma_mgf_bl = ori->gamma_mgf_bl;
   
   Make_Model_Complete(cpy);
   Record_Model(ori,cpy);
@@ -3764,7 +3765,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->ns                   = ori->ns;
   cpy->ras->n_catg          = ori->ras->n_catg;
   cpy->ras->normalise_rr    = ori->ras->normalise_rr;
-  cpy->l_var_sigma          = ori->l_var_sigma;
+  cpy->l_var_sigma->v       = ori->l_var_sigma->v;
 
   cpy->kappa->v             = ori->kappa->v;
   cpy->ras->alpha->v        = ori->ras->alpha->v;
@@ -10553,14 +10554,14 @@ void Set_Br_Len_Var(t_edge *b, t_tree *tree)
             {
               len = MAX(0.0,tree->a_edges[i]->l->v);
               /* tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
-              tree->a_edges[i]->l_var->v = tree->mod->l_var_sigma;
+              tree->a_edges[i]->l_var->v = tree->mod->l_var_sigma->v;
             }
         }
       else
         {
           len = MAX(0.0,b->l->v);
           /* b->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
-          b->l_var->v = tree->mod->l_var_sigma;
+          b->l_var->v = tree->mod->l_var_sigma->v;
         }
     }
 }

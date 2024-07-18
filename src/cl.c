@@ -278,7 +278,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #endif
 	case 74:
           {
-            io->mod->l_var_sigma = String_To_Dbl(optarg);
+            io->mod->l_var_sigma->v = String_To_Dbl(optarg);
             break;
           }
 	case 73:
@@ -396,10 +396,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 66:
 	  {
-            /* PhyML_Printf("\n. Integrated edge length model needs additional work."); */
-            /* PhyML_Printf("\n. Please send me an email at guindon@lirmm.fr if you are"); */
-            /* PhyML_Printf("\n. really keen on using this model."); */
-            /* assert(false); */
 	    io->mod->gamma_mgf_bl = YES;
 	    io->mod->s_opt->opt_gamma_br_len = YES;
 	    break;
@@ -1823,8 +1819,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
       PhyML_Printf("\n\n. Command line: ");
       for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
     }
-
-  return 1;
+    
+    return 1;
 }
 
 //////////////////////////////////////////////////////////////

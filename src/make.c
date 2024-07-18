@@ -934,6 +934,9 @@ t_mod *Make_Model_Basic(void)
   mod->aa_rate_mat_file       = Make_String(T_MAX_FILE);
   Init_String(mod->aa_rate_mat_file);
 
+  mod->l_var_sigma            = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(mod->l_var_sigma);
+
   return mod;
 }
 

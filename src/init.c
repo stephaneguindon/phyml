@@ -683,7 +683,7 @@ void Set_Defaults_Model(t_mod *mod)
   
   mod->kappa->v                = 4.0;
   mod->lambda->v               = 1.0;
-  mod->l_var_sigma             = 1.E-1;
+  mod->l_var_sigma->v          = 1.E-1;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
@@ -797,7 +797,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->br_len_in_spr        = 10;
   s_opt->opt_free_mixt_rates  = YES;
   s_opt->constrained_br_len   = NO;
-  s_opt->opt_gamma_br_len     = NO;
+  s_opt->opt_gamma_br_len     = YES;
   s_opt->first_opt_free_mixt_rates = YES;
 
   s_opt->wim_n_rgrft          = -1;

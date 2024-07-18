@@ -623,7 +623,8 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   Set_Use_Eigen_Lr(NO,tree);
 
   lk_begin = Lk(b,tree); /* We can't assume that the log-lk value is up-to-date */
-  
+
+
   Set_Update_Eigen_Lr(NO,tree);
   Set_Use_Eigen_Lr(YES,tree);
 
@@ -633,7 +634,9 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   
   Set_Update_Eigen_Lr(NO,tree);
   Set_Use_Eigen_Lr(NO,tree);
-  
+
+  /* Set_Update_Eigen_Lr(NO,tree); */
+  /* Set_Use_Eigen_Lr(NO,tree); */
   /* lk_begin = Lk(b,tree); */
   /* tree->n_tot_bl_opt += Generic_Brent_Lk(l, */
   /*                                        tree->mod->l_min, */
@@ -644,13 +647,13 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   /*                                        Wrap_Lk_At_Given_Edge, */
   /*                                        b,tree,NULL,NO,NO); */
 
-  /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
-  
-
   /* lk_end = Lk(b,tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
 
-  lk_end = tree->c_lnL;
+  /* PhyML_Printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
+
+  lk_end = tree->c_lnL;
+
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Fprintf(stderr,"\n. lk_beg = %f lk_end = %f",lk_begin, lk_end);
@@ -678,7 +681,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
-
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
@@ -719,30 +721,9 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
   Lk(NULL,tree);
   
   lk_init = tree->c_lnL;
+
+  Optimize_Lvar(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
   
-  if(tree->mod->gamma_mgf_bl == YES)
-    {
-      Generic_Brent_Lk(&(tree->mod->l_var_sigma),
-                       tree->mod->l_var_min,
-                       tree->mod->l_var_max,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk,NULL,tree,NULL,NO,NO);
-
-      if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
-        {
-          PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
-          PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-        }
-
-      if((tree->io->quiet)?(0):(tree->verbose > VL2))
-        {
-          Print_Lk(tree,"[Branch len. var.   ]");
-          PhyML_Printf("[%10f]",tree->mod->l_var_sigma);
-        }
-    }
-
   iter = 0;
   do
     {      
@@ -866,7 +847,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
-
       PhyML_Fprintf(stderr,"\n. %f -- %f",lk_init,tree->c_lnL);
       PhyML_Fprintf(stderr,"\n. Edge: %d",b_fcus->num);
       PhyML_Fprintf(stderr,"\n. is_mixt_tree: %d",tree->is_mixt_tree);
@@ -2296,7 +2276,6 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
   Set_Use_Eigen_Lr(YES,tree);
-
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
@@ -2500,7 +2479,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
 
   *l = best_l;
   tree->c_lnL = best_lnL;
-    
+  
   if(iter == n_iter_max)
     {
       PhyML_Printf("\n. Too many iterations in edge length optimization routine (l=%G init=%G).\n",best_l,init_l);
@@ -2958,6 +2937,59 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   
   Set_Update_Eigen(NO,mixt_tree->mod);
   
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Optimize_Lvar(t_tree *mixt_tree, int verbose)
+{
+  t_tree *tree;
+  scalar_dbl **l_var;
+  int n_l_var;
+  int i;
+  
+  tree = mixt_tree;
+  n_l_var = 0;
+  l_var = NULL;
+  do
+    {
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+      
+      for(i=0;i<n_l_var;i++) if(tree->mod->l_var_sigma == l_var[i]) break;
+
+      if(i == n_l_var)
+        {
+          if(!l_var) l_var = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+          else       l_var = (scalar_dbl **)mRealloc(l_var,n_l_var+1,sizeof(scalar_dbl *));
+          l_var[n_l_var] = tree->mod->l_var_sigma;
+          n_l_var++;
+
+          if(tree->mod->gamma_mgf_bl == YES && tree->mod->s_opt->opt_gamma_br_len == YES)
+            {
+              Generic_Brent_Lk(&(tree->mod->l_var_sigma->v),
+                               tree->mod->l_var_min,
+                               tree->mod->l_var_max,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,mixt_tree,NULL,NO,NO);
+              
+
+              if(verbose)
+                {
+                  Print_Lk(tree,"[Branch len. var.   ]");
+                  PhyML_Printf("[%10f]",tree->mod->l_var_sigma->v);
+                }
+            }
+        }
+      tree = tree->next;
+    }
+  while(tree);
+  
+  if(l_var) Free(l_var);
 }
 
 //////////////////////////////////////////////////////////////
