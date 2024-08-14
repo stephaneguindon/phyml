@@ -3277,6 +3277,7 @@ void Bootstrap(t_tree *tree)
       else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
       else assert(FALSE);
 
+      
       Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
 
@@ -3330,7 +3331,7 @@ void Br_Len_Involving_Invar(t_tree *tree)
       return;
     }
 
-  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4226,7 +4227,6 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
         }
     out: ;
     }
-
   return n_edges - identical;
 }
 

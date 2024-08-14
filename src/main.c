@@ -366,7 +366,7 @@ int main(int argc, char **argv)
               /* Print the most likely tree in the output file */
               if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
               if(io->n_data_sets == 1) rewind(io->fp_out_tree);
-              
+
               t_tree *dum;
               dum = Read_Tree(&most_likely_tree);
               dum->data = cdata;

@@ -351,11 +351,21 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
   p++;
 
   i = 0;
-  if(p[i] == '(') i = Next_Matching_Char(p,'(',')',i);
-  i++;  
-  if(p[i] == '[') i = Next_Matching_Char(p,'[',']',i);
-  i++;
-  if(p[i] != ':') b->support_val = atof((char *)p);
+  if(p[i] == '(')
+    {
+      i = Next_Matching_Char(p,'(',')',i);
+      i++;
+    }
+  if(p[i] == '[')
+    {
+      i = Next_Matching_Char(p,'[',']',i);
+      i++;
+    }
+  
+  if(p[i] != ':')
+    {
+      b->support_val = atof((char *)(p+i));
+    }
     
   Free(sub_tp);
 }
@@ -6222,12 +6232,12 @@ void Collect_Edge_Support_Values(t_tree *tree)
     {      
       if(tree->io->do_boot == YES)
         {
-          tree->a_edges[i]->support_val = tree->a_edges[i]->bip_score; 
+          tree->a_edges[i]->support_val = (phydbl)tree->a_edges[i]->bip_score;
         }
       else if(tree->io->do_tbe == YES)
         {
           int pminus1=MIN(tree->a_edges[i]->left->bip_size[tree->a_edges[i]->l_r], tree->a_edges[i]->rght->bip_size[tree->a_edges[i]->r_l])-1;
-          tree->a_edges[i]->support_val = 1-((tree->a_edges[i]->tdist_score)/(tree->io->n_boot_replicates*1.0))/pminus1;
+          tree->a_edges[i]->support_val = 1.-((tree->a_edges[i]->tdist_score)/(tree->io->n_boot_replicates*1.0))/pminus1;
         }
       else if(tree->io->do_alrt == YES)
         {

@@ -267,12 +267,14 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 	{
 	  io->datatype = NT;
 	  io->mod->ns = 4;
+	  io->mod->whichmodel = HKY85;
 	}
 
       else if(!strcmp(curr_parm->value,"protein"))
 	{
 	  io->datatype = AA;
 	  io->mod->ns = 20;
+	  io->mod->whichmodel = LG;
 	}
       
       else if(!strcmp(curr_parm->value,"continuous"))
@@ -288,7 +290,7 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
       PhyML_Printf("\n== The 'missing' subcommand is not supported by PhyML. Please remove it from the NEXUS file.");
       PhyML_Printf("\n== Note that the characters 'X', '?' and '-' will be considered as indels by default."); 
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("");
+      /* Exit(""); */
     }
 
   else if(!strcmp(curr_parm->name,"gap"))
@@ -296,7 +298,7 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
       PhyML_Printf("\n== The 'gap' subcommand is not supported by PhyML. Please remove it from the NEXUS file.");
       PhyML_Printf("\n== Note that the characters 'X', '?' and '-' will be considered as indels by default."); 
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("");
+      /* Exit(""); */
     }
 
   else if(!strcmp(curr_parm->name,"symbols"))
