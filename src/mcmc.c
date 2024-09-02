@@ -14569,8 +14569,7 @@ void MCMC_Crossvalidate_Locations(t_tree *tree)
           (void)signal(SIGINT,MCMC_Terminate);
         }
       while(mcmc->run < mcmc->chain_len);
-
-
+      
       PHYREX_Restore_Geo_Coord(tree->a_nodes[i]->ldsk->coord);
     }
 }

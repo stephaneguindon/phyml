@@ -800,9 +800,7 @@ void VELOC_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
   phydbl son_a, bro_a;
   phydbl son_b, bro_b;
   
-
   if(d->tax) return;
-
 
   dad = d;
   son = bro = NULL;

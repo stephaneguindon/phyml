@@ -113,57 +113,10 @@ void IBM_Integrated_Location_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down
                                   phydbl son_logrem, phydbl bro_logrem,
                                   phydbl *mean, phydbl *var, phydbl *logrem)
 {
-  phydbl m,v,logr;
-  int err;
-
-  err = 0;
-  v = 0.0;
-
-  logr  = son_logrem + bro_logrem;
-  logr -= log(fabs(bro_a*son_a));
-  logr += Log_Dnorm((son_mu_down-son_b)/son_a,(bro_mu_down-bro_b)/bro_a,sqrt((son_var_down+son_var)/pow(son_a,2)+(bro_var_down+bro_var)/pow(bro_a,2)),&err);
-
-  if(err == YES)
-    {
-      PhyML_Printf("\n. son_mu_down: %f son_b: %f son_a: %f bro_mu_down: %f  bro_b: %f bro_a: %f son_var_down: %f son_var: %f bro_var_down: %f bro_var: %f",
-                   son_mu_down,
-                   son_b,
-                   son_a,
-                   bro_mu_down,
-                   bro_b,
-                   bro_a,
-                   son_var_down,
-                   son_var,
-                   bro_var_down,
-                   bro_var);
-      assert(false);
-    }
-
-  if((son_var + son_var_down > 1.E-7) && (bro_var + bro_var_down > 1.E-7)) // Standard case
-    {
-      v = pow(son_a,2)/(son_var_down + son_var) + pow(bro_a,2)/(bro_var_down + bro_var);
-      v = 1./v;
-
-      m = (son_a*(son_mu_down-son_b)/(son_var_down + son_var) + bro_a*(bro_mu_down-bro_b)/(bro_var_down + bro_var)) * v;
-    }
-  else if(son_var + son_var_down > 1.E-7) // Null variance along d - v2
-    {
-      m = (bro_mu_down-bro_b)/bro_a;
-    }
-  else if(bro_var + bro_var_down > 1.E-7) // Null variance along d - v1
-    {
-      m = (son_mu_down-son_b)/son_a; 
-   }
-  else
-    {
-      m = (son_mu_down-son_b)/son_a;
-    }
-
-  *mean = m;
-  *var  = v;
-  *logrem = logr;
-
-  /* assert(v>0.0); */
+  RW_Integrated_Lk_Down(son_a, son_b, son_mu_down, son_var_down, son_var,
+                        bro_a, bro_b, bro_mu_down, bro_var_down, bro_var,
+                        son_logrem, bro_logrem,
+                        mean, var, logrem);
 }
 
 //////////////////////////////////////////////////////////////
@@ -172,69 +125,13 @@ void IBM_Integrated_Location_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down
 void IBM_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_up,
                                 phydbl son_a, phydbl son_b, phydbl son_var,
                                 phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var, phydbl bro_logrem_down,
-                                
-
                                 phydbl *mean, phydbl *var, phydbl *logrem)
-{
-  phydbl m,v,logr;
-  int err;
+{  
+  RW_Integrated_Lk_Up(dad_mu_up, dad_var_up, dad_logrem_up, 
+                      son_a, son_b, son_var, 
+                      bro_a, bro_b, bro_mu_down, bro_var_down, bro_var, bro_logrem_down, 
+                      mean, var, logrem);
   
-  v = logr = 0.0;
-  err = 0;
-
-  logr  = dad_logrem_up + bro_logrem_down;
-  logr -= log(fabs(bro_a));
-  logr += Log_Dnorm((bro_mu_down-bro_b)/bro_a,dad_mu_up,sqrt((bro_var_down+bro_var)/(bro_a*bro_a)+dad_var_up),&err);
-
-  if(err == YES)
-    {
-      PhyML_Printf("\n. bro_mu_down: %f bro_b: %f bro_a: %f dad_mu_up: %f  bro_var_down: %f bro_var: %f dad_var_up: %f",
-                   bro_mu_down,
-                   bro_b,
-                   bro_a,
-                   dad_mu_up,
-                   bro_var_down,
-                   bro_var,
-                   dad_var_up);
-      assert(false);
-    }
-
-  
-  if((bro_var_down + bro_var) > 1.E-7 && dad_var_up > 1.E-7) // Standard case
-    {
-      
-      v += dad_var_up * (bro_var_down + bro_var);
-      v /= bro_a * bro_a * dad_var_up + bro_var_down + bro_var;
-      
-      m = v * (bro_a * (bro_mu_down - bro_b) / (bro_var_down + bro_var) + dad_mu_up / dad_var_up);
-      m = son_a * m + son_b;
-      
-      v = son_a * son_a * v + son_var;
-    }
-  else if(dad_var_up > 1.E-7) // Null variance along bro
-    {
-      v = son_var;
-      m = son_a * bro_mu_down / bro_a + son_b;
-    }
-  else if((bro_var_down + bro_var) > 1.E-7) // Null variance along dad
-    {
-      v = son_var;
-      m = son_a * dad_mu_up + son_b;
-    }
-  else
-    {
-      v = son_var;
-      m = son_a * bro_mu_down / bro_a + son_b;
-      /* m = son_b; */
-    }
-
-
-  *mean = m;
-  *var  = v;
-  *logrem = logr;
-
-  /* !!!!!!!!!!!!!!!!!!!! */
-  /* assert(v>0.0); */
 }
 
 //////////////////////////////////////////////////////////////

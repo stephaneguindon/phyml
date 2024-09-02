@@ -4053,6 +4053,11 @@ phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree)
   int i;
   phydbl disp;
 
+  if (RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
+    RRW_Sample_Node_Locations_Joint(tree);
+  if (VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
+    VELOC_Sample_All_Node_Locations(tree);
+
   disp = 0.0;
   for(i=0;i<2*tree->n_otu-1;++i)
     {
@@ -4092,7 +4097,12 @@ phydbl PHYREX_Realized_Dispersal_Dist(short int dist_type, t_tree *tree)
   t_dsk *disk,*root_disk;
   phydbl dist;
   int i;
-  
+
+  if (RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
+    RRW_Sample_Node_Locations_Joint(tree);
+  if (VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
+    VELOC_Sample_All_Node_Locations(tree);
+
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
