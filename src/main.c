@@ -598,300 +598,282 @@ int main(int argc, char **argv)
 int main(int argc, char **argv)
 {
 
-  /* /\* Prediction using linear extrapolation of velocities estimated at the tips. Takes as input */
-  /*    the XML file used for running the MCMC analysis (so as to get the coordinates + sampling dates), */
-  /*    the list of sampled trees, the time interval for which prediction will be made and the burnin */
-  /*    proportion *\/ */
+  /* Prediction using linear extrapolation of velocities estimated at the tips. Takes as input */
+  /* the XML file used for running the MCMC analysis (so as to get the coordinates + sampling dates), */
+  /* the list of sampled trees, the time interval for which prediction will be made and the burnin */
+  /* proportion */
   
   
-  /* option *io; */
-  /* t_tree *tree; */
-  /* xml_node *root; */
-  /* phydbl date_old,date_recent,burnin; */
-  /* short int first; */
-  /* int stepsize,sampsize; */
+   option *io; 
+   t_tree *tree; 
+   xml_node *root; 
+   phydbl date_old,date_recent,burnin; 
+   short int first; 
+   int stepsize,sampsize; 
   
   
-  /* date_recent = atof(argv[4]); */
-  /* date_old = atof(argv[5]); */
-  /* burnin = atof(argv[6]); */
-  /* sampsize = 1000; */
-  /* first = YES; */
+   date_recent = atof(argv[4]); 
+   date_old = atof(argv[5]); 
+   burnin = atof(argv[6]); 
+   sampsize = 1000; 
+   first = YES; 
   
-  /* PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent); */
-  /* assert(date_old < date_recent); */
+   PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent); 
+   assert(date_old < date_recent); 
 
 
-  /* io = (option *)Get_Input(argc,argv); */
-  /* if(!io) return(0); */
+   io = (option *)Get_Input(argc,argv); 
+   if(!io) return(0); 
 
-  /* Read_User_Tree(NULL,NULL,io); */
+   Read_User_Tree(NULL,NULL,io); 
   
-  /* root = XML_Load_File(io->fp_in_xml); */
+   root = XML_Load_File(io->fp_in_xml); 
 
-  /* stepsize = io->treelist->list_size*(1. - burnin) / sampsize; */
+   stepsize = io->treelist->list_size*(1. - burnin) / sampsize; 
   
-  /* /\* for(int i=0;i<io->treelist->list_size;i+=stepsize) *\/ */
-  /* for(int i=0;i<io->treelist->list_size;i++) */
-  /*   { */
-  /*     if(i > (int)(burnin*io->treelist->list_size)) */
-  /*       { */
-  /*         PhyML_Fprintf(stderr,"\n. Processing tree %d",i+1); */
-  /*         tree = io->treelist->tree[i]; */
+   for(int i=0;i<io->treelist->list_size;i++) 
+     { 
+       if(i > (int)(burnin*io->treelist->list_size)) 
+         { 
+           PhyML_Fprintf(stderr,"\n. Processing tree %d",i+1); 
+           tree = io->treelist->tree[i]; 
 
-  /*         tree->times = TIMES_Make_Time_Struct(tree->n_otu); */
-  /*         TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu); */
+           tree->times = TIMES_Make_Time_Struct(tree->n_otu); 
+           TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu); 
           
-  /*         tree->rates = RATES_Make_Rate_Struct(tree->n_otu); */
-  /*         RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu); */
+           tree->rates = RATES_Make_Rate_Struct(tree->n_otu); 
+           RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu); 
           
-  /*         tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2); */
-  /*         tree->mmod->n_dim = 2; */
-  /*         PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod); */
+           tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2); 
+           tree->mmod->n_dim = 2; 
+           PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod); 
           
-  /*         XML_Read_Calibration(root,tree); */
-  /*         MIXT_Chain_Cal(tree); */
+           XML_Read_Calibration(root,tree); 
+           MIXT_Chain_Cal(tree); 
           
-  /*         TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged */
-  /*         /\* Edge_Labels_To_Rates(tree); *\/ */
-  /*         tree->rates->clock_r = 1.0; */
-  /*         TIMES_Bl_To_Times(tree); */
-  /*         Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); */
-  /*         Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); */
+           TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged 
+           tree->rates->clock_r = 1.0; 
+           TIMES_Bl_To_Times(1,tree); 
+           Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); 
+           Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); 
           
-  /*         PHYREX_Make_And_Connect_Tip_Disks(tree); */
-  /*         /\* PHYREX_Read_Tip_Coordinates(tree); *\/ */
-  /*         PHYREX_Tree_To_Ldsk(tree); */
+           PHYREX_Make_And_Connect_Tip_Disks(tree); 
+           PHYREX_Tree_To_Ldsk(tree); 
           
-  /*         Node_Labels_To_Velocities(tree); */
-  /*         Node_Labels_To_Locations(tree); */
+           Node_Labels_To_Velocities(tree); 
+           Node_Labels_To_Locations(tree); 
           
-  /*         if(first == YES) PhyML_Printf("\n. XXX Tree\t Time\t Tax\t Longitude\t Latitude\t NextLongitude\t NextLatitude"); */
-  /*         first = NO; */
+           if(first == YES) PhyML_Printf("\n. XXX Tree\t Time\t Tax\t Longitude\t Latitude\t NextLongitude\t NextLatitude"); 
+           first = NO; 
           
-  /*         for(int j=0;j<2*tree->n_otu-1;++j) */
-  /*           { */
-  /*             /\* if(tree->times->nd_t[j] > date_old-1.E-10 && tree->times->nd_t[j] < date_recent) *\/ */
-  /*             /\*   { *\/ */
-  /*             /\*     PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f", *\/ */
-  /*             /\*                  i+1, *\/ */
-  /*             /\*                  tree->times->nd_t[j], *\/ */
-  /*             /\*                  tree->a_nodes[j]->tax, *\/ */
-  /*             /\*                  tree->a_nodes[j]->ldsk->coord->lonlat[0], *\/ */
-  /*             /\*                  tree->a_nodes[j]->ldsk->coord->lonlat[1], *\/ */
-  /*             /\*                  tree->a_nodes[j]->ldsk->coord->lonlat[0] + tree->a_nodes[j]->ldsk->veloc->deriv[0], *\/ */
-  /*             /\*                  tree->a_nodes[j]->ldsk->coord->lonlat[1] + tree->a_nodes[j]->ldsk->veloc->deriv[1]); *\/ */
-  /*             /\*   } *\/ */
-
-  /*             if(tree->a_nodes[j]->tax == YES) */
-  /*               { */
-  /*                 phydbl survival_duration,survival_rate,t,delta_t; */
-  /*                 int k,K; */
+           for(int j=0;j<2*tree->n_otu-1;++j) 
+             { 
+               if(tree->a_nodes[j]->tax == YES) 
+                 { 
+                   phydbl survival_duration,survival_rate,t,delta_t; 
+                   int k,K; 
                   
-  /*                 survival_rate = 1.0; */
-  /*                 K = 4; */
-  /*                 delta_t = (date_recent - date_old) / K; */
+                   survival_rate = 1.0; 
+                   K = 4; 
+                   delta_t = (date_recent - date_old) / K; 
                   
-  /*                 survival_duration = Rexp(survival_rate); */
+                   survival_duration = Rexp(survival_rate); 
 
-  /*                 if(tree->times->nd_t[j] + survival_duration > date_old) */
-  /*                   { */
-  /*                     t = date_old; */
-  /*                     k = 0; */
-  /*                     do */
-  /*                       { */
-  /*                         PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f", */
-  /*                                      i+1, */
-  /*                                      tree->times->nd_t[j], */
-  /*                                      tree->a_nodes[j]->tax, */
-  /*                                      tree->a_nodes[j]->ldsk->coord->lonlat[0], */
-  /*                                      tree->a_nodes[j]->ldsk->coord->lonlat[1], */
-  /*                                      tree->a_nodes[j]->ldsk->coord->lonlat[0] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[0], */
-  /*                                      tree->a_nodes[j]->ldsk->coord->lonlat[1] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[1]); */
-  /*                         k++; */
-  /*                         t += delta_t;  */
-  /*                       } */
-  /*                     while(t < MIN(date_recent,tree->times->nd_t[j] + survival_duration)); */
-  /*                   } */
-  /*               } */
+                   if(tree->times->nd_t[j] + survival_duration > date_old) 
+                     { 
+                       t = date_old; 
+                       k = 0; 
+                       do 
+                         { 
+                           PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f", 
+                                        i+1, 
+                                        tree->times->nd_t[j], 
+                                        tree->a_nodes[j]->tax, 
+                                        tree->a_nodes[j]->ldsk->coord->lonlat[0], 
+                                        tree->a_nodes[j]->ldsk->coord->lonlat[1], 
+                                        tree->a_nodes[j]->ldsk->coord->lonlat[0] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[0], 
+                                        tree->a_nodes[j]->ldsk->coord->lonlat[1] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[1]); 
+                           k++; 
+                           t += delta_t;  
+                         } 
+                       while(t < MIN(date_recent,tree->times->nd_t[j] + survival_duration)); 
+                     } 
+                 }
+             } 
 
+           PHYREX_Free_Ldsk_Struct(tree); 
+           RATES_Free_Rates(tree->rates); 
+           TIMES_Free_Times(tree->times); 
+           Free_Mmod(tree->mmod); 
+           Free_Tree(tree); 
 
-
-
-
-  /*           } */
-
-  /*         PHYREX_Free_Ldsk_Struct(tree); */
-  /*         RATES_Free_Rates(tree->rates); */
-  /*         TIMES_Free_Times(tree->times); */
-  /*         Free_Mmod(tree->mmod); */
-  /*         Free_Tree(tree); */
-
-  /*       } */
-  /*   } */
+         } 
+     } 
       
-  /* Exit("\n"); */
+   Exit("\n"); 
  
-  
-  
-  /* Select samples in the 801 sequence WNV data set within a user defined date range ./test --xml=../WNV_RRW_tree_1.xml 2000 1990 1.0 */
-  option *io;
-  xml_node *beast_root,*beast_taxa,*beast_taxon,*beast_date,*beast_loc,*beast_seq,**valid_taxa;
-  xml_node *phyrex_root,*nd,*ndnd;
-  int i,n_selected,n_selected_max,r_seed;
-  FILE *fp_xml,*fp_coord,*fp_seq;
-  char *filename,*dum,*xml_filename;
-  phydbl date_recent, date_f;
-  int *permut;
-  phydbl *select_proba,sum;
+
+
+
+
+  // /* Select samples in the 801 sequence WNV data set within a user defined date range ./test --xml=../WNV_RRW_tree_1.xml 2000 1990 1.0 */
+  // option *io;
+  // xml_node *beast_root,*beast_taxa,*beast_taxon,*beast_date,*beast_loc,*beast_seq,**valid_taxa;
+  // xml_node *phyrex_root,*nd,*ndnd;
+  // int i,n_selected,n_selected_max,r_seed;
+  // FILE *fp_xml,*fp_coord,*fp_seq;
+  // char *filename,*dum,*xml_filename;
+  // phydbl date_recent, date_f;
+  // int *permut;
+  // phydbl *select_proba,sum;
     
-  valid_taxa = (xml_node **)mCalloc(800,sizeof(xml_node *));
-  select_proba = (phydbl *)mCalloc(800,sizeof(phydbl));
+  // valid_taxa = (xml_node **)mCalloc(800,sizeof(xml_node *));
+  // select_proba = (phydbl *)mCalloc(800,sizeof(phydbl));
   
-  filename = (char *)mCalloc(100,sizeof(char));
-  xml_filename = (char *)mCalloc(100,sizeof(char));
-  r_seed = time(NULL);
-  PhyML_Printf("\n seed: %d",r_seed);
-  srand(r_seed);
+  // filename = (char *)mCalloc(100,sizeof(char));
+  // xml_filename = (char *)mCalloc(100,sizeof(char));
+  // r_seed = time(NULL);
+  // PhyML_Printf("\n seed: %d",r_seed);
+  // srand(r_seed);
 
-  io = (option *)Get_Input(argc,argv);
-  if(!io) return(0);
+  // io = (option *)Get_Input(argc,argv);
+  // if(!io) return(0);
 
-  date_recent = atof(argv[2]);
-  n_selected_max = atoi(argv[3]);
-
-  
-  dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%d%s","wnv_config_",r_seed,".xml");
-  strcpy(xml_filename,dum);
-  Free(dum);
-  
-  PhyML_Printf("\n. Upper limit of time: %f",date_recent);
-
-  strcpy(filename,"coord.txt");
-  fp_coord = Openfile(filename,WRITE);
-
-  PhyML_Fprintf(fp_coord,"traits lat long\n");
-  PhyML_Fprintf(fp_coord,"|NorthEast| 1000 1000\n");
-  PhyML_Fprintf(fp_coord,"|SouthWest| -1000 -1000");
+  // date_recent = atof(argv[2]);
+  // n_selected_max = atoi(argv[3]);
 
   
-  strcpy(filename,"seq.txt");
-  fp_seq = Openfile(filename,WRITE);
+  // dum = (char *)mCalloc(100,sizeof(char));
+  // sprintf(dum,"%s%d%s","wnv_config_",r_seed,".xml");
+  // strcpy(xml_filename,dum);
+  // Free(dum);
+  
+  // PhyML_Printf("\n. Upper limit of time: %f",date_recent);
 
-  dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%d","wnv_predict_",r_seed);
-  phyrex_root = Generate_PhyREX_XMLObj("ibm",dum,"seq.txt","coord.txt");
-  Free(dum);
+  // strcpy(filename,"coord.txt");
+  // fp_coord = Openfile(filename,WRITE);
+
+  // PhyML_Fprintf(fp_coord,"traits lat long\n");
+  // PhyML_Fprintf(fp_coord,"|NorthEast| 1000 1000\n");
+  // PhyML_Fprintf(fp_coord,"|SouthWest| -1000 -1000");
+
+  
+  // strcpy(filename,"seq.txt");
+  // fp_seq = Openfile(filename,WRITE);
+
+  // dum = (char *)mCalloc(100,sizeof(char));
+  // sprintf(dum,"%s%d","wnv_predict_",r_seed);
+  // phyrex_root = Generate_PhyREX_XMLObj("ibm",dum,"seq.txt","coord.txt");
+  // Free(dum);
     
-  beast_root = XML_Load_File(io->fp_in_xml);
+  // beast_root = XML_Load_File(io->fp_in_xml);
   
-  beast_taxa = XML_Search_Node_Name("taxa",NO,beast_root);
+  // beast_taxa = XML_Search_Node_Name("taxa",NO,beast_root);
 
   
-  i = 1;
-  n_selected = 0;
-  beast_taxon = beast_taxa->child;
-  do
-    {
-      beast_date = XML_Search_Node_Name("date",NO,beast_taxon);
-      assert(beast_date);
+  // i = 1;
+  // n_selected = 0;
+  // beast_taxon = beast_taxa->child;
+  // do
+  //   {
+  //     beast_date = XML_Search_Node_Name("date",NO,beast_taxon);
+  //     assert(beast_date);
 
-      date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
+  //     date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
 
       
-      if(date_f < date_recent)
-        {
-          valid_taxa[n_selected] = beast_taxon;
-          select_proba[n_selected] = exp(-fabs(date_f-date_recent));
-          n_selected++;
-        }
+  //     if(date_f < date_recent)
+  //       {
+  //         valid_taxa[n_selected] = beast_taxon;
+  //         select_proba[n_selected] = exp(-fabs(date_f-date_recent));
+  //         n_selected++;
+  //       }
           
-      beast_taxon = beast_taxon->next;
-    }
-  while(beast_taxon);
+  //     beast_taxon = beast_taxon->next;
+  //   }
+  // while(beast_taxon);
 
-  PhyML_Fprintf(fp_seq,"%d 10302\n",MIN(n_selected,n_selected_max));
-  permut = Permutate(MIN(n_selected,n_selected_max));
+  // PhyML_Fprintf(fp_seq,"%d 10302\n",MIN(n_selected,n_selected_max));
+  // permut = Permutate(MIN(n_selected,n_selected_max));
 
 
-  sum = 0.0;
-  for(i=0;i<n_selected;++i) sum += select_proba[i];
-  for(i=0;i<n_selected;++i) select_proba[i] /= sum;
+  // sum = 0.0;
+  // for(i=0;i<n_selected;++i) sum += select_proba[i];
+  // for(i=0;i<n_selected;++i) select_proba[i] /= sum;
 
-  for(i=0;i<n_selected;++i) PhyML_Printf("\n. Target %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[i],"id"),i,select_proba[i]);
+  // for(i=0;i<n_selected;++i) PhyML_Printf("\n. Target %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[i],"id"),i,select_proba[i]);
   
-  for(i=0;i<MIN(n_selected,n_selected_max);++i)
-    {
-      permut[i] = Sample_i_With_Proba_pi(select_proba,n_selected);
+  // for(i=0;i<MIN(n_selected,n_selected_max);++i)
+  //   {
+  //     permut[i] = Sample_i_With_Proba_pi(select_proba,n_selected);
 
 
-      beast_date = XML_Search_Node_Name("date",NO,valid_taxa[permut[i]]);
-      assert(beast_date);
-      date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
+  //     beast_date = XML_Search_Node_Name("date",NO,valid_taxa[permut[i]]);
+  //     assert(beast_date);
+  //     date_f = atof(XML_Get_Attribute_Value(beast_date,"value"));
       
-      nd = XML_Add_Node(phyrex_root,"clade");
-      dum = (char *)mCalloc(100,sizeof(char));
-      sprintf(dum,"%s%d","clad",i+1);
-      nd->attr = XML_Make_Attribute(NULL,"id",dum);
-      ndnd = XML_Add_Node(nd,"taxon");
-      ndnd->attr = XML_Make_Attribute(NULL,"value",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+  //     nd = XML_Add_Node(phyrex_root,"clade");
+  //     dum = (char *)mCalloc(100,sizeof(char));
+  //     sprintf(dum,"%s%d","clad",i+1);
+  //     nd->attr = XML_Make_Attribute(NULL,"id",dum);
+  //     ndnd = XML_Add_Node(nd,"taxon");
+  //     ndnd->attr = XML_Make_Attribute(NULL,"value",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
       
-      nd = XML_Add_Node(phyrex_root,"calibration");
-      dum = (char *)mCalloc(100,sizeof(char));
-      sprintf(dum,"%s%d","cal",i+1);
-      nd->attr = XML_Make_Attribute(NULL,"id",dum);
-      Free(dum);
+  //     nd = XML_Add_Node(phyrex_root,"calibration");
+  //     dum = (char *)mCalloc(100,sizeof(char));
+  //     sprintf(dum,"%s%d","cal",i+1);
+  //     nd->attr = XML_Make_Attribute(NULL,"id",dum);
+  //     Free(dum);
       
-      ndnd = XML_Add_Node(nd,"lower");
-      XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
+  //     ndnd = XML_Add_Node(nd,"lower");
+  //     XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
       
-      ndnd = XML_Add_Node(nd,"upper");
-      XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
+  //     ndnd = XML_Add_Node(nd,"upper");
+  //     XML_Set_Node_Value(ndnd,XML_Get_Attribute_Value(beast_date,"value"));
       
-      ndnd = XML_Add_Node(nd,"appliesto");
-      dum = (char *)mCalloc(100,sizeof(char));
-      sprintf(dum,"%s%d","clad",i+1);
-      ndnd->attr = XML_Make_Attribute(NULL,"clade.id",dum);
-      Free(dum);
+  //     ndnd = XML_Add_Node(nd,"appliesto");
+  //     dum = (char *)mCalloc(100,sizeof(char));
+  //     sprintf(dum,"%s%d","clad",i+1);
+  //     ndnd->attr = XML_Make_Attribute(NULL,"clade.id",dum);
+  //     Free(dum);
             
-      PhyML_Fprintf(fp_coord,"\n");
-      PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+  //     PhyML_Fprintf(fp_coord,"\n");
+  //     PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
       
-      beast_loc = XML_Search_Node_Generic("attr","name","latitude",NO,valid_taxa[permut[i]]);
-      assert(beast_loc);
-      PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
+  //     beast_loc = XML_Search_Node_Generic("attr","name","latitude",NO,valid_taxa[permut[i]]);
+  //     assert(beast_loc);
+  //     PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
       
-      beast_loc = XML_Search_Node_Generic("attr","name","longitude",NO,valid_taxa[permut[i]]);
-      assert(beast_loc);
-      PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
+  //     beast_loc = XML_Search_Node_Generic("attr","name","longitude",NO,valid_taxa[permut[i]]);
+  //     assert(beast_loc);
+  //     PhyML_Fprintf(fp_coord,"\t %s",beast_loc->value);
       
       
-      beast_seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),NO,beast_root);
-      assert(beast_seq);
-      PhyML_Printf("\n. Found match with %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),permut[i],select_proba[permut[i]]);
-      PhyML_Fprintf(fp_seq,"%s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
-      PhyML_Fprintf(fp_seq,"\t\t%s\n",beast_seq->value);
+  //     beast_seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),NO,beast_root);
+  //     assert(beast_seq);
+  //     PhyML_Printf("\n. Found match with %s (%d) prob: %f",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"),permut[i],select_proba[permut[i]]);
+  //     PhyML_Fprintf(fp_seq,"%s",XML_Get_Attribute_Value(valid_taxa[permut[i]],"id"));
+  //     PhyML_Fprintf(fp_seq,"\t\t%s\n",beast_seq->value);
 
 
-      select_proba[permut[i]] = 0.0;
-      sum = 0.0;
-      for(int i=0;i<n_selected;++i) sum += select_proba[i];
-      for(int i=0;i<n_selected;++i) select_proba[i] /= sum;
+  //     select_proba[permut[i]] = 0.0;
+  //     sum = 0.0;
+  //     for(int i=0;i<n_selected;++i) sum += select_proba[i];
+  //     for(int i=0;i<n_selected;++i) select_proba[i] /= sum;
 
-    }
+  //   }
 
-  PhyML_Printf("\n. Number of selected sequences: %d",MIN(n_selected,n_selected_max));
+  // PhyML_Printf("\n. Number of selected sequences: %d",MIN(n_selected,n_selected_max));
 
-  fp_xml = Openfile(xml_filename,WRITE);
-  XML_Write_XML_Graph(fp_xml,phyrex_root);
-  fclose(fp_xml);
-
-
+  // fp_xml = Openfile(xml_filename,WRITE);
+  // XML_Write_XML_Graph(fp_xml,phyrex_root);
+  // fclose(fp_xml);
 
 
-  fclose(fp_coord);
-  fclose(fp_seq);
+
+
+  // fclose(fp_coord);
+  // fclose(fp_seq);
 
 
 

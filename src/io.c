@@ -787,7 +787,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
       else
         {
           PhyML_Printf("\n. Unknown tree format.");
-	  PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+	        PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
           PhyML_Printf("\n. s=%s\n",*s_tree);
         }
       

@@ -841,8 +841,8 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
   for (i = 0; i < tree->mmod->n_dim; ++i)
   {
     root_var = tree->mmod->rw_root_var;
-    /* root_mean = LOCATION_Mean_Lonlat(i,tree); */
-    root_mean = tree->mmod->rw_root_mean;
+    root_mean = LOCATION_Mean_Lonlat(i,tree);
+    // root_mean = tree->mmod->rw_root_mean;
 
     start = Contmod_Start(LOCATION, i, tree);
 
@@ -1039,8 +1039,8 @@ void RRW_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
         }
       else
         {
-          /* dad_mu_up     = LOCATION_Mean_Lonlat(i,tree); */
-          dad_mu_up     = tree->mmod->rw_root_mean;
+          dad_mu_up     = LOCATION_Mean_Lonlat(i,tree);
+          // dad_mu_up     = tree->mmod->rw_root_mean;
           dad_var_up    = tree->mmod->rw_root_var;
           dad_logrem_up = 0.0;
         }
