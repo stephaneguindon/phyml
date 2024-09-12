@@ -41,8 +41,11 @@ phydbl VELOC_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree
 phydbl VELOC_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree);
 phydbl VELOC_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree);
 
-void VELOC_Sample_All_Node_Locations(t_tree *tree);
+void VELOC_Sample_Node_Locations_Marginal(t_tree *tree);
 void VELOC_Sample_One_Node_Location(t_node *z, t_tree *tree);
+
+void VELOC_Sample_Node_Locations_Joint(t_tree *tree);
+void VELOC_Sample_Node_Locations_Joint_Post(t_node *a, t_node *d, t_tree *tree);
 
 void VELOC_Integrated_Lk_Velocity_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print);
 void VELOC_Integrated_Lk_Velocity_Pre(t_node *a, t_node *d, short int dim, t_tree *tree);

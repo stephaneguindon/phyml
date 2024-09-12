@@ -10545,21 +10545,19 @@ void Set_Br_Len_Var(t_edge *b, t_tree *tree)
 
   if(tree->rates == NO && tree->mod->gamma_mgf_bl == YES)
     {
-      phydbl len;
+      
       if(b == NULL)
         {
           int i;
           
           for(i=0;i<2*tree->n_otu-1;++i)
             {
-              len = MAX(0.0,tree->a_edges[i]->l->v);
               /* tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
               tree->a_edges[i]->l_var->v = tree->mod->l_var_sigma->v;
             }
         }
       else
         {
-          len = MAX(0.0,b->l->v);
           /* b->l_var->v = POW(len,2)*tree->mod->l_var_sigma; */
           b->l_var->v = tree->mod->l_var_sigma->v;
         }

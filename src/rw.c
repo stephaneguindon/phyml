@@ -40,7 +40,7 @@ phydbl RW_Prior_Sigsq(t_tree *tree)
   int i,err;
   
   lnP = 0.0;
-  
+    
   if(tree->mmod->rw_prior_distrib == EXPONENTIAL_PRIOR)
     {
       for(i=0;i<tree->mmod->n_dim;++i)
@@ -216,18 +216,18 @@ void RW_Integrated_Lk_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down, phydb
   logr -= log(fabs(bro_a*son_a));
   logr += Log_Dnorm((son_mu_down-son_b)/son_a,(bro_mu_down-bro_b)/bro_a,sqrt((son_var_down+son_var)/pow(son_a,2)+(bro_var_down+bro_var)/pow(bro_a,2)),&err);
 
-  if((son_var + son_var_down > 1.E-7) && (bro_var + bro_var_down > 1.E-7)) // Standard case
+  if((son_var + son_var_down > SMALL) && (bro_var + bro_var_down > SMALL)) // Standard case
     {
       v = pow(son_a,2)/(son_var_down + son_var) + pow(bro_a,2)/(bro_var_down + bro_var);
       v = 1/v;
 
       m = (son_a*(son_mu_down-son_b)/(son_var_down + son_var) + bro_a*(bro_mu_down-bro_b)/(bro_var_down + bro_var)) * v;
     }
-  else if(son_var + son_var_down > 1.E-7) // Null variance along d - v2
+  else if(son_var + son_var_down > SMALL) // Null variance along d - v2
     {
       m = (bro_mu_down-bro_b)/bro_a;
     }
-  else if(bro_var + bro_var_down > 1.E-7) // Null variance along d - v1
+  else if(bro_var + bro_var_down > SMALL) // Null variance along d - v1
     {
       m = (son_mu_down-son_b)/son_a; 
    }
@@ -239,7 +239,7 @@ void RW_Integrated_Lk_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down, phydb
   *mean = m;
   *var  = v;
   *logrem = logr;
-
+  // PhyML_Printf("\n. m: %g v: %g logr: %g son_var_down: %g son_var: %g bro_var_down: %g bro_var: %g",m,v,logr,son_var_down,son_var,bro_var_down,bro_var);
 }
 
 //////////////////////////////////////////////////////////////
@@ -273,7 +273,7 @@ void RW_Integrated_Lk_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_
     assert(false);
   }
 
-  if ((bro_var_down + bro_var) > 1.E-7 && dad_var_up > 1.E-7) // Standard case
+  if ((bro_var_down + bro_var) > SMALL && dad_var_up > SMALL) // Standard case
   {
     v += dad_var_up * (bro_var_down + bro_var);
     v /= bro_a * bro_a * dad_var_up + bro_var_down + bro_var;
@@ -283,12 +283,12 @@ void RW_Integrated_Lk_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_
 
     v = son_a * son_a * v + son_var;
   }
-  else if (dad_var_up > 1.E-7) // Null variance along bro
+  else if (dad_var_up > SMALL) // Null variance along bro
   {
     v = son_var;
     m = son_a * bro_mu_down / bro_a + son_b;
   }
-  else if ((bro_var_down + bro_var) > 1.E-7) // Null variance along dad
+  else if ((bro_var_down + bro_var) > SMALL) // Null variance along dad
   {
     v = son_var;
     m = son_a * dad_mu_up + son_b;

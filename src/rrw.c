@@ -642,10 +642,10 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
 
 void RRW_Sample_Node_Locations_Joint(t_tree *tree)
 {
-  int i,j,start;
+  int i,start;
   phydbl root_var, root_mean, var, mean;
   
-  root_var = tree->mmod->rw_root_var;
+  root_var = tree->mmod->rw_root_var[LOCATION];
   root_mean = -BIG;
   
   RRW_Update_Normalization_Factor(tree);
@@ -666,9 +666,7 @@ void RRW_Sample_Node_Locations_Joint(t_tree *tree)
       mean = (tree->contmod->mu_down[start+tree->n_root->num]/tree->contmod->var_down[start+tree->n_root->num] +
               root_mean / root_var)*var;
 
-      tree->n_root->ldsk->coord->lonlat[i] =
-        Rnorm(tree->contmod->mu_down[start+tree->n_root->num],
-              sqrt(tree->contmod->var_down[start+tree->n_root->num]));
+      tree->n_root->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
 
       assert(isnan(tree->contmod->var_down[start + tree->n_root->num]) == NO);
     }
@@ -743,13 +741,13 @@ void RRW_Sample_Node_Locations_Marginal(t_tree *tree)
 {
   int i,j,start;
   t_node *n;
-  phydbl au,bu,varu,var,mean;
+  phydbl var,mean;
   phydbl root_var, root_mean;
   
   n = NULL;
-  au = bu = varu = var = mean = -1;
+  var = mean = -1;
 
-  root_var = tree->mmod->rw_root_var;
+  root_var = tree->mmod->rw_root_var[LOCATION];
   root_mean = -BIG;
   
   RRW_Update_Normalization_Factor(tree);
@@ -769,22 +767,19 @@ void RRW_Sample_Node_Locations_Marginal(t_tree *tree)
           if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
             {
               n = tree->a_nodes[j];
-              au = 1.0;
-              bu = 0.0;
-              varu = RRW_Location_Variance_Along_Edge(n,i,tree); 
         
-              if(tree->contmod->var_down[start+n->num] > SMALL && pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
+              if(tree->contmod->var_down[start+n->num] > SMALL && tree->contmod->var_up[start+n->num] > SMALL)
                 {
-                  var = 1./tree->contmod->var_down[start+n->num] + 1. / (pow(au,2)*tree->contmod->var_up[start+n->num]+varu);
+                  var = 1./tree->contmod->var_down[start+n->num] + 1. / tree->contmod->var_up[start+n->num];
                   var = 1./var;
-                  mean = (tree->contmod->mu_down[start+n->num]/tree->contmod->var_down[start+n->num] + (au*tree->contmod->mu_up[start+n->num]+bu)/(pow(au,2)*tree->contmod->var_up[start+n->num]+varu))*var;
+                  mean = (tree->contmod->mu_down[start+n->num]/tree->contmod->var_down[start+n->num] + tree->contmod->mu_up[start+n->num]/tree->contmod->var_up[start+n->num])*var;
                 }
               else if(tree->contmod->var_down[start+n->num] > SMALL)
                 {
                   var = 0.0;
-                  mean = au*tree->contmod->mu_up[start+n->num]+bu;
+                  mean = tree->contmod->mu_up[start+n->num];
                 }
-              else if(pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
+              else if(tree->contmod->var_up[start+n->num] > SMALL)
                 {
                   var = 0.0;
                   mean = tree->contmod->mu_down[start+n->num];
@@ -810,9 +805,8 @@ void RRW_Sample_Node_Locations_Marginal(t_tree *tree)
       mean = (tree->contmod->mu_down[start+tree->n_root->num]/tree->contmod->var_down[start+tree->n_root->num] +
               root_mean / root_var)*var;
 
-      tree->n_root->ldsk->coord->lonlat[i] =
-        Rnorm(tree->contmod->mu_down[start+tree->n_root->num],
-              sqrt(tree->contmod->var_down[start+tree->n_root->num]));
+
+      tree->n_root->ldsk->coord->lonlat[i] = Rnorm(mean,var);
     }
 }
 
@@ -840,11 +834,12 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
 
   for (i = 0; i < tree->mmod->n_dim; ++i)
   {
-    root_var = tree->mmod->rw_root_var;
+    root_var = tree->mmod->rw_root_var[LOCATION];
     root_mean = LOCATION_Mean_Lonlat(i,tree);
-    // root_mean = tree->mmod->rw_root_mean;
+    
 
     start = Contmod_Start(LOCATION, i, tree);
+
 
     tree->contmod->lnL[LOCATION * tree->mmod->n_dim + i] = 0.0;
     tree->contmod->lnL[LOCATION * tree->mmod->n_dim + i] += tree->contmod->logrem_down[start + tree->n_root->num];
@@ -985,6 +980,9 @@ void RRW_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
                             tree->contmod->var_down + start + dad->num,
                             tree->contmod->logrem_down + start + dad->num);
 
+      // PhyML_Printf("\n. node %d mu_down: %g var_down: %g logrem_down: %g", dad->num, tree->contmod->mu_down[start+dad->num], tree->contmod->var_down[start+dad->num], tree->contmod->logrem_down[start+dad->num]);
+
+      assert(isnan(tree->contmod->logrem_down[start + dad->num]) == NO);
       assert(isnan(tree->contmod->mu_down[start + dad->num]) == NO);
       assert(isnan(tree->contmod->var_down[start + dad->num]) == NO && !(tree->contmod->var_down[start + dad->num] < 0.0));
     }
@@ -1041,7 +1039,7 @@ void RRW_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
         {
           dad_mu_up     = LOCATION_Mean_Lonlat(i,tree);
           // dad_mu_up     = tree->mmod->rw_root_mean;
-          dad_var_up    = tree->mmod->rw_root_var;
+          dad_var_up    = tree->mmod->rw_root_var[LOCATION];
           dad_logrem_up = 0.0;
         }
 
@@ -1052,6 +1050,7 @@ void RRW_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
                             tree->contmod->var_up + start + son->num,
                             tree->contmod->logrem_up + start + son->num);
 
+        assert(isnan(tree->contmod->logrem_down[start + d->num]) == NO);
         assert(isnan(tree->contmod->mu_up[start + d->num]) == NO);
         assert(isnan(tree->contmod->var_up[start + d->num]) == NO && !(tree->contmod->var_down[start + d->num] < 0.0));
 
@@ -1066,11 +1065,8 @@ void RRW_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
 void RRW_Tip_Velocities(t_tree *tree)
 {
   int i,j;
-  short int dist_type;
   t_node *n;
   phydbl dt;
-
-  dist_type = tree->mmod->dist_type;
 
   RRW_Sample_Node_Locations_Joint(tree);
 

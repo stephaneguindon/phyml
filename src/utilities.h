@@ -2149,17 +2149,19 @@ typedef struct __Migrep_Model{
   short int          sampling_scheme;
   short int            use_locations;
 
+// Prior mean, sd and distribution for sigsq parameter, controlling either the variation of coordinates or velocities (and coordinates)
   phydbl               rw_prior_mean;
   phydbl                 rw_prior_sd;
   short int         rw_prior_distrib;
 
-  phydbl                rw_root_mean;
-  phydbl                 rw_root_var;
+  phydbl               *rw_root_mean;
+  phydbl                *rw_root_var;
   
   phydbl                rrw_prior_sd; // value of parameter governing the variance of diffusion coefficient across edges  
   
   short int                 print_lk;
-
+  
+  short int     do_location_sampling;
 }t_phyrex_mod;
 
 /*!********************************************************/

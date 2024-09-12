@@ -3560,6 +3560,8 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->rad = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
   t->prior_param_rad = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
 
+  t->do_location_sampling = YES;
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3577,7 +3579,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id        = -1;
   t->use_locations   = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex     = NO;
+  t->safe_phyrex     = YES;
   t->dist_type       = HAVERSINE;
   
   t->lim_up->lonlat[0] = 100.;
@@ -3641,9 +3643,12 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->rw_prior_mean    = 1.0;
   t->rw_prior_sd      = 1.0;
   t->rw_prior_distrib = EXPONENTIAL_PRIOR;
-  
-  t->rw_root_mean     = 0.0;
-  t->rw_root_var      = 1.0;
+
+  t->rw_root_mean[LOCATION]     = 0.0;
+  t->rw_root_var[LOCATION]      = 1.0;
+
+  t->rw_root_mean[VELOCITY]     = 0.0;
+  t->rw_root_var[VELOCITY]      = 1.0;
 
   t->integrateAncestralLocations = YES;
 

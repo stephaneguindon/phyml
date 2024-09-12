@@ -154,5 +154,6 @@ void PHYREX_Store_Veloc(t_geo_veloc *t);
 void PHYREX_Restore_Veloc(t_geo_veloc *t);
 phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree);
 short int PHYREX_Check_Lk(t_tree *tree);
+void PHYREX_Check_Lk_Nodes(t_tree *tree);
 
 #endif

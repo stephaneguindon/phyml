@@ -1408,6 +1408,8 @@ void Free_Mmod(t_phyrex_mod *mmod)
   Free(mmod->sigsq_scale);
   Free(mmod->sigsq);
   Free(mmod->ou_mu);
+  Free(mmod->rw_root_mean);
+  Free(mmod->rw_root_var);
   Free(mmod);
 }
 

@@ -43,6 +43,8 @@ void PHYREX_XML(char *xml_filename)
   int seed;
   char *dum_string;
  
+ res = NULL;
+ 
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
 
@@ -406,22 +408,38 @@ void PHYREX_XML(char *xml_filename)
         }
 
       char *rw_root_mean;
-      rw_root_mean = XML_Get_Attribute_Value(xnd,"rw.root.mean");
+      char *rw_root_var;
+
+      rw_root_mean = XML_Get_Attribute_Value(xnd,"rw.root.mean.location");
 
       if(rw_root_mean != NULL)
         {
-          mixt_tree->mmod->rw_root_mean = String_To_Dbl(rw_root_mean);
+          mixt_tree->mmod->rw_root_mean[LOCATION] = String_To_Dbl(rw_root_mean);
         }
 
-      char *rw_root_var;
-      rw_root_var = XML_Get_Attribute_Value(xnd,"rw.root.var");
+      rw_root_var = XML_Get_Attribute_Value(xnd,"rw.root.var.location");
 
       if(rw_root_var != NULL)
         {
-          mixt_tree->mmod->rw_root_var = String_To_Dbl(rw_root_var);
+          mixt_tree->mmod->rw_root_var[LOCATION] = String_To_Dbl(rw_root_var);
         }
 
-      
+      rw_root_mean = XML_Get_Attribute_Value(xnd,"rw.root.mean.velocity");
+
+      if(rw_root_mean != NULL)
+        {
+          mixt_tree->mmod->rw_root_mean[VELOCITY] = String_To_Dbl(rw_root_mean);
+        }
+
+      rw_root_var = XML_Get_Attribute_Value(xnd,"rw.root.var.velocity");
+
+      if(rw_root_var != NULL)
+        {
+          mixt_tree->mmod->rw_root_var[VELOCITY] = String_To_Dbl(rw_root_var);
+        }
+
+
+
       char *observational_model;
       observational_model = XML_Get_Attribute_Value(xnd,"observational.model");
 
@@ -696,8 +714,6 @@ void PHYREX_XML(char *xml_filename)
   XML_Read_Calibration(xroot,mixt_tree);
   MIXT_Chain_Cal(mixt_tree);
 
-  
-  
   if(TIMES_Calibrations_Apply_To_Tips_Only(mixt_tree) == YES &&
      mixt_tree->mod->s_opt->opt_topo == NO)
     {
@@ -853,6 +869,8 @@ void PHYREX_XML(char *xml_filename)
       }
     }
 
+
+
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree->n_root->b[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree->n_root->b[1],mixt_tree);  
 
@@ -900,10 +918,22 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(YES,mixt_tree->mod);
   RATES_Update_Edge_Lengths(mixt_tree);
 
-  MCMC_Randomize_Veloc(mixt_tree);
   mixt_tree->contmod->both_sides[LOCATION] = NO;
   mixt_tree->contmod->both_sides[VELOCITY] = NO;
   LOCATION_Lk(NULL,mixt_tree);
+
+
+//   PHYREX_Check_Lk_Nodes(mixt_tree);
+//   Exit("\n");
+
+  // PhyML_Printf("\n. INIT lnL space: %f %f location: %f %f tot: %f",
+  // mixt_tree->contmod->lnL[LOCATION*mixt_tree->mmod->n_dim+0],
+  // mixt_tree->contmod->lnL[LOCATION*mixt_tree->mmod->n_dim+1],
+  // mixt_tree->contmod->lnL[VELOCITY*mixt_tree->mmod->n_dim+0],
+  // mixt_tree->contmod->lnL[VELOCITY*mixt_tree->mmod->n_dim+1],
+  // mixt_tree->mmod->c_lnL);
+
+  // Exit("\n");
 
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
@@ -4056,7 +4086,7 @@ phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree)
   if (RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
     RRW_Sample_Node_Locations_Joint(tree);
   if (VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
-    VELOC_Sample_All_Node_Locations(tree);
+    VELOC_Sample_Node_Locations_Joint(tree);
 
   disp = 0.0;
   for(i=0;i<2*tree->n_otu-1;++i)
@@ -4101,7 +4131,7 @@ phydbl PHYREX_Realized_Dispersal_Dist(short int dist_type, t_tree *tree)
   if (RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
     RRW_Sample_Node_Locations_Joint(tree);
   if (VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES)
-    VELOC_Sample_All_Node_Locations(tree);
+    VELOC_Sample_Node_Locations_Joint(tree);
 
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
@@ -5097,3 +5127,23 @@ short int PHYREX_Check_Lk(t_tree *tree)
   return(1);
 }
   
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Check_Lk_Nodes(t_tree *tree)
+{
+  tree->contmod->both_sides[LOCATION] = YES;
+  tree->contmod->both_sides[VELOCITY] = YES;
+  LOCATION_Lk(NULL,tree);
+
+  PhyML_Printf("\n. Reference lk: %f",tree->mmod->c_lnL);
+  
+  for(int i=0; i < 2*tree->n_otu-1; ++i)
+  {
+    LOCATION_Lk(tree->a_nodes[i],tree);
+    PhyML_Printf("\n. Node %d lk: %f",i,LOCATION_Lk(tree->a_nodes[i],tree));
+  }
+  
+  tree->contmod->both_sides[LOCATION] = NO;
+  tree->contmod->both_sides[VELOCITY] = NO;
+}

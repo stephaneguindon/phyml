@@ -1741,6 +1741,10 @@ t_phyrex_mod *PHYREX_Make_Migrep_Model(int n_otu,int dim)
   t->sigsq = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->ou_mu = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->sigsq_scale = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+
+  t->rw_root_mean = (phydbl *)mCalloc(2,sizeof(phydbl));
+  t->rw_root_var = (phydbl *)mCalloc(2,sizeof(phydbl));
+
   return(t);
 }
 
