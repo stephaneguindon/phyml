@@ -132,6 +132,19 @@ void PHYREX_XML(char *xml_filename)
       else mixt_tree->io->mcmc_output_trees = NO;
     }
 
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.verbose");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mcmc->out_verbose = 1;
+      else mixt_tree->io->mcmc->out_verbose = 0;
+    }
+
+
+
+
   
   dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
   if(!dum_string) dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");

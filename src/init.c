@@ -598,7 +598,7 @@ void Set_Defaults_Input(option* io)
   io->n_data_set_asked           = -1;
   io->print_boot_trees           = 1;
   io->n_part                     = 1;
-  io->ratio_test		 = ABAYES;
+  io->ratio_test		         = ABAYES;
   io->multigene                  = 0;
   io->config_multigene           = 0;
   io->curr_interface             = 0;
@@ -3704,6 +3704,7 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->always_yes       = NO;
   mcmc->max_lag          = 1000;
   mcmc->sample_num       = 0;
+  mcmc->out_verbose      = 1;
   
   if(filename)
     {

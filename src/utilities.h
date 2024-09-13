@@ -1918,7 +1918,7 @@ typedef struct __Tmcmc {
   int always_yes; /* Always accept proposed move (as long as log-likelihood > UNLIKELY) */
   int is; /* Importance sampling? Yes or NO */
 
-
+  short int out_verbose;
 
 }t_mcmc;
 
