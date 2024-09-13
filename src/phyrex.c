@@ -837,7 +837,7 @@ void PHYREX_XML(char *xml_filename)
 
 
   /* Initialize parameters of migrep model */
-  mixt_tree->mmod->lbda = 10.0;
+  mixt_tree->mmod->lbda = 0.1;
   mixt_tree->mmod->mu   = 1.0;
   
   if(mixt_tree->mmod->model_id == SLFV_GAUSSIAN || mixt_tree->mmod->model_id == SLFV_UNIFORM)
