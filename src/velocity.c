@@ -618,16 +618,26 @@ void VELOC_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
       bro_var_down    = tree->contmod->var_down[start+bro->num];
       bro_logrem_down = tree->contmod->logrem_down[start+bro->num];
 
-      bro_var         = VELOC_Location_Variance_Along_Edge(bro,i,tree);    
-      bro_a           = 1.0;
-      // bro_b           = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
-      bro_b =         dt_bro * dad->ldsk->veloc->deriv[i]; // !!!!!!!!!!  only correct for IBM
-
+      bro_var         = VELOC_Location_Variance_Along_Edge(bro,i,tree);
       son_var         = VELOC_Location_Variance_Along_Edge(son,i,tree);
+
       son_a           = 1.0;
+      bro_a           = 1.0;
+
       // son_b           = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
-      son_b =         dt_son * dad->ldsk->veloc->deriv[i]; // !!!!!!!!!!  only correct for IBM
-      
+      // bro_b           = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
+
+      if (IBM_Is_Ibm(tree->mmod) == YES)
+      {
+          son_b = dt_son * dad->ldsk->veloc->deriv[i];
+          bro_b = dt_bro * dad->ldsk->veloc->deriv[i];
+      }
+      else if (IOU_Is_Iou(tree->mmod) == YES)
+      {
+          son_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta * dt_son)) / tree->mmod->ou_theta + tree->mmod->ou_mu[i] * dt_son;
+          bro_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta * dt_bro)) / tree->mmod->ou_theta + tree->mmod->ou_mu[i] * dt_bro;
+      }
+
       if(dad != tree->n_root)
         {
           dad_mu_up     = tree->contmod->mu_up[start+dad->num];
@@ -726,8 +736,16 @@ void VELOC_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
       
       // son_b = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
       // bro_b = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
-      son_b = dt_son * dad->ldsk->veloc->deriv[i]; // !!!!!!!!!!  only correct for IBM
-      bro_b = dt_bro * dad->ldsk->veloc->deriv[i]; // !!!!!!!!!!  only correct for IBM
+      if (IBM_Is_Ibm(tree->mmod) == YES)
+      {
+          son_b = dt_son * dad->ldsk->veloc->deriv[i]; 
+          bro_b = dt_bro * dad->ldsk->veloc->deriv[i]; 
+      }
+      else if (IOU_Is_Iou(tree->mmod) == YES)
+      {
+          son_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta*dt_son))/tree->mmod->ou_theta + tree->mmod->ou_mu[i]*dt_son;
+          bro_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta*dt_bro))/tree->mmod->ou_theta + tree->mmod->ou_mu[i]*dt_bro;
+      }
 
       if(IBM_Is_Ibm(tree->mmod) == YES)
         {
@@ -752,9 +770,6 @@ void VELOC_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
         }
       else if(IOU_Is_Iou(tree->mmod) == YES)
         {
-          PhyML_Printf("\n FIX son_b bro_b etc first...");
-          Exit("\n");
-
           IOU_Integrated_Location_Down(son_a,son_b,son_mu_down,son_var_down,son_var,
                                        bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,
                                        son_logrem_down,bro_logrem_down,
