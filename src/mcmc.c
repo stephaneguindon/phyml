@@ -14210,8 +14210,8 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
       VELOC_Update_Lk_Location_Down(a,d,tree);
     }
 
-//   new_glnL = LOCATION_Lk(d,tree);
-  new_glnL = LOCATION_Lk(NULL,tree); /* !!!!!!!!!!!!!!!!! */
+  new_glnL = LOCATION_Lk(d,tree);
+//   new_glnL = LOCATION_Lk(NULL,tree); /* !!!!!!!!!!!!!!!!! */
 
 //   PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f",
 //                a ? a->num : -1, d->num,
