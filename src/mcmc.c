@@ -6797,9 +6797,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 6.0;
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tips]             = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_node_times]            = 4.0;
-  mcmc->move_prob[mcmc->num_move_phyrex_node_veloc]            = 3.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_node_veloc]            = 4.0;
   mcmc->move_prob[mcmc->num_move_phyrex_correlated_node_veloc] = 0.0; 
-  mcmc->move_prob[mcmc->num_move_phyrex_all_veloc]             = 3.0; 
+  mcmc->move_prob[mcmc->num_move_phyrex_all_veloc]             = 1.0; 
   mcmc->move_prob[mcmc->num_move_phyrex_shuffle_node_times]    = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1.0;
@@ -13944,6 +13944,120 @@ void MCMC_PHYREX_Node_Velocity(t_tree *tree)
   MCMC_PHYREX_Node_Velocity_Pre(NULL,tree->n_root,tree);
   tree->contmod->both_sides[LOCATION] = NO;
   tree->contmod->both_sides[VELOCITY] = NO;
+
+//   /* Velocities */
+
+//   int *permut;
+//   int i, j;
+//   t_node *n;
+//   phydbl cur_glnL, new_glnL;
+//   phydbl hr,u,alpha,ratio;
+//   phydbl cur, new;
+//   int err;
+
+//   permut = Permutate(2 * tree->n_otu - 1);
+
+//   for (i = 0; i < 2 * tree->n_otu - 1; ++i)
+//   {
+//       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_node_veloc]++;
+
+//       cur_glnL = tree->mmod->c_lnL;
+//       new_glnL = UNLIKELY;
+
+//       hr = 0.0;
+
+//       n = tree->a_nodes[permut[i]];
+
+//       PHYREX_Store_Veloc(n->ldsk->veloc);
+
+//       for (j = 0; j < tree->mmod->n_dim; ++j)
+//       {
+
+//           cur = n->ldsk->veloc->deriv[j];
+
+//           /* new = Rnorm(cur,sqrt(fabs(cur)/5.+1.E-6)); */
+//           /* hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)/5.+1.E-6),&err); */
+//           /* hr += Log_Dnorm(cur,new,sqrt(fabs(new)/5.+1.E-6),&err); */
+
+//           /* new = Rnorm(cur,sqrt(fabs(mean_v[j]/2.))); */
+//           /* hr -= Log_Dnorm(new,cur,sqrt(fabs(mean_v[j]/2.)),&err); */
+//           /* hr += Log_Dnorm(cur,new,sqrt(fabs(mean_v[j]/2.)),&err); */
+
+//           /* new = Rnorm(cur,0.1); */
+//           /* hr -= Log_Dnorm(new,cur,0.1,&err); */
+//           /* hr += Log_Dnorm(cur,new,0.1,&err); */
+
+//           new = Rnorm(cur, 1.E-0);
+//           hr -= Log_Dnorm(new, cur, 1.E-0, &err);
+//           hr += Log_Dnorm(cur, new, 1.E-0, &err);
+
+//           /* if(n->ldsk->prev != NULL) */
+//           /*   { */
+//           /*     phydbl dt,sd; */
+
+//           /*     dt = fabs(n->ldsk->disk->time-n->ldsk->prev->disk->time); */
+
+//           /*     sd = */
+//           /*       log(tree->mmod->sigsq[j])+ */
+//           /*       log(tree->mmod->sigsq_scale[n->num])+ */
+//           /*       log(tree->mmod->sigsq_scale_norm_fact)+ */
+//           /*       log(dt); */
+//           /*     sd = sqrt(exp(sd)); */
+
+//           /*     new = Rnorm(n->ldsk->prev->veloc->deriv[j],sd); */
+//           /*     hr -= Log_Dnorm(new,n->ldsk->prev->veloc->deriv[j],sd,&err); */
+//           /*     hr += Log_Dnorm(cur,n->ldsk->prev->veloc->deriv[j],sd,&err); */
+//           /*   }                           */
+//           /* else */
+//           /*   { */
+//           /*     new = Rnorm(cur,sqrt(fabs(cur)/5.+1.E-6)); */
+//           /*     hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)/5.+1.E-6),&err); */
+//           /*     hr += Log_Dnorm(cur,new,sqrt(fabs(new)/5.+1.E-6),&err); */
+//           /*   } */
+
+//           n->ldsk->veloc->deriv[j] = new;
+//       }
+
+//       new_glnL = LOCATION_Lk(NULL,tree);
+
+//       ratio = 0.0;
+//       ratio += (new_glnL - cur_glnL);
+//       ratio += hr;
+
+//       ratio = exp(ratio);
+//       alpha = MIN(1., ratio);
+
+//       /* if(Are_Equal(ratio,1.,1.E-5) == NO) */
+//       /*   { */
+//       /*     PhyML_Printf("\n. LOCATION -- Node %3d tip? %d root? %d ratio: %14f sigsq_scale: %f", */
+//       /*                  n->num, */
+//       /*                  n->tax ? 1 : 0, */
+//       /*                  (n == tree->n_root) ? 1 : 0, */
+//       /*                  ratio, */
+//       /*                  tree->mmod->sigsq_scale[n->num]); */
+//       /*     assert(NO); */
+//       /*   } */
+
+//       u = Uni();
+
+//       if (u > alpha) /* Reject */
+//       {
+//           PHYREX_Restore_Veloc(n->ldsk->veloc);
+//           tree->mmod->c_lnL = cur_glnL;
+//       }
+//       else
+//       {
+//           tree->mmod->c_lnL = new_glnL;
+//           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_node_veloc]++;
+//       }
+
+//       tree->mcmc->run++;
+//       PHYREX_Print_MCMC_Stats(tree);
+//       PHYREX_Print_MCMC_Tree(tree);
+//       PHYREX_Print_MCMC_Summary(tree);
+//   }
+
+//   Free(permut);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -14062,15 +14176,26 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
               mu = mu_dad;
             }
         }
-      
-      if(isnan(mu)) assert(false);
-      if(isnan(var)) assert(false);
-      
-      new_vel = Rnorm(mu,1.*sqrt(var));
-      hr -= Log_Dnorm(new_vel,mu,1.*sqrt(var),&err);
-      hr += Log_Dnorm(cur_vel,mu,1.*sqrt(var),&err);
-      
-      d->ldsk->veloc->deriv[i] = new_vel;
+
+        if (isnan(mu))
+            assert(false);
+        if (isnan(var))
+            assert(false);
+
+        new_vel = Rnorm(mu, 1.5 * sqrt(var));
+        hr -= Log_Dnorm(new_vel, mu, 1.5 * sqrt(var), &err);
+        hr += Log_Dnorm(cur_vel, mu, 1.5 * sqrt(var), &err);
+
+        //   if(dad == tree->n_root)
+        //   {
+        //     PhyML_Printf("\n. mu: %g var: %g v1: %g v2: %g new_vel: %g cur_vel: %g hr: %g",
+        //         mu,var,
+        //         var_son,var_bro,
+        //             new_vel,cur_vel,
+        //             hr);
+        //   }
+
+        d->ldsk->veloc->deriv[i] = new_vel;
     }
 
   if(a != NULL)
@@ -14085,29 +14210,28 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
       VELOC_Update_Lk_Location_Down(a,d,tree);
     }
 
-  new_glnL = LOCATION_Lk(d,tree);
-//   new_glnL = LOCATION_Lk(NULL,tree); /* !!!!!!!!!!!!!!!!! */
+//   new_glnL = LOCATION_Lk(d,tree);
+  new_glnL = LOCATION_Lk(NULL,tree); /* !!!!!!!!!!!!!!!!! */
 
-  /* PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f", */
-  /*              a?a->num:-1,d->num, */
-  /*              d == tree->n_root ? 1 : 0, */
-  /*              d == tree->n_root->v[1] ? 1 : 0, */
-  /*              d == tree->n_root->v[2] ? 1 : 0, */
-  /*              hr, */
-  /*              cur_glnL,new_glnL, */
-  /*              d->ldsk->veloc->deriv[0], */
-  /*              d->ldsk->veloc->deriv[1], */
-  /*              tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+0], */
-  /*              tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+1], */
-  /*              tree->contmod->lnL[LOCATION*tree->mmod->n_dim+0], */
-  /*              tree->contmod->lnL[LOCATION*tree->mmod->n_dim+1], */
-  /*              tree->contmod->lnL_down[Contmod_Start(VELOCITY,0,tree) + d->num], */
-  /*              tree->contmod->lnL_down[Contmod_Start(VELOCITY,1,tree) + d->num], */
-  /*              tree->contmod->lnL_up[Contmod_Start(VELOCITY,0,tree) + d->num], */
-  /*              tree->contmod->lnL_up[Contmod_Start(VELOCITY,1,tree) + d->num], */
-  /*              a ? (d->ldsk->disk->time - a->ldsk->disk->time) : -1.); */
-  
-    
+//   PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f",
+//                a ? a->num : -1, d->num,
+//                d == tree->n_root ? 1 : 0,
+//                d == tree->n_root->v[1] ? 1 : 0,
+//                d == tree->n_root->v[2] ? 1 : 0,
+//                hr,
+//                cur_glnL, new_glnL,
+//                d->ldsk->veloc->deriv[0],
+//                d->ldsk->veloc->deriv[1],
+//                tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 0],
+//                tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 1],
+//                tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 0],
+//                tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 1],
+//                tree->contmod->lnL_down[Contmod_Start(VELOCITY, 0, tree) + d->num],
+//                tree->contmod->lnL_down[Contmod_Start(VELOCITY, 1, tree) + d->num],
+//                tree->contmod->lnL_up[Contmod_Start(VELOCITY, 0, tree) + d->num],
+//                tree->contmod->lnL_up[Contmod_Start(VELOCITY, 1, tree) + d->num],
+//                a ? (d->ldsk->disk->time - a->ldsk->disk->time) : -1.);
+
   ratio = 0.0;
   ratio += (new_glnL - cur_glnL);
   ratio += hr;

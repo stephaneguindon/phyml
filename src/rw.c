@@ -28,7 +28,29 @@ phydbl RW_Lk(t_tree *tree)
 phydbl RW_Prior(t_tree *tree)
 {
   tree->mmod->c_lnP = RW_Prior_Sigsq(tree);
+  tree->mmod->c_lnP += RW_Prior_Observational_Model(tree);
   return(tree->mmod->c_lnP);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RW_Prior_Observational_Model(t_tree *tree)
+{
+    phydbl lnP;
+    int i;
+
+    lnP = 0.0;
+
+    if (tree->contmod->obs_model == NO)
+        return (0.0);
+
+    for (i = 0; i < tree->mmod->n_dim; ++i)
+    {
+        lnP += Log_Dexp(tree->contmod->obs_var[i],
+                        1. / tree->contmod->obs_var_prior_mean);
+    }
+    return (lnP);
 }
 
 //////////////////////////////////////////////////////////////

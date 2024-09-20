@@ -1926,9 +1926,14 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   
   nd = XML_Add_Node(root,"spatialmodel");
   nd->attr = XML_Make_Attribute(NULL,"name","ibm");
+  XML_Add_Attribute(nd,"rw.prior.distrib","exponential");
+  XML_Add_Attribute(nd,"rw.prior.mean","1.E-3");
+  XML_Add_Attribute(nd,"rw.root.mean.velocity","0.0");
+  XML_Add_Attribute(nd,"rw.root.var.velocity","1.E-0");
   XML_Add_Attribute(nd,"sampling","detection");
   XML_Add_Attribute(nd,"integrateAncestralLocations","true");
   XML_Add_Attribute(nd,"distance.type","euclidean");
+  XML_Add_Attribute(nd,"observational.model","no");
 
   nd = XML_Add_Node(root,"lineagerates");
   nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
@@ -1943,10 +1948,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%f",tree->rates->clock_r);
   nd->attr = XML_Make_Attribute(NULL,"init.value",dum);
-  XML_Add_Attribute(nd,"opt.clock","yes");
-  XML_Add_Attribute(nd,"prior.mean",dum);
-  sprintf(dum,"%f",1.E-6);
-  XML_Add_Attribute(nd,"prior.var",dum);
+  XML_Add_Attribute(nd,"opt.clock","no");
   Free(dum);
 
   
@@ -2071,6 +2073,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   nd = XML_Search_Node_Name("spatialmodel",NO,root);
   XML_Set_Attribute_Value(nd,"name","rrw+gamma");
+  XML_Set_Attribute_Value(nd,"rw.prior.mean","1.E-0");
+
   
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%d%s","./",r_seed,"_sim_rrw_config.xml");
@@ -2085,6 +2089,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   nd = XML_Search_Node_Name("spatialmodel",NO,root);
   XML_Set_Attribute_Value(nd,"name","iou");
+  XML_Set_Attribute_Value(nd,"rw.prior.mean","1.E-3");
   
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%d%s","./",r_seed,"_sim_iou_config.xml");

@@ -27,7 +27,7 @@ short int IBM_Is_Ibm(t_phyrex_mod *mod)
 
 phydbl IBM_Prior(t_tree *tree)
 {
-  tree->mmod->c_lnP = RW_Prior_Sigsq(tree);
+  tree->mmod->c_lnP = RW_Prior(tree);
   return(tree->mmod->c_lnP);
 }
 

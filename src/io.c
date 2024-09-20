@@ -959,7 +959,9 @@ void Detect_Tree_File_Format(option *io)
   int c;
   fpos_t curr_pos;
 
-  fgetpos(io->fp_in_tree,&curr_pos);
+  assert(io->fp_in_tree != NULL);
+
+  fgetpos(io->fp_in_tree, &curr_pos);
 
   errno = 0;
 
@@ -3644,9 +3646,8 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   PhyML_Printf("\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
 
-
   Detect_Tree_File_Format(io);
-
+  
   tree = NULL;
   
   switch(io->tree_file_format)

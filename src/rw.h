@@ -31,5 +31,6 @@ void RW_Integrated_Lk_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_
                          phydbl son_a, phydbl son_b, phydbl son_var,
                          phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var, phydbl bro_logrem_down,
                          phydbl *mean, phydbl *var, phydbl *logrem);
+phydbl RW_Prior_Observational_Model(t_tree *tree);
 
 #endif

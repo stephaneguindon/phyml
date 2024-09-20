@@ -1,14 +1,14 @@
-/*
 
-PhyML:  a program that  computes maximum likelihood phylogenies from
-DNA or AA homologous sequences.
 
-Copyright (C) Stephane Guindon. Oct 2003 onward.
+// PhyML:  a program that  computes maximum likelihood phylogenies from
+// DNA or AA homologous sequences.
 
-All parts of the source except where indicated are distributed under
-the GNU public licence. See http://www.opensource.org for details.
+// Copyright (C) Stephane Guindon. Oct 2003 onward.
 
-*/
+// All parts of the source except where indicated are distributed under
+// the GNU public licence. See http://www.opensource.org for details.
+
+
 
 #include "spr.h"
 #include "utilities.h"
@@ -598,119 +598,119 @@ int main(int argc, char **argv)
 int main(int argc, char **argv)
 {
 
-  /* Prediction using linear extrapolation of velocities estimated at the tips. Takes as input */
-  /* the XML file used for running the MCMC analysis (so as to get the coordinates + sampling dates), */
-  /* the list of sampled trees, the time interval for which prediction will be made and the burnin */
-  /* proportion */
+//   /* Prediction using linear extrapolation of velocities estimated at the tips. Takes as input */
+//   /* the XML file used for running the MCMC analysis (so as to get the coordinates + sampling dates), */
+//   /* the list of sampled trees, the time interval for which prediction will be made and the burnin */
+//   /* proportion */
   
   
-   option *io; 
-   t_tree *tree; 
-   xml_node *root; 
-   phydbl date_old,date_recent,burnin; 
-   short int first; 
-   int stepsize,sampsize; 
+//    option *io; 
+//    t_tree *tree; 
+//    xml_node *root; 
+//    phydbl date_old,date_recent,burnin; 
+//    short int first; 
+//    int stepsize,sampsize; 
   
   
-   date_recent = atof(argv[4]); 
-   date_old = atof(argv[5]); 
-   burnin = atof(argv[6]); 
-   sampsize = 1000; 
-   first = YES; 
+//    date_recent = atof(argv[4]); 
+//    date_old = atof(argv[5]); 
+//    burnin = atof(argv[6]); 
+//    sampsize = 1000; 
+//    first = YES; 
   
-   PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent); 
-   assert(date_old < date_recent); 
+//    PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent); 
+//    assert(date_old < date_recent); 
 
 
-   io = (option *)Get_Input(argc,argv); 
-   if(!io) return(0); 
+//    io = (option *)Get_Input(argc,argv); 
+//    if(!io) return(0); 
 
-   Read_User_Tree(NULL,NULL,io); 
+//    Read_User_Tree(NULL,NULL,io); 
   
-   root = XML_Load_File(io->fp_in_xml); 
+//    root = XML_Load_File(io->fp_in_xml); 
 
-   stepsize = io->treelist->list_size*(1. - burnin) / sampsize; 
+//    stepsize = io->treelist->list_size*(1. - burnin) / sampsize; 
   
-   for(int i=0;i<io->treelist->list_size;i++) 
-     { 
-       if(i > (int)(burnin*io->treelist->list_size)) 
-         { 
-           PhyML_Fprintf(stderr,"\n. Processing tree %d",i+1); 
-           tree = io->treelist->tree[i]; 
+//    for(int i=0;i<io->treelist->list_size;i++) 
+//      { 
+//        if(i > (int)(burnin*io->treelist->list_size)) 
+//          { 
+//            PhyML_Fprintf(stderr,"\n. Processing tree %d",i+1); 
+//            tree = io->treelist->tree[i]; 
 
-           tree->times = TIMES_Make_Time_Struct(tree->n_otu); 
-           TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu); 
+//            tree->times = TIMES_Make_Time_Struct(tree->n_otu); 
+//            TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu); 
           
-           tree->rates = RATES_Make_Rate_Struct(tree->n_otu); 
-           RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu); 
+//            tree->rates = RATES_Make_Rate_Struct(tree->n_otu); 
+//            RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu); 
           
-           tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2); 
-           tree->mmod->n_dim = 2; 
-           PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod); 
+//            tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2); 
+//            tree->mmod->n_dim = 2; 
+//            PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod); 
           
-           XML_Read_Calibration(root,tree); 
-           MIXT_Chain_Cal(tree); 
+//            XML_Read_Calibration(root,tree); 
+//            MIXT_Chain_Cal(tree); 
           
-           TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged 
-           tree->rates->clock_r = 1.0; 
-           TIMES_Bl_To_Times(1,tree); 
-           Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); 
-           Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); 
+//            TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged 
+//            tree->rates->clock_r = 1.0; 
+//            TIMES_Bl_To_Times(1,tree); 
+//            Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); 
+//            Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); 
           
-           PHYREX_Make_And_Connect_Tip_Disks(tree); 
-           PHYREX_Tree_To_Ldsk(tree); 
+//            PHYREX_Make_And_Connect_Tip_Disks(tree); 
+//            PHYREX_Tree_To_Ldsk(tree); 
           
-           Node_Labels_To_Velocities(tree); 
-           Node_Labels_To_Locations(tree); 
+//            Node_Labels_To_Velocities(tree); 
+//            Node_Labels_To_Locations(tree); 
           
-           if(first == YES) PhyML_Printf("\n. XXX Tree\t Time\t Tax\t Longitude\t Latitude\t NextLongitude\t NextLatitude"); 
-           first = NO; 
+//            if(first == YES) PhyML_Printf("\n. XXX Tree\t Time\t Tax\t Longitude\t Latitude\t NextLongitude\t NextLatitude"); 
+//            first = NO; 
           
-           for(int j=0;j<2*tree->n_otu-1;++j) 
-             { 
-               if(tree->a_nodes[j]->tax == YES) 
-                 { 
-                   phydbl survival_duration,survival_rate,t,delta_t; 
-                   int k,K; 
+//            for(int j=0;j<2*tree->n_otu-1;++j) 
+//              { 
+//                if(tree->a_nodes[j]->tax == YES) 
+//                  { 
+//                    phydbl survival_duration,survival_rate,t,delta_t; 
+//                    int k,K; 
                   
-                   survival_rate = 1.0; 
-                   K = 4; 
-                   delta_t = (date_recent - date_old) / K; 
+//                    survival_rate = 1.0; 
+//                    K = 4; 
+//                    delta_t = (date_recent - date_old) / K; 
                   
-                   survival_duration = Rexp(survival_rate); 
+//                    survival_duration = Rexp(survival_rate); 
 
-                   if(tree->times->nd_t[j] + survival_duration > date_old) 
-                     { 
-                       t = date_old; 
-                       k = 0; 
-                       do 
-                         { 
-                           PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f", 
-                                        i+1, 
-                                        tree->times->nd_t[j], 
-                                        tree->a_nodes[j]->tax, 
-                                        tree->a_nodes[j]->ldsk->coord->lonlat[0], 
-                                        tree->a_nodes[j]->ldsk->coord->lonlat[1], 
-                                        tree->a_nodes[j]->ldsk->coord->lonlat[0] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[0], 
-                                        tree->a_nodes[j]->ldsk->coord->lonlat[1] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[1]); 
-                           k++; 
-                           t += delta_t;  
-                         } 
-                       while(t < MIN(date_recent,tree->times->nd_t[j] + survival_duration)); 
-                     } 
-                 }
-             } 
+//                    if(tree->times->nd_t[j] + survival_duration > date_old) 
+//                      { 
+//                        t = date_old; 
+//                        k = 0; 
+//                        do 
+//                          { 
+//                            PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f", 
+//                                         i+1, 
+//                                         tree->times->nd_t[j], 
+//                                         tree->a_nodes[j]->tax, 
+//                                         tree->a_nodes[j]->ldsk->coord->lonlat[0], 
+//                                         tree->a_nodes[j]->ldsk->coord->lonlat[1], 
+//                                         tree->a_nodes[j]->ldsk->coord->lonlat[0] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[0], 
+//                                         tree->a_nodes[j]->ldsk->coord->lonlat[1] + (k*delta_t) * tree->a_nodes[j]->ldsk->veloc->deriv[1]); 
+//                            k++; 
+//                            t += delta_t;  
+//                          } 
+//                        while(t < MIN(date_recent,tree->times->nd_t[j] + survival_duration)); 
+//                      } 
+//                  }
+//              } 
 
-           PHYREX_Free_Ldsk_Struct(tree); 
-           RATES_Free_Rates(tree->rates); 
-           TIMES_Free_Times(tree->times); 
-           Free_Mmod(tree->mmod); 
-           Free_Tree(tree); 
+//            PHYREX_Free_Ldsk_Struct(tree); 
+//            RATES_Free_Rates(tree->rates); 
+//            TIMES_Free_Times(tree->times); 
+//            Free_Mmod(tree->mmod); 
+//            Free_Tree(tree); 
 
-         } 
-     } 
+//          } 
+//      } 
       
-   Exit("\n"); 
+//    Exit("\n"); 
  
 
 
@@ -882,116 +882,114 @@ int main(int argc, char **argv)
 
 
 
-
-  /* option *io; */
-  /* int i; */
-  /* char *year,*lat,*lon; */
-  /* t_tree *tree; */
+// Philippe Lemey data preprocessisng steps
+   option *io;
+   int i; 
+   char *year,*lat,*lon; 
+   t_tree *tree; 
   
-  /* io = (option *)Get_Input(argc,argv); */
-  /* if(!io) return(0); */
+   io = (option *)Get_Input(argc,argv); 
+   if(!io) return(0); 
 
-  /* tree = Read_User_Tree(NULL,NULL,io); */
+   tree = Read_User_Tree(NULL,NULL,io); 
 
-  /* PhyML_Printf("\n. n_otus: %d",tree->n_otu); */
-  /* for(i=0;i<tree->n_otu;++i) */
-  /*   { */
-  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name); */
-  /*     PhyML_Printf("\n</clade>"); */
-  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<lower>-%f</lower>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); */
-  /*     PhyML_Printf("\n\t<upper>-%f</upper>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); */
-  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-  /*     PhyML_Printf("\n</calibration>"); */
-  /*   } */
+   PhyML_Printf("\n. n_otus: %d",tree->n_otu); 
+   for(i=0;i<tree->n_otu;++i) 
+     { 
+       PhyML_Printf("\n<clade id=\"clad%d\">",i+1); 
+       PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name); 
+       PhyML_Printf("\n</clade>"); 
+       PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); 
+       PhyML_Printf("\n\t<lower>-%f</lower>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); 
+       PhyML_Printf("\n\t<upper>-%f</upper>",atof(strrchr(tree->a_nodes[i]->name,'|')+1)); 
+       PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); 
+       PhyML_Printf("\n</calibration>"); 
+     } 
 
-  /* PhyML_Printf("\n\n%d\t 4",tree->n_otu); */
-  /* for(i=0;i<tree->n_otu;++i) */
-  /*   { */
-  /*     PhyML_Printf("\n%s\tATGC",tree->a_nodes[i]->name); */
-  /*   } */
-  /* Exit("\n"); */
+   PhyML_Printf("\n\n%d\t 4",tree->n_otu); 
+   for(i=0;i<tree->n_otu;++i) 
+     { 
+       PhyML_Printf("\n%s\tATGC",tree->a_nodes[i]->name); 
+     } 
+   Exit("\n"); 
   
-  /* Get_Seq(io); */
+//    Get_Seq(io); 
 
-  /* /\* for(i=0;i<io->n_otu;i++) *\/ */
-  /* /\*   { *\/ */
-  /* /\*     sscanf(io->data[i]->name,"%d",&year); *\/ */
-  /* /\*     PhyML_Printf("\n%s\t%d",io->data[i]->name,year); *\/ */
-  /* /\*   } *\/ */
+//    for(i=0;i<io->n_otu;i++)  
+//       {
+//         sscanf(io->data[i]->name,"%d",&year); 
+//         PhyML_Printf("\n%s\t%d",io->data[i]->name,year);  
+//       }  
 
-  /* for(i=0;i<io->n_otu;i++) */
-  /*   { */
-  /*     /\* sscanf(io->data[i]->name,"%[^_]_%[^_]_%lf",a,b,&year); *\/ */
-  /*     /\* PhyML_Printf("\n. a: %s b: %s",a,b); *\/ */
-  /*     strtok(io->data[i]->name,"_"); */
-  /*     char *a = strtok(NULL,"_"); */
-  /*     year = strtok(NULL,"_"); */
-  /*     lat = strtok(NULL,"_"); */
-  /*     lon = strtok(NULL,"_"); */
+   for(i=0;i<io->n_otu;i++) 
+     { 
+    //    sscanf(io->data[i]->name,"%[^_]_%[^_]_%lf",a,b,&year);
+    //    PhyML_Printf("\n. a: %s b: %s",a,b);
+       strtok(io->data[i]->name,"_"); 
+       char *a = strtok(NULL,"_"); 
+       year = strtok(NULL,"_"); 
+       lat = strtok(NULL,"_"); 
+       lon = strtok(NULL,"_"); 
 
 
-  /*     PhyML_Printf("\n\t <taxon id=\"%s_%s_%s\">",io->data[i]->name,a,year); */
-  /*     PhyML_Printf("\n\t\t <date value=\"%s\" direction=\"forwards\" units=\"years\"/>",year); */
-  /*     PhyML_Printf("\n\t\t <attr name=\"lat\">"); */
-  /*     PhyML_Printf("\n\t\t\t %s",lat); */
-  /*     PhyML_Printf("\n\t\t </attr>"); */
-  /*     PhyML_Printf("\n\t\t <attr name=\"lon\">"); */
-  /*     PhyML_Printf("\n\t\t\t %s",lon); */
-  /*     PhyML_Printf("\n\t\t </attr>"); */
-  /*     PhyML_Printf("\n\t\t <attr name=\"location\">"); */
-  /*     PhyML_Printf("\n\t\t\t %s %s",lat,lon); */
-  /*     PhyML_Printf("\n\t\t </attr>"); */
-  /*     PhyML_Printf("\n\t </taxon>"); */
+       PhyML_Printf("\n\t <taxon id=\"%s_%s_%s\">",io->data[i]->name,a,year); 
+       PhyML_Printf("\n\t\t <date value=\"%s\" direction=\"forwards\" units=\"years\"/>",year); 
+       PhyML_Printf("\n\t\t <attr name=\"lat\">"); 
+       PhyML_Printf("\n\t\t\t %s",lat); 
+       PhyML_Printf("\n\t\t </attr>"); 
+       PhyML_Printf("\n\t\t <attr name=\"lon\">"); 
+       PhyML_Printf("\n\t\t\t %s",lon); 
+       PhyML_Printf("\n\t\t </attr>"); 
+       PhyML_Printf("\n\t\t <attr name=\"location\">"); 
+       PhyML_Printf("\n\t\t\t %s %s",lat,lon); 
+       PhyML_Printf("\n\t\t </attr>"); 
+       PhyML_Printf("\n\t </taxon>"); 
       
-  /*     /\* PhyML_Printf("\n<clade id=\"clad%d\">",i+1); *\/ */
-  /*     /\* PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); *\/ */
-  /*     /\* PhyML_Printf("\n</clade>"); *\/ */
-  /*     /\* PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); *\/ */
-  /*     /\* PhyML_Printf("\n\t<lower>%d</lower>",year); *\/ */
-  /*     /\* PhyML_Printf("\n\t<upper>%d</upper>",year); *\/ */
-  /*     /\* PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); *\/ */
-  /*     /\* PhyML_Printf("\n</calibration>"); *\/ */
-  /*   } */
+        // PhyML_Printf("\n<clade id=\"clad%d\">",i+1); 
+        // PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
+        // PhyML_Printf("\n</clade>");
+        // PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+        // PhyML_Printf("\n\t<lower>%d</lower>",year);
+        // PhyML_Printf("\n\t<upper>%d</upper>",year); 
+        // PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+        // PhyML_Printf("\n</calibration>");
+     }
 
-  /* /\* FILE *fp; *\/ */
-  /* /\* char *name,*date; *\/ */
-  /* /\* int i; *\/ */
-  
-  /* /\* name = (char *)mCalloc(T_MAX_NAME,sizeof(char)); *\/ */
-  /* /\* date = (char *)mCalloc(T_MAX_NAME,sizeof(char)); *\/ */
+    //  FILE *fp;
+    //  char *name, *date;
+    //  int i;
 
-  /* /\* i = 0; *\/ */
-  /* /\* fp = Openfile(argv[1],READ); *\/ */
-  /* /\* do *\/ */
-  /* /\*   { *\/ */
-  /* /\*     if(fscanf(fp,"%s",name) == EOF) break; *\/ */
-  /* /\*     if(fscanf(fp,"%s",date) == EOF) break; *\/ */
-  /* /\*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); *\/ */
-  /* /\*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",name); *\/ */
-  /* /\*     PhyML_Printf("\n</clade>"); *\/ */
-  /* /\*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); *\/ */
-  /* /\*     PhyML_Printf("\n\t<lower>%s</lower>",date); *\/ */
-  /* /\*     PhyML_Printf("\n\t<upper>%s</upper>",date); *\/ */
-  /* /\*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); *\/ */
-  /* /\*     PhyML_Printf("\n</calibration>"); *\/ */
-  /* /\*     ++i; *\/ */
-  /* /\*   } *\/ */
-  /* /\* while(1); *\/ */
+    //  name = (char *)mCalloc(T_MAX_NAME, sizeof(char));
+    //  date = (char *)mCalloc(T_MAX_NAME, sizeof(char));
 
-
-  
+    //  i = 0;
+    //  fp = Openfile(argv[1], READ);
+    //  do
+    //  {
+    //      if (fscanf(fp, "%s", name) == EOF)
+    //          break;
+    //      if (fscanf(fp, "%s", date) == EOF)
+    //          break;
+    //      PhyML_Printf("\n<clade id=\"clad%d\">", i + 1);
+    //      PhyML_Printf("\n\t<taxon value=\"%s\"/>", name);
+    //      PhyML_Printf("\n</clade>");
+    //      PhyML_Printf("\n<calibration id=\"cal%d\">", i + 1);
+    //      PhyML_Printf("\n\t<lower>%s</lower>", date);
+    //      PhyML_Printf("\n\t<upper>%s</upper>", date);
+    //      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>", i + 1);
+    //      PhyML_Printf("\n</calibration>");
+    //      ++i;
+    //  } while (1);
 }
 
 #elif(INVITEE)
 #include "invitee.h"
 int main(int argc, char **argv)
 {
-  /*My_Function(argc, argv);*/
-  /* PhyTime_XML(argc, argv); */
-  Get_Input(argc,argv);
-  return 1;
+    // My_Function(argc, argv);
+    // PhyTime_XML(argc, argv);
+    // Get_Input(argc, argv);
+    // return 1;
 }
 
 #elif(GEO)

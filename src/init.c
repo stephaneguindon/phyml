@@ -3579,7 +3579,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id        = -1;
   t->use_locations   = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex     = YES;
+  t->safe_phyrex     = NO;
   t->dist_type       = HAVERSINE;
   
   t->lim_up->lonlat[0] = 100.;
@@ -3901,12 +3901,17 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 
 void Set_Defaults_Contmod(t_tree *tree)
 {
+    int i;
+
   tree->contmod->obs_model = NO;
   tree->contmod->obs_model_est = YES;
   tree->contmod->obs_var_min = 0.0;
   tree->contmod->obs_var_max = 1.E+2;
   tree->contmod->both_sides[LOCATION] = NO;
   tree->contmod->combined_lnL = UNLIKELY;
+  tree->contmod->obs_var_prior_mean = 50.0;
+
+  for(i=0;i<tree->mmod->n_dim;++i) tree->contmod->obs_var[i] = 0.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3914,7 +3919,7 @@ void Set_Defaults_Contmod(t_tree *tree)
 
 void Init_Contmod_Locations(t_tree *tree)
 {
-  int i,j,start;
+  int i,j,start,err;
   
 
   for(i=0;i < tree->mmod->n_dim;++i)
@@ -3922,19 +3927,25 @@ void Init_Contmod_Locations(t_tree *tree)
       start = Contmod_Start(LOCATION,i,tree);
 
       for(j=0;j<tree->n_otu;++j)
-        {          
-          tree->contmod->mu_down[start + j] = tree->a_nodes[j]->ldsk->coord->lonlat[i];
-          tree->contmod->var_down[start + j] = tree->contmod->obs_var[i];
-          tree->contmod->logrem_down[start + j] = 0.0;
-          
-          tree->contmod->mu_up[start + j] = 0.0;
-          tree->contmod->var_up[start + j] = 0.0;
-          tree->contmod->logrem_up[start + j] = 0.0;
+        {
+            tree->contmod->mu_down[start + j] = tree->a_nodes[j]->ldsk->coord->lonlat[i];
+            if (tree->contmod->obs_model == YES)
+                tree->contmod->var_down[start + j] = tree->contmod->obs_var[i];
+            else
+                tree->contmod->var_down[start + j] = 0.0;
+            tree->contmod->logrem_down[start + j] = 0.0;
 
-          tree->contmod->lnL_down[start + j] = 1.0;
-          tree->contmod->lnL_up[start + j] = 0.0; 
+            tree->contmod->mu_up[start + j] = 0.0;
+            tree->contmod->var_up[start + j] = 0.0;
+            tree->contmod->logrem_up[start + j] = 0.0;
+
+            if (tree->contmod->obs_model == YES)
+                tree->contmod->lnL_down[start + j] = Log_Dnorm(tree->a_nodes[j]->ldsk->coord->lonlat[i], tree->a_nodes[j]->ldsk->coord->lonlat[i], tree->contmod->obs_var[i], &err);
+            else
+                tree->contmod->lnL_down[start + j] = 1.0;
+            tree->contmod->lnL_up[start + j] = 0.0;
         }
-      
+
       for(j=tree->n_otu;j<2*tree->n_otu-1;++j)
         {
           tree->contmod->mu_down[start + j] = 0.0;

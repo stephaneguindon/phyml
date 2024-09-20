@@ -248,7 +248,7 @@ phydbl VELOC_Augmented_Lk_Velocity(t_node *z, t_tree *tree)
                                                                         root_mean,
                                                                         sqrt(root_var),
                                                                         &err);
-
+ 
           lnL += tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i];
         }
     }
@@ -624,19 +624,10 @@ void VELOC_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
       son_a           = 1.0;
       bro_a           = 1.0;
 
-      // son_b           = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
-      // bro_b           = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
-
-      if (IBM_Is_Ibm(tree->mmod) == YES)
-      {
-          son_b = dt_son * dad->ldsk->veloc->deriv[i];
-          bro_b = dt_bro * dad->ldsk->veloc->deriv[i];
-      }
-      else if (IOU_Is_Iou(tree->mmod) == YES)
-      {
-          son_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta * dt_son)) / tree->mmod->ou_theta + tree->mmod->ou_mu[i] * dt_son;
-          bro_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta * dt_bro)) / tree->mmod->ou_theta + tree->mmod->ou_mu[i] * dt_bro;
-      }
+      // dad->ldsk->coord->lonlat[i] is not involved here as it appears in VELOC_Location_Mean_Along_Edge and is subtracted below
+      // Only true if son_a (son_b) = 1.0
+      bro_b = VELOC_Location_Mean_Along_Edge(bro, i, tree) - bro_a * dad->ldsk->coord->lonlat[i];
+      son_b = VELOC_Location_Mean_Along_Edge(son, i, tree) - son_a * dad->ldsk->coord->lonlat[i];
 
       if(dad != tree->n_root)
         {
@@ -733,19 +724,11 @@ void VELOC_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
       
       son_a = 1.0;
       bro_a = 1.0;
-      
-      // son_b = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
-      // bro_b = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
-      if (IBM_Is_Ibm(tree->mmod) == YES)
-      {
-          son_b = dt_son * dad->ldsk->veloc->deriv[i]; 
-          bro_b = dt_bro * dad->ldsk->veloc->deriv[i]; 
-      }
-      else if (IOU_Is_Iou(tree->mmod) == YES)
-      {
-          son_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta*dt_son))/tree->mmod->ou_theta + tree->mmod->ou_mu[i]*dt_son;
-          bro_b = (dad->ldsk->veloc->deriv[i] - tree->mmod->ou_mu[i]) * (1. - exp(-tree->mmod->ou_theta*dt_bro))/tree->mmod->ou_theta + tree->mmod->ou_mu[i]*dt_bro;
-      }
+
+      // dad->ldsk->coord->lonlat[i] is not involved here as it appears in VELOC_Location_Mean_Along_Edge and is subtracted below
+      // Only true if son_a (son_b) = 1.0
+      son_b = VELOC_Location_Mean_Along_Edge(son, i, tree) - son_a * dad->ldsk->coord->lonlat[i];
+      bro_b = VELOC_Location_Mean_Along_Edge(bro, i, tree) - bro_a * dad->ldsk->coord->lonlat[i];
 
       if(IBM_Is_Ibm(tree->mmod) == YES)
         {

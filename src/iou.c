@@ -58,7 +58,7 @@ phydbl IOU_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
   ta = tree->mmod->ou_theta;
   
   var = sg2 /(2.*ta) * (1. - exp(-2.*ta*t));
-  
+
   if(var < 0.0) var = 0.0;
 
   if(isinf(var) || isnan(var))
@@ -144,7 +144,7 @@ phydbl IOU_Prior(t_tree *tree)
   tree->mmod->c_lnP =
     IOU_Prior_Theta(tree) +
     IOU_Prior_Mu(tree) +
-    RW_Prior_Sigsq(tree);
+    RW_Prior(tree);
 
   return(tree->mmod->c_lnP);
 }
