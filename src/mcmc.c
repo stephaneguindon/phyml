@@ -14689,6 +14689,7 @@ void MCMC_PHYREX_IOU_Update_Theta(t_tree *tree)
 
             tree->mcmc->run++;
 
+            PHYREX_Print_MCMC_Stats(tree);
             PHYREX_Print_MCMC_Tree(tree);
             PHYREX_Print_MCMC_Summary(tree);
         }

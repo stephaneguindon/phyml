@@ -160,7 +160,7 @@ phydbl IOU_Prior_Theta(t_tree *tree)
   phydbl lbda,lnP;
 
   lnP = 0.0;
-  lbda = 1.0E+4;
+  lbda = 1.0E+2;
   lnP += Log_Dexp(tree->mmod->ou_theta,lbda);
   return(lnP);
 }
@@ -173,7 +173,7 @@ phydbl IOU_Prior_Mu(t_tree *tree)
   phydbl lbda,lnP;
 
   lnP = 0.0;
-  lbda = 1.0E+3;
+  lbda = 1.0E+0;
   for (int i = 0; i < tree->mmod->n_dim; i++)
       lnP += Log_Dexp(tree->mmod->ou_mu[i], lbda);
   return (lnP);
