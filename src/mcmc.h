@@ -206,5 +206,6 @@ void MCMC_Crossvalidate_Locations(t_tree *tree);
 void MCMC_Randomize_Sigsq(t_tree *tree);
 void MCMC_PHYREX_Correlated_Node_Velocity(t_tree *tree);
 void MCMC_PHYREX_Correlated_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree);
+void MCMC_PHYREX_IOU_Update_Theta_Sigsq(t_tree *tree);
 
 #endif

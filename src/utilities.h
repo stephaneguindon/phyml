@@ -1872,6 +1872,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_shuffle_node_times;
   int num_move_phyrex_iwn_omega;
   int num_move_phyrex_iou_theta;
+  int num_move_phyrex_iou_theta_sigsq;
   int num_move_phyrex_iou_mu;
   int num_move_obs_var;
   int num_move_phyrex_tip_loc;

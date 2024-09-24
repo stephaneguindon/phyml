@@ -3579,7 +3579,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id        = -1;
   t->use_locations   = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex     = NO;
+  t->safe_phyrex     = YES;
   t->dist_type       = HAVERSINE;
   
   t->lim_up->lonlat[0] = 100.;
@@ -3604,9 +3604,6 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->prior_param_rad   = 1.;
   t->update_rad        = NO;
   
-  t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+3;
-  t->prior_param_sigsq = 10.0;
 
   t->min_veloc         = -1.E+5;
   t->max_veloc         = +1.E+5;
@@ -3615,16 +3612,19 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->min_omega         = 0.0;
   t->max_omega         = 1.E+3;
 
-  t->ou_theta             = 1.0;
-  t->min_ou_theta         = 1.0E-4;
-  t->max_ou_theta         = 10.0;
+  t->ou_theta             = 1.0E-1;
+  t->min_ou_theta         = 0.0;
+  t->max_ou_theta         = 1000.0;
 
   for(int i=0;i<t->n_dim;++i) t->ou_mu[i] = 0.0;
   t->min_ou_mu            = -10.;
   t->max_ou_mu            = 10.;
   
+  t->min_sigsq         = 0.0;
+  t->max_sigsq         = 1.E+3;
+  t->prior_param_sigsq = 10.0;
   assert(t->n_dim > 0);
-  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.;
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 1.E-1;
   
   t->nu = 1.0E-0;
 

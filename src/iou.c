@@ -65,7 +65,8 @@ phydbl IOU_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
     {
       PhyML_Printf("\n. ta: %f t: %f sg2: %f sinh: %f",ta,t,sg2,sinh(ta*t));
     }
-  
+//   PhyML_Printf("\n. t: %f ta: %f sg2: %f var: %f",t,ta,sg2,var);
+
   assert(isnan(var) == NO);
   assert(isinf(var) == NO);
   
@@ -115,22 +116,24 @@ phydbl IOU_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
    at both extremities */
 phydbl IOU_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
-  phydbl var,t,ta,sg;
+  phydbl var,t,ta,sg2;
   
   assert(d != tree->n_root);
 
   
   t  = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
   ta = tree->mmod->ou_theta;
-  sg = tree->mmod->sigsq[dim];
+  sg2 = tree->mmod->sigsq[dim] * tree->mmod->sigsq_scale[d->num] * tree->mmod->sigsq_scale_norm_fact;
   
   if(t < SMALL) return(0.0);
 
-  /* var = sg/pow(ta,3)*(ta*t-2.*(cosh(ta*t)-1.)/sinh(ta*t)); */
-  var = sg/pow(ta,3)*(ta*t-2.*(1./tanh(ta*t) - 1./sinh(ta*t)));
+//   var = sg/pow(ta,3)*(ta*t-2.*(cosh(ta*t)-1.)/sinh(ta*t));
+  var = sg2/pow(ta,3)*(ta*t-2.*(1./tanh(ta*t) - 1./sinh(ta*t)));
+
+  if(var > sg2*pow(t,3)/12) var = sg2*pow(t,3)/12;
 
   if(var < 0.0) var = 0.0;
-  
+    
   assert(isnan(var) == NO);
   
   return(var);
@@ -156,9 +159,9 @@ phydbl IOU_Prior_Theta(t_tree *tree)
 {
   phydbl lbda,lnP;
 
-  lbda = 1.0;
-  lnP = log(lbda)-lbda*tree->mmod->ou_theta;
-
+  lnP = 0.0;
+  lbda = 1.0E+4;
+  lnP += Log_Dexp(tree->mmod->ou_theta,lbda);
   return(lnP);
 }
 
@@ -167,7 +170,13 @@ phydbl IOU_Prior_Theta(t_tree *tree)
 
 phydbl IOU_Prior_Mu(t_tree *tree)
 {
-  return(0.0);
+  phydbl lbda,lnP;
+
+  lnP = 0.0;
+  lbda = 1.0E+3;
+  for (int i = 0; i < tree->mmod->n_dim; i++)
+      lnP += Log_Dexp(tree->mmod->ou_mu[i], lbda);
+  return (lnP);
 }
 
 //////////////////////////////////////////////////////////////

@@ -237,7 +237,7 @@ void RW_Integrated_Lk_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down, phydb
   logr  = son_logrem + bro_logrem;
   logr -= log(fabs(bro_a*son_a));
   logr += Log_Dnorm((son_mu_down-son_b)/son_a,(bro_mu_down-bro_b)/bro_a,sqrt((son_var_down+son_var)/pow(son_a,2)+(bro_var_down+bro_var)/pow(bro_a,2)),&err);
-
+  
   if((son_var + son_var_down > SMALL) && (bro_var + bro_var_down > SMALL)) // Standard case
     {
       v = pow(son_a,2)/(son_var_down + son_var) + pow(bro_a,2)/(bro_var_down + bro_var);
