@@ -897,12 +897,6 @@ void PHYREX_XML(char *xml_filename)
   MCMC_Randomize_Veloc(mixt_tree);
   MCMC_Randomize_Contmod(mixt_tree);
 
-//   mixt_tree->mmod->ou_theta = 0.1;
-//   mixt_tree->mmod->ou_mu[0] = 0.1;
-//   mixt_tree->mmod->ou_mu[1] = 0.1;
-//   mixt_tree->mmod->sigsq[0] = 1.E-3;
-//   mixt_tree->mmod->sigsq[1] = 1.E-3;
-
   Set_Ignore_Root(YES,mixt_tree);
   Set_Bl_From_Rt(YES,mixt_tree);
 

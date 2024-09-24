@@ -3624,7 +3624,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
   assert(t->n_dim > 0);
-  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 1.E-1;
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 10.;
   
   t->nu = 1.0E-0;
 
