@@ -1064,12 +1064,10 @@ phydbl VELOC_Mean_Speed(t_tree *tree)
       phydbl mean_speed;
 
       mean_speed = 0.0;
-    //   for(i=0;i<2*tree->n_otu-1;++i) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
-    //   return(mean_speed / (phydbl)(2*tree->n_otu-1));
-    //   for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i] != tree->n_root) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
-    //   return(mean_speed / (phydbl)(2*tree->n_otu-2));
-      for(i=0;i<tree->n_otu;++i) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
-      return(mean_speed / (phydbl)(tree->n_otu));
+      for(i=0;i<2*tree->n_otu-1;++i) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
+      return(mean_speed / (phydbl)(2*tree->n_otu-1));
+    //   for(i=0;i<tree->n_otu;++i) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
+    //   return(mean_speed / (phydbl)(tree->n_otu));
     }
   return(-1.);
 }
