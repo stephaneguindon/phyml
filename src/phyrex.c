@@ -576,8 +576,24 @@ void PHYREX_XML(char *xml_filename)
       
     }
 
-  
-  
+  // Cross validation
+  xnd = XML_Search_Node_Name("phyrex",YES,xroot);
+  short int do_cv = YES;
+  if(xnd != NULL)
+    {
+      char *crossvald;
+      crossvald = XML_Get_Attribute_Value(xnd,"cross.validation");
+      if(crossvald != NULL)
+        {
+          int select = XML_Validate_Attr_Int(crossvald,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3)  do_cv = YES;
+          else do_cv = NO;
+        }
+    }  
+
+
   // Looking for XML node with rate-across-lineage info
   xnd = XML_Search_Node_Name("clockrate",YES,xroot);
   
@@ -935,19 +951,6 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->contmod->both_sides[VELOCITY] = NO;
   LOCATION_Lk(NULL,mixt_tree);
 
-
-//   PHYREX_Check_Lk_Nodes(mixt_tree);
-//   Exit("\n");
-
-  // PhyML_Printf("\n. INIT lnL space: %f %f location: %f %f tot: %f",
-  // mixt_tree->contmod->lnL[LOCATION*mixt_tree->mmod->n_dim+0],
-  // mixt_tree->contmod->lnL[LOCATION*mixt_tree->mmod->n_dim+1],
-  // mixt_tree->contmod->lnL[VELOCITY*mixt_tree->mmod->n_dim+0],
-  // mixt_tree->contmod->lnL[VELOCITY*mixt_tree->mmod->n_dim+1],
-  // mixt_tree->mmod->c_lnL);
-
-  // Exit("\n");
-
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
@@ -965,13 +968,14 @@ void PHYREX_XML(char *xml_filename)
   PhyML_Printf("\n. Init clock rate: %f",mixt_tree->rates->clock_r);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
 
+  if (do_cv == YES)
+      MCMC_Crossvalidate_Locations(mixt_tree);
+  else
+  {
+      res = PHYREX_MCMC(mixt_tree);
+      Free(res);
+  }
 
-  
-  MCMC_Crossvalidate_Locations(mixt_tree);
-
-  /* res = PHYREX_MCMC(mixt_tree); */
-  /* Free(res); */
-  
   // Cleaning up...
   PHYREX_Free_Ldsk_Struct(mixt_tree);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Free_Ldsk_Struct(mixt_tree->aux_tree[i]);
