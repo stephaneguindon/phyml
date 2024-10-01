@@ -29,6 +29,7 @@ phydbl LOCATION_Mean_Lonlat(short int dim, t_tree *tree);
 phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl LOCATION_Wrap_Prior(t_edge *b, t_tree *tree, supert_tree *stree);
 void LOCATION_Update_Lk_Down(t_node *a, t_node *d, t_tree *tree);
+void LOCATION_Update_Lk_Up(t_node *a, t_node *d, t_tree *tree);
 
 
 #endif

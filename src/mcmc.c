@@ -9341,18 +9341,13 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
   
   assert(tree->n_root->ldsk->n_next == 2);
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[0],tree,print);
-  
-  if(tree->eval_alnL == YES) Update_Partial_Lk(tree,
-                                               tree->e_root,
-                                               tree->n_root->ldsk->next[0]->nd);
 
-  if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES) 
-    {
-      VELOC_Update_Lk_Velocity_Up(tree->n_root,tree->n_root->ldsk->next[1]->nd,tree);
-      VELOC_Update_Lk_Location_Up(tree->n_root,tree->n_root->ldsk->next[1]->nd,tree);
-    }
+  if (tree->eval_alnL == YES)
+      Update_Partial_Lk(tree,tree->e_root,tree->n_root->ldsk->next[0]->nd);
 
-  
+  if (tree->eval_glnL == YES)
+      LOCATION_Update_Lk_Up(tree->n_root, tree->n_root->ldsk->next[1]->nd, tree);
+
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[1],tree,print);
 
   RATES_Update_Normalization_Factor(tree);
@@ -9459,29 +9454,15 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       
   if(tree->eval_glnL == YES)
     {
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
-        {
-          if(d_ldsk->nd->anc != NULL)
-            {
-              VELOC_Update_Lk_Velocity_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
-              VELOC_Update_Lk_Location_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
-            }
-          
-          if(d_ldsk->nd->tax == NO)
-            {
-              VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-              VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-            }
-          
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(d_ldsk->nd,tree) : 0.0;
-        //   new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0; /* !!!!!!!!!!!!!!!!!! */
-        }
-      else // NOTE: should use node lk calculation for RRW here as well....
-        {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(NULL,tree) : 0.0; 
-        }
-      
-      if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
+        if (d_ldsk->nd->anc != NULL)
+            LOCATION_Update_Lk_Up(d_ldsk->nd->anc, d_ldsk->nd, tree);
+        if (d_ldsk->nd->tax == NO)
+            LOCATION_Update_Lk_Down(d_ldsk->nd->anc, d_ldsk->nd, tree);
+
+        new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(d_ldsk->nd, tree) : 0.0;
+
+        if (PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
+            new_glnL = UNLIKELY;
     }
 
 
@@ -9545,18 +9526,12 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       d_ldsk->disk->time = cur_t;
       tree->times->nd_t[d_ldsk->nd->num] = cur_t; // Ok only if tree is binary
         
-      if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+      if(tree->eval_glnL == YES)
         {
-          if(d_ldsk->nd->anc != NULL)
-            {
-              VELOC_Update_Lk_Velocity_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
-              VELOC_Update_Lk_Location_Up(d_ldsk->nd->anc,d_ldsk->nd,tree);
-            }
-          if(d_ldsk->nd->tax == NO)
-            {
-              VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-              VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-            }
+            if (d_ldsk->nd->anc != NULL)
+                LOCATION_Update_Lk_Up(d_ldsk->nd->anc, d_ldsk->nd, tree);
+            if (d_ldsk->nd->tax == NO)
+                LOCATION_Update_Lk_Down(d_ldsk->nd->anc, d_ldsk->nd, tree);
         }
 
       if(tree->eval_alnL == YES)
@@ -9594,25 +9569,20 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
   for(i=0;i<d_ldsk->n_next;i++)
     {
-      if(tree->eval_alnL == YES) Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree),d_ldsk->nd);
+        if (tree->eval_alnL == YES)
+            Update_Partial_Lk(tree, Get_Edge(d_ldsk->nd, d_ldsk->next[i]->nd, tree), d_ldsk->nd);
 
-      if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
-        {
-          VELOC_Update_Lk_Velocity_Up(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
-          VELOC_Update_Lk_Location_Up(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
-        }
-      
-      MCMC_PHYREX_Node_Times_Pre(d_ldsk,d_ldsk->next[i],tree,print);
+        if (tree->eval_glnL == YES)
+            LOCATION_Update_Lk_Up(d_ldsk->nd, d_ldsk->next[i]->nd, tree);
+
+        MCMC_PHYREX_Node_Times_Pre(d_ldsk, d_ldsk->next[i], tree, print);
     }
   
   if(tree->eval_alnL == YES && d_ldsk->nd->anc != tree->n_root)
     Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree),d_ldsk->nd);
 
-  if(tree->eval_glnL == YES && VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
-    {
-      VELOC_Update_Lk_Velocity_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-      VELOC_Update_Lk_Location_Down(d_ldsk->nd->anc,d_ldsk->nd,tree);
-    }
+  if (tree->eval_glnL == YES)
+      LOCATION_Update_Lk_Down(d_ldsk->nd->anc, d_ldsk->nd, tree);
 }
 
 #endif
@@ -14209,13 +14179,13 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
 
         if (dad == tree->n_root)
         {
-            new_vel = Rnorm(cur_vel, 1.E-2);
+            new_vel = Rnorm(cur_vel, 1.E-1);
         }
         else
         {
-            new_vel = Rnorm(mu, 2. * sqrt(var));
-            hr -= Log_Dnorm(new_vel, mu, 2. * sqrt(var), &err);
-            hr += Log_Dnorm(cur_vel, mu, 2. * sqrt(var), &err);
+            new_vel = Rnorm(mu, 1.5 * sqrt(var));
+            hr -= Log_Dnorm(new_vel, mu, 1.5 * sqrt(var), &err);
+            hr += Log_Dnorm(cur_vel, mu, 1.5 * sqrt(var), &err);
         }
 
         d->ldsk->veloc->deriv[i] = new_vel;
@@ -14244,25 +14214,25 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
     alpha = MIN(1., ratio);
 
     //   if (dad == tree->n_root)
-    //       PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f alpha: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f",
-    //                    a ? a->num : -1, d->num,
-    //                    d == tree->n_root ? 1 : 0,
-    //                    d == tree->n_root->v[1] ? 1 : 0,
-    //                    d == tree->n_root->v[2] ? 1 : 0,
-    //                    hr,
-    //                    alpha,
-    //                    cur_glnL, new_glnL,
-    //                    d->ldsk->veloc->deriv[0],
-    //                    d->ldsk->veloc->deriv[1],
-    //                    tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 0],
-    //                    tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 1],
-    //                    tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 0],
-    //                    tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 1],
-    //                    tree->contmod->lnL_down[Contmod_Start(VELOCITY, 0, tree) + d->num],
-    //                    tree->contmod->lnL_down[Contmod_Start(VELOCITY, 1, tree) + d->num],
-    //                    tree->contmod->lnL_up[Contmod_Start(VELOCITY, 0, tree) + d->num],
-    //                    tree->contmod->lnL_up[Contmod_Start(VELOCITY, 1, tree) + d->num],
-    //                    a ? (d->ldsk->disk->time - a->ldsk->disk->time) : -1.);
+        //   PhyML_Printf("\n. a: %3d d: %3d (%d%d%d) hr: %13f alpha: %13f cur_glnL: %13f new_glnL: %13f vel: %12f %12f lnLv(%13f %13f) lnLl(%13f %13f) VEL down:(%13f %13f) up:(%13f %13f) dt: %f",
+        //                a ? a->num : -1, d->num,
+        //                d == tree->n_root ? 1 : 0,
+        //                d == tree->n_root->v[1] ? 1 : 0,
+        //                d == tree->n_root->v[2] ? 1 : 0,
+        //                hr,
+        //                alpha,
+        //                cur_glnL, new_glnL,
+        //                d->ldsk->veloc->deriv[0],
+        //                d->ldsk->veloc->deriv[1],
+        //                tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 0],
+        //                tree->contmod->lnL[VELOCITY * tree->mmod->n_dim + 1],
+        //                tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 0],
+        //                tree->contmod->lnL[LOCATION * tree->mmod->n_dim + 1],
+        //                tree->contmod->lnL_down[Contmod_Start(VELOCITY, 0, tree) + d->num],
+        //                tree->contmod->lnL_down[Contmod_Start(VELOCITY, 1, tree) + d->num],
+        //                tree->contmod->lnL_up[Contmod_Start(VELOCITY, 0, tree) + d->num],
+        //                tree->contmod->lnL_up[Contmod_Start(VELOCITY, 1, tree) + d->num],
+        //                a ? (d->ldsk->disk->time - a->ldsk->disk->time) : -1.);
 
     u = Uni();
 

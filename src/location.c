@@ -103,13 +103,46 @@ void LOCATION_Update_Lk_Down(t_node *a, t_node *d, t_tree *tree)
       }
     case RRW_GAMMA : case RRW_LOGNORMAL : case RW : 
       {
-        assert(false);
+        RRW_Update_Lk_Location_Down(a,d,tree);
         break;
       }
     case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         VELOC_Update_Lk_Velocity_Down(a,d,tree);
         VELOC_Update_Lk_Location_Down(a,d,tree);
+        break;
+      }
+    default : assert(false);
+    }      
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void LOCATION_Update_Lk_Up(t_node *a, t_node *d, t_tree *tree)
+{
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN :
+      {
+        assert(false);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }
+    case RRW_GAMMA : case RRW_LOGNORMAL : case RW : 
+      {
+        RRW_Update_Lk_Location_Up(a,d,tree);
+        break;
+      }
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
+      {
+        VELOC_Update_Lk_Velocity_Up(a,d,tree);
+        VELOC_Update_Lk_Location_Up(a,d,tree);
         break;
       }
     default : assert(false);
