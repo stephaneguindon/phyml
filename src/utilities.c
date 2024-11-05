@@ -3104,7 +3104,9 @@ void Bootstrap(t_tree *tree)
 {
   int *site_num, n_site;
   int replicate,j,k;
-  int position,init_len;
+  int position, init_len;
+  phydbl sum_weight;
+  phydbl* bayesboot_weights;
   calign *boot_data;
   t_tree *boot_tree;
   t_mod *boot_mod;
@@ -3148,20 +3150,29 @@ void Bootstrap(t_tree *tree)
       for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
       init_len = 0;
-      for(j=0;j<boot_data->init_len;j++)
-        {
-          position = Rand_Int(0,(int)(tree->data->init_len-1.0));
-          boot_data->wght[site_num[position]] += 1;
-          init_len++;
-        }
+      if(tree->io->do_bayesboot)
+			{
+				bayesboot_weights = Dirichlet(n_site);
+				for(j=0;j<n_site;j++)
+				{
+					boot_data->wght[site_num[j]] += bayesboot_weights[j];
+					init_len++;
+				}
+				free(bayesboot_weights);
+			}else{
+        for(j=0;j<boot_data->init_len;j++)
+          {
+            position = Rand_Int(0,(int)(tree->data->init_len-1.0));
+            boot_data->wght[site_num[position]] += 1;
+            init_len++;
+          }
+      }
+      if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences 1\n");
 
-      if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences\n");
+      sum_weight = 0;
+      for(j=0;j<boot_data->crunch_len;j++) sum_weight += boot_data->wght[j];
 
-      init_len = 0;
-      for(j=0;j<boot_data->crunch_len;j++) init_len += boot_data->wght[j];
-
-      
-      if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences\n");
+      if((int)(roundf(sum_weight)) != tree->data->init_len) Exit("\n. Pb. when copying sequences 2\n");
 
       
       if(tree->io->datatype == NT)      Get_Base_Freqs(boot_data);
@@ -3273,7 +3284,8 @@ void Bootstrap(t_tree *tree)
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
 
-      if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO);
+      if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO,-1.0);
+      else if(tree->io->do_bayesboot)     Compare_Bip(tree,boot_tree,NO,0.1/n_site);
       else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
       else assert(FALSE);
 
@@ -4105,7 +4117,10 @@ int Sort_String(const void *a, const void *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
+/* If tree2_brlen_cutoff <=0 => takes all identical bipartitions    */
+/* Else: Will only take bipartitions of the tree2 that are          */
+/* longer than the cutoff                                           */
+int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only, phydbl tree2_brlen_cutoff)
 {
   int i,j,k;
   t_edge *b1,*b2;
@@ -4214,7 +4229,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
                           if(bip1[k]->num != bip2[k]->num) break;
                         }
                       
-                      if(k == bip_size) /* Branches b1 and b2 define the same bipartition */
+                      if(k == bip_size && (tree2_brlen_cutoff<=0 || b2->l->v >= tree2_brlen_cutoff)) /* Branches b1 and b2 define the same bipartition */
                         {
                           b1->bip_score++;
                           b2->bip_score++;
@@ -4310,7 +4325,7 @@ void Test_Multiple_Data_Set_Format(option *io)
 
   Free(line);
 
-  if((io->do_boot || io->do_tbe) && (io->n_trees > 1))
+  if((io->do_boot || io->do_tbe || io->do_bayesboot) && (io->n_trees > 1))
     Warn_And_Exit("\n. Bootstrap option is not allowed with multiple input trees !\n");
 
   rewind(io->fp_in_tree);
@@ -9934,7 +9949,7 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   for(i=0;i<2*big_tree_cpy->n_otu-3;++i) big_tree_cpy->a_edges[i]->bip_score = 0;
   for(i=0;i<2*small_tree->n_otu-3;++i)   small_tree->a_edges[i]->bip_score = 0;
 
-  diffs = Compare_Bip(small_tree,big_tree_cpy,NO);
+  diffs = Compare_Bip(small_tree,big_tree_cpy,NO,-1.0);
 
   /* printf("\n"); */
   /* printf("\n. %s",Write_Tree(big_tree_cpy)); */

@@ -29,6 +29,8 @@ void Bootstrap_MPI(t_tree *tree)
 	int *site_num, n_site;
 	int replicate, j, k;
 	int position, init_len;
+	phydbl sum_weight;
+	phydbl* bayesboot_weights; 
 	calign *boot_data;
 	t_tree *boot_tree;
 	t_mod *boot_mod;
@@ -107,11 +109,22 @@ void Bootstrap_MPI(t_tree *tree)
 			for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
 			init_len = 0;
-			for(j=0;j<boot_data->init_len;j++)
+			if(tree->io->do_bayesboot)
 			{
-				position = Rand_Int(0,(int)(tree->data->init_len-1.0));
-				boot_data->wght[site_num[position]] += 1;
-				init_len++;
+				bayesboot_weights = Dirichlet(n_site);
+				for(j=0;j<n_site;j++)
+				{
+					boot_data->wght[site_num[j]] += bayesboot_weights[j];
+					init_len++;
+				}
+				free(bayesboot_weights);
+			}else{
+				for(j=0;j<boot_data->init_len;j++)
+				{
+					position = Rand_Int(0,(int)(tree->data->init_len-1.0));
+					boot_data->wght[site_num[position]] += 1;
+					init_len++;
+				}
 			}
 			if (init_len != tree->data->init_len) 
 			{
@@ -120,11 +133,11 @@ void Bootstrap_MPI(t_tree *tree)
 				Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 			}
 
-			init_len = 0;
+			sum_weight = 0;
 			for(j=0;j<boot_data->crunch_len;j++)
-				init_len += boot_data->wght[j];
+				sum_weight += boot_data->wght[j];
 			
-			if (init_len != tree->data->init_len)
+			if((int)(roundf(sum_weight)) != tree->data->init_len)
 			{
 				printf("\n== thread: %d init: %d %d. Pb when copying sequences\n",Global_myRank,init_len,tree->data->init_len);
 				Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -226,7 +239,8 @@ void Bootstrap_MPI(t_tree *tree)
 				boot_tree->a_nodes[0]->v[0],
 				boot_tree);
 			
-			if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO);
+			if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO,-1);
+			else if(tree->io->do_bayesboot) Compare_Bip(tree,boot_tree, NO, 0.1/n_site);
 			else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
 			else assert(FALSE);
 			

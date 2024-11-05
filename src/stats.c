@@ -5226,3 +5226,32 @@ phydbl Reflected(phydbl x, phydbl down, phydbl up)
 
   return(ref);
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl* Dirichlet(int n_sites)
+{
+  phydbl* weights;
+  phydbl* intervals;
+  int i;
+
+  if(n_sites <= 2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  weights = (phydbl *)mCalloc(n_sites,sizeof(phydbl));
+	intervals = (phydbl *)mCalloc(n_sites+1,sizeof(phydbl));
+	intervals[0] = 0.0;
+	intervals[1] = 1.0;
+
+	for(i = 2; i < n_sites+1; i++){
+		intervals[i] = Uni();
+	}
+
+  Qksort(intervals,NULL,0,n_sites);
+
+	for(i = 1; i < n_sites+1; i++){
+		weights[i-1] = n_sites * (intervals[i] - intervals[i-1]);
+	}
+  free(intervals);
+	return(weights);
+}

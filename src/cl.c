@@ -131,6 +131,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"precision",           required_argument,NULL,82},
       {"l_min",               required_argument,NULL,83},
       {"print_mat_and_exit",  no_argument,NULL,84},
+	  {"bayesian_bootstrap",  no_argument,NULL,85},
       {0,0,0,0}
     };
 
@@ -213,7 +214,16 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  {
 	    io->do_tbe = YES;
 	    io->do_boot = NO;
-            io->do_alrt = NO;
+		io->do_alrt = NO;
+		io->do_bayesboot = NO;
+	    break;
+	  }
+	case 85 :
+	  {
+	    io->do_tbe = NO;
+	    io->do_boot = NO;
+		io->do_bayesboot = YES;
+		io->do_alrt = NO;
 	    break;
 	  }
         case 79:
@@ -1179,12 +1189,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		    io->do_alrt    = NO;
                     io->do_tbe     = NO;
                     io->do_boot    = NO;
+					io->do_bayesboot    = NO;
 		    io->ratio_test = 0;
 		  }
 		else
 		  {
                     io->do_alrt = YES;
                     io->do_tbe  = NO;
+                    io->do_bayesboot  = NO;
                     io->do_boot = NO;
 		    io->ratio_test = -(int)atoi(optarg);
 		  }
@@ -1644,10 +1656,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
     {
       io->do_alrt = NO;
       io->do_boot = NO;
+	  io->do_bayesboot = NO;
     }
   else
     {
-      if(io->do_alrt == NO && io->n_boot_replicates > 0) io->do_boot = YES;        
+      if(io->do_alrt == NO && io->n_boot_replicates > 0 && io->do_bayesboot == NO) io->do_boot = YES;        
     }
   
 #ifndef PHYML
@@ -1732,7 +1745,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   
-  if((io->print_boot_trees) && (io->do_boot == YES || io->do_tbe == YES) && (io->fp_in_align != NULL))
+  if((io->print_boot_trees) && (io->do_boot == YES || io->do_bayesboot == YES || io->do_tbe == YES) && (io->fp_in_align != NULL))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
       strcat(io->out_boot_tree_file,"_phyml_boot_trees");

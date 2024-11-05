@@ -1391,6 +1391,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   
   short int                    do_tbe;
   short int                   do_boot;
+  short int                   do_bayesboot;
   short int                   do_alrt;
 
   short int             edge_len_unit;
@@ -2397,7 +2398,7 @@ void Get_Bip(t_node *a,t_node *d,t_tree *tree);
 void Alloc_Bip(t_tree *tree);
 int Sort_Phydbl_Increase(const void *a,const void *b);
 int Sort_String(const void *a,const void *b);
-int Compare_Bip(t_tree *tree1,t_tree *tree2,int on_existing_edges_only);
+int Compare_Bip(t_tree *tree1,t_tree *tree2,int on_existing_edges_only, phydbl tree2_brlen_cutoff);
 void Compare_Bip_Distance(t_tree *tree1,t_tree *tree2);
 void Match_Tip_Numbers(t_tree *tree1,t_tree *tree2);
 void Test_Multiple_Data_Set_Format(option *io);
