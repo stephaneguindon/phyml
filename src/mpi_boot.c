@@ -76,7 +76,7 @@ void Bootstrap_MPI(t_tree *tree)
 	}
 	if (Global_myRank == 0)
 	{
-		PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
+		PhyML_Printf("\n\n. Non parametric bootstrap analysis %s\n\n",(tree->io->do_bayesboot ? "(Bayesian Bootstrap)" : "(Frequentist Bootstrap)"));
 		PhyML_Printf("\n  [");
 	}
 	

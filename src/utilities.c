@@ -3141,8 +3141,7 @@ void Bootstrap(t_tree *tree)
       }
 
   boot_data = Copy_Cseq(tree->data,tree->io);
-  
-  PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
+  PhyML_Printf("\n\n. Non parametric bootstrap analysis %s\n\n",(tree->io->do_bayesboot ? "(Bayesian Bootstrap)" : "(Frequentist Bootstrap)"));  
   PhyML_Printf("  [");
 
   for(replicate=0;replicate<tree->io->n_boot_replicates;replicate++)
@@ -3167,12 +3166,12 @@ void Bootstrap(t_tree *tree)
             init_len++;
           }
       }
-      if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences 1\n");
+      if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences\n");
 
       sum_weight = 0;
       for(j=0;j<boot_data->crunch_len;j++) sum_weight += boot_data->wght[j];
 
-      if((int)(roundf(sum_weight)) != tree->data->init_len) Exit("\n. Pb. when copying sequences 2\n");
+      if((int)(roundf(sum_weight)) != tree->data->init_len) Exit("\n. Pb. when copying sequences\n");
 
       
       if(tree->io->datatype == NT)      Get_Base_Freqs(boot_data);
