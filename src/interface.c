@@ -1659,7 +1659,7 @@ void Launch_Interface_Branch_Support(option *io)
 
 
   strcpy(s,(io->do_boot || io->do_tbe || io->do_bayesboot)?("yes"):("no"));
-  if(io->n_boot_replicates > 0) sprintf(s+strlen(s)," (%d replicate%s%s)",
+  if(io->n_boot_replicates > 0) sprintf(s+strlen(s)," (%d replicate%s%s%s)",
 					io->n_boot_replicates,
 					(io->n_boot_replicates>1)?("s"):(""),
 					(io->do_tbe)?(", TBE"):(""),
