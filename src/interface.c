@@ -1831,8 +1831,8 @@ void Launch_Interface_Branch_Support(option *io)
 	      case 'N' : case 'n' :
 		{
 		  io->do_tbe = NO;
-		  io->do_boot = NO;
-		  io->do_bayesboot = YES;
+		  io->do_boot = YES;
+		  io->do_bayesboot = NO;
 		  break;
 		}
 	      }

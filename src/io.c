@@ -867,7 +867,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
           
           if(tree->io && tree->io->print_support_val == YES)
             {
-              if(tree->io->do_boot == YES || tree->io->do_bayesboot)
+              if(tree->io->do_boot == YES || tree->io->do_bayesboot == YES)
                 {
                   sprintf(*s_tree+(int)strlen(*s_tree),"%.0f",fils->b[p]->support_val);
                 }
