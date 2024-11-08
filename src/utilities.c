@@ -4116,9 +4116,10 @@ int Sort_String(const void *a, const void *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/* Compares the bipartitions of the 2 input trees                   */
 /* If tree2_brlen_cutoff <=0 => takes all identical bipartitions    */
-/* Else: Will only take bipartitions of the tree2 that are          */
-/* longer than the cutoff                                           */
+/* Else: Will only consider identical bipartitions of the tree2 that*/
+/* are longer than the cutoff                                       */
 int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only, phydbl tree2_brlen_cutoff)
 {
   int i,j,k;
