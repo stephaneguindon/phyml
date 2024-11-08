@@ -3291,7 +3291,8 @@ void Bootstrap(t_tree *tree)
               boot_tree);
 
       if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO,-1.0);
-      else if(tree->io->do_bayesboot)     Compare_Bip(tree,boot_tree,NO,0.1/n_site);
+      // We consider only branches of the boot tree that are longer than 0.1/n_site
+      else if(tree->io->do_bayesboot)     Compare_Bip(tree,boot_tree,NO,0.1/n_site); 
       else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
       else assert(FALSE);
 
