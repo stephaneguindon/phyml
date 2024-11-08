@@ -3133,10 +3133,14 @@ void Bootstrap(t_tree *tree)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
   n_site = 0;
+  // For each pattern
   for(j=0;j<tree->data->crunch_len;j++)
+    // For each occurence (site) of the pattern (if float: considered as int)
     for(k=0;k<tree->data->wght[j];++k)
       {
+        // We keep the pattern corresponding to that given site
         site_num[n_site] = j;
+        // We increment the total number of sites
         n_site++;
       }
 
@@ -3151,9 +3155,12 @@ void Bootstrap(t_tree *tree)
       init_len = 0;
       if(tree->io->do_bayesboot)
 			{
+        // We generate a vector of normalized Dirichlet weights
 				bayesboot_weights = Dirichlet(n_site);
+        // For each individual site (decompressed)
 				for(j=0;j<n_site;j++)
 				{
+          // We add the given Dirichlet weight to the pattern corresponding to that site
 					boot_data->wght[site_num[j]] += bayesboot_weights[j];
 					init_len++;
 				}
