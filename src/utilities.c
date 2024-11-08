@@ -3154,18 +3154,18 @@ void Bootstrap(t_tree *tree)
 
       init_len = 0;
       if(tree->io->do_bayesboot)
-			{
+      {
         // We generate a vector of normalized Dirichlet weights
-				bayesboot_weights = Dirichlet(n_site);
+        bayesboot_weights = Dirichlet(n_site);
         // For each individual site (decompressed)
-				for(j=0;j<n_site;j++)
-				{
+        for(j=0;j<n_site;j++)
+        {
           // We add the given Dirichlet weight to the pattern corresponding to that site
-					boot_data->wght[site_num[j]] += bayesboot_weights[j];
-					init_len++;
-				}
-				free(bayesboot_weights);
-			}else{
+          boot_data->wght[site_num[j]] += bayesboot_weights[j];
+          init_len++;
+        }
+        free(bayesboot_weights);
+      }else{
         for(j=0;j<boot_data->init_len;j++)
           {
             position = Rand_Int(0,(int)(tree->data->init_len-1.0));
