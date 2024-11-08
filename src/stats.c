@@ -5230,6 +5230,10 @@ phydbl Reflected(phydbl x, phydbl down, phydbl up)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+// Dirichlet generates n_sites weights from a Dirichlet distribution  D(n_sites,1,...,1).
+// The weights are normalized such that their sum is = n_sites (and not 1)/
+// This implements the interval method described in the paragraph "When each alpha is 1" 
+// of https://en.wikipedia.org/wiki/Dirichlet_distribution
 phydbl* Dirichlet(int n_sites)
 {
   phydbl* weights;
