@@ -14179,7 +14179,7 @@ void MCMC_PHYREX_Node_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
 
         if (dad == tree->n_root)
         {
-            new_vel = Rnorm(cur_vel, 1.E-1);
+            new_vel = Rnorm(cur_vel, 1.E-0);
         }
         else
         {
