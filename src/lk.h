@@ -42,6 +42,7 @@ void Update_Partial_Lk_Generic(t_tree *tree,t_edge *b_fcus,t_node *n);
 /* void Default_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n); */
 void Init_Partial_Lk_Tips_Double(t_tree *tree);
 void Init_Partial_Lk_Tips_Int(t_tree *tree);
+void Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site, t_tree *tree);
 void Init_Partial_Lk_At_One_Node(t_node *a, t_tree *tree);
 void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree);
 void Sort_Sites_Based_On_Lk(t_tree *tree);

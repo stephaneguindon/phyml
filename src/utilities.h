@@ -2664,6 +2664,7 @@ void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 #include "init.h"
 #include "mcmc.h"
 #include "ancestral.h"
+#include "cv.h"
 
 #ifdef GEO
 #include "geo.h"

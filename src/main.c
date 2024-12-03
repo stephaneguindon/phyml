@@ -256,20 +256,23 @@ int main(int argc, char **argv)
 
                   PhyML_Printf("\n. Init log-likelihood: %f",tree->c_lnL);
 
-                  if(tree->mod->s_opt->opt_topo)
-		    {
-                      Global_Spr_Search(tree);                      
-                      if(tree->n_root) Add_Root(tree->a_edges[0],tree);
-                    }
+                  if (tree->mod->s_opt->opt_topo)
+                  {
+                      Global_Spr_Search(tree);
+                      if (tree->n_root)
+                          Add_Root(tree->a_edges[0], tree);
+                  }
                   else
-                    {
+                  {
 #ifdef BEAGLE
                       tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
-                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) Round_Optimize(tree,ROUND_MAX);                      
-                    }
-
-                  
+                      if (tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)
+                          Round_Optimize(tree, ROUND_MAX);
+                  }
+                
+                CV_Tip_Cv(tree);
+                
                   /* if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree); */
 
                   Set_Both_Sides(YES,tree);
@@ -283,8 +286,7 @@ int main(int argc, char **argv)
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
-                  
-                  
+
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");

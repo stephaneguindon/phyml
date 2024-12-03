@@ -17,5 +17,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "utilities.h"
 
+void CV_Tip_Cv(t_tree *tree);
 
 #endif

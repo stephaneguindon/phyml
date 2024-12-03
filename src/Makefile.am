@@ -443,7 +443,8 @@ sse.c sse.h\
 avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
-mixt.c mixt.h
+mixt.c mixt.h \
+cv.c cv.h
 # phyml_LDADD = -lm
 endif
 endif

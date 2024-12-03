@@ -2057,44 +2057,53 @@ void Composite_Lk(t_tree *tree)
 
 void Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
-  unsigned int curr_site,i,dim1;
+    unsigned int curr_site, i;
 
-  if(tree->is_mixt_tree == YES) return;
-  
-  dim1 = tree->mod->ns;
+    if (tree->is_mixt_tree == YES)
+        return;
 
 
-  for(i=0;i<tree->n_otu;i++)
+    for (i = 0; i < tree->n_otu; i++)
     {
-      if(!tree->a_nodes[i]->c_seq || 
-	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
+        if (!tree->a_nodes[i]->c_seq || strcmp(tree->a_nodes[i]->c_seq->name, tree->a_nodes[i]->name))
         {
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("");
+            PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n", __FILE__, __LINE__, __FUNCTION__);
+            Exit("");
         }
     }
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+    for (curr_site = 0; curr_site < tree->data->crunch_len; curr_site++)
     {
-      for(i=0;i<tree->n_otu;i++)
-        {          
-          if (tree->io->datatype == NT)
-            Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                                    curr_site*dim1,
-                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          else if(tree->io->datatype == AA)
-            Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                           curr_site*dim1,
-                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          
-          else if(tree->io->datatype == GENERIC)
-            Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                                                tree->mod->ns,
-                                                tree->mod->io->state_len,
-                                                curr_site*dim1,
-                                                tree->a_nodes[i]->b[0]->p_lk_tip_r);
+        for (i = 0; i < tree->n_otu; i++)
+        {
+            Init_Partial_Lk_Tips_Double_One_Character(i, curr_site, tree);
         }
     }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site, t_tree *tree)
+{
+    int dim1;
+
+    dim1 = tree->mod->ns;
+
+    if (tree->io->datatype == NT)
+        Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[node_idx]->c_seq->state[curr_site],
+                                                curr_site * dim1,
+                                                tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
+    else if (tree->io->datatype == AA)
+        Init_Tips_At_One_Site_AA_Float(tree->a_nodes[node_idx]->c_seq->state[curr_site],
+                                       curr_site * dim1,
+                                       tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
+
+    else if (tree->io->datatype == GENERIC)
+        Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[node_idx]->c_seq->state + curr_site * tree->mod->io->state_len,
+                                            tree->mod->ns,
+                                            tree->mod->io->state_len,
+                                            curr_site * dim1,
+                                            tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
 }
 
 //////////////////////////////////////////////////////////////

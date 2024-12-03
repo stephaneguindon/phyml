@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "lk.h": "c",
+        "utilities.h": "c"
+    },
+    "C_Cpp.loggingLevel": "Debug",
+    "C_Cpp.default.compilerPath": "/usr/bin/clang",
+    "C_Cpp.errorSquiggles": "disabled",
+    "editor.autoIndent": "full",
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+}
