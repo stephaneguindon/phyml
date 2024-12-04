@@ -1190,9 +1190,10 @@ phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydb
     
   if(ambiguity_check == NO)/* tip case */
     {      
+     assert(state >= 0);
       sum = .0;
       Pij += state*ns;
-      for(l=0;l<ns;++l) sum += Pij[l] * p_lk_left[l];               
+      for(l=0;l<ns;++l) sum += Pij[l] * p_lk_left[l];
       lk += sum * pi[state];
     }
   else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */

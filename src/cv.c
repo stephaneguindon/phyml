@@ -32,7 +32,7 @@ void CV_Tip_Cv(t_tree *tree)
     state_prob = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
 
     ns = tree->mod->ns;
-    nsncatg = ns*tree->mod->ras->n_catg;
+    nsncatg = ns * tree->mod->ras->n_catg;
 
     for (int tax_id = 0; tax_id < tree->n_otu; ++tax_id)
     {
@@ -51,9 +51,9 @@ void CV_Tip_Cv(t_tree *tree)
                     obs_state = tree->a_nodes[tax_id]->c_seq->state[site];
                     obs_d_state = tree->a_nodes[tax_id]->c_seq->d_state[site];
 
+                    tree->a_nodes[tax_id]->c_seq->is_ambigu[site] = YES;
                     tree->a_nodes[tax_id]->c_seq->state[site] = '?';
                     tree->a_nodes[tax_id]->c_seq->d_state[site] = -1;
-
                     
                     Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, tree);
 
@@ -97,6 +97,7 @@ void CV_Tip_Cv(t_tree *tree)
 
                     tree->a_nodes[tax_id]->c_seq->state[site] = obs_state;
                     tree->a_nodes[tax_id]->c_seq->d_state[site] = obs_d_state;
+                    tree->a_nodes[tax_id]->c_seq->is_ambigu[site] = NO;
 
                     Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, tree);
                 }
@@ -104,5 +105,6 @@ void CV_Tip_Cv(t_tree *tree)
             p_lk_left += nsncatg;
         }
     }
+
     Free(state_prob);
 }
