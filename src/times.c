@@ -15,7 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "times.h"
 
-#if(defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if(defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

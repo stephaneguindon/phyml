@@ -88,4 +88,5 @@ t_label *Make_Label(void);
 void Make_Contrasts(t_tree *tree);
 void Make_Contmod(t_tree *tree);
 t_geo_veloc *GEO_Make_Geo_Veloc(int dim);
+align **Make_Empty_Alignment(option *io);
 #endif

@@ -6,10 +6,8 @@
             "name": "C/C++: gcc build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/Users/guindon/phyml/src/phyml",
-            "args": [
-                "-i ./p1.nxs --no_colalias --freerates -c 6 -m GTR --r_seed=1733228095"
-            ],
+            "program": "/Users/guindon/phyml/src/evolve",
+            "args": ["-mGTR", "--n_otu=4", "--seq_len=10"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

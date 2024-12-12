@@ -22,7 +22,7 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 
 phydbl RATES_Lk(t_tree *tree)
 {
@@ -115,7 +115,7 @@ phydbl RATES_Autocor_Prior(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
@@ -172,7 +172,7 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree)
 {
   phydbl log_dens,mean,sd,min_r, max_r,cr;
@@ -1020,7 +1020,7 @@ void RATES_Random_Branch_Lengths(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Scale relative rates (on edges) so that they average to one */
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Normalization_Factor(t_tree *tree)
 {
   phydbl dt,rdt,T,RT;
@@ -1207,7 +1207,7 @@ phydbl RATES_Lk_Jumps(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Edge_Lengths(t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1228,7 +1228,7 @@ void RATES_Update_Edge_Lengths(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   RATES_Update_One_Edge_Length(b,tree);
@@ -1247,7 +1247,7 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1317,7 +1317,7 @@ void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
 {      
   phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
@@ -1692,22 +1692,22 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST)
+#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Fill_Lca_Table(t_tree *tree)
 {
-  int i,j,dist;
-  int dim;
+    int i, j, dist;
+    int dim;
 
-  dist = 0;
-  dim = 2*tree->n_otu-1;
+    dist = 0;
+    dim = 2 * tree->n_otu - 1;
 
-  for(i=0;i<dim;i++)
+    for (i = 0; i < dim; i++)
     {
-      for(j=i;j<dim;j++)
-	{
-	  tree->rates->lca[i*dim+j] = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],&dist,tree);
-	  tree->rates->lca[j*dim+i] = tree->rates->lca[i*dim+j];
-	}
+        for (j = i; j < dim; j++)
+        {
+            tree->rates->lca[i * dim + j] = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i], tree->a_nodes[j], &dist, tree);
+            tree->rates->lca[j * dim + i] = tree->rates->lca[i * dim + j];
+        }
     }
 }
 #endif

@@ -7677,7 +7677,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
 
       /*   } */
 
-      for(i=0;i<2*tree->n_otu-3;++i) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != NULL) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
       
       /* Pick the root nucleotide/aa */
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
@@ -7741,35 +7741,38 @@ int Pick_State(int n, phydbl *prob)
 
 void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int site_num, calign *gen_data, t_mod *mod, t_tree *tree)
 {
-  int d_state;
-  int dim1,dim2;
+    int d_state;
+    int dim1, dim2;
 
-  dim1 = tree->mod->ns * tree->mod->ns;
-  dim2 = tree->mod->ns;
+    dim1 = tree->mod->ns * tree->mod->ns;
+    dim2 = tree->mod->ns;
 
-  d_state = Pick_State(mod->ns,b->Pij_rr+r_class*dim1+a_state*dim2);
+    d_state = Pick_State(mod->ns, b->Pij_rr + r_class * dim1 + a_state * dim2);
 
-  /* PhyML_Printf("\n>> %c (%d) L:%G %G %G %G %G",Reciproc_Assign_State(d_state,mod->io->datatype),d_state, */
-  /*              b->l->v, */
-  /*              b->Pij_rr[r_class*dim1+a_state*dim2+0], */
-  /*              b->Pij_rr[r_class*dim1+a_state*dim2+1], */
-  /*              b->Pij_rr[r_class*dim1+a_state*dim2+2], */
-  /*              b->Pij_rr[r_class*dim1+a_state*dim2+3]); */
+    //   PhyML_Printf("\n>> %c (%d) L:%G %G %G %G %G",
+    //                Reciproc_Assign_State(d_state, mod->io->datatype),
+    //                d_state,
+    //                b->l->v,
+    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 0],
+    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 1],
+    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 2],
+    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 3]);
 
-
-  if(d->tax)
+    if (d->tax)
     {
-      gen_data->c_seq[d->num]->state[site_num] = Reciproc_Assign_State(d_state,tree->io->datatype);
-      return;
+        gen_data->c_seq[d->num]->state[site_num] = Reciproc_Assign_State(d_state, tree->io->datatype);
+        return;
     }
-  else
+    else
     {
-      int i;
-      for(i=0;i<3;i++)
-        if(d->v[i] != a)
-          Evolve_Recur(d,d->v[i],d->b[i],
-                       d_state,r_class,site_num,gen_data,
-                       mod,tree);
+        int i;
+        for (i = 0; i < 3; i++)
+            if (d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+                Evolve_Recur(d, d->v[i], d->b[i],
+                             d_state, r_class, site_num, gen_data,
+                             mod, tree);
+            }
     }
 }
 
@@ -10306,11 +10309,96 @@ void Get_Mutmap_Coord(int idx, int *edge, int *site, int *mut, t_tree *tree)
 void Copy_Edge_Lengths(t_tree *to, t_tree *from)
 {
   int i;
-  For(i,2*from->n_otu-1) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
+  for(i=0;i<2*from->n_otu-1;++i) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/**
+ * @brief Maps a digit state to the corresponding character in the DNA/AA alphabet
+ *
+ * @param d_state the digit state
+ * @param tree the tree object
+ * @return the corresponding character
+ */
+
+char D_State_To_Character(int d_state, t_tree *tree)
+{
+    if(tree->mod->io->datatype == AA)
+    {
+        switch (d_state)
+        {
+        case 0:
+            return ('A');
+        case 1:
+            return ('R');
+        case 2:
+            return ('N');
+        case 3:
+            return ('D');
+        case 4:
+            return ('C');
+        case 5:
+            return ('Q');
+        case 6:
+            return ('E');
+        case 7:
+            return ('G');
+        case 8:
+            return ('H');
+        case 9:
+            return ('I');
+        case 10:
+            return ('L');
+        case 11:
+            return ('K');
+        case 12:
+            return ('M');
+        case 13:
+            return ('F');
+        case 14:
+            return ('P');
+        case 15:
+            return ('S');
+        case 16:
+            return ('T');
+        case 17:
+            return ('W');
+        case 18:
+            return ('Y');
+        case 19:
+            return ('V');
+        default:
+        {
+            assert(false);
+            break;
+        }
+        }
+    }
+    else if(tree->mod->io->datatype == NT)
+    {
+        switch (d_state)
+        {
+        case 0:
+            return ('A');
+        case 1:
+            return ('C');
+        case 2:
+            return ('G');
+        case 3:
+            return ('T');
+        default:
+        {
+            assert(false);
+            break;
+        }
+        }
+    }
+    return('X');
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -11103,39 +11191,6 @@ phydbl Get_d2Lk(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-align **Make_Empty_Alignment(option *io)
-{
-  int i;
-  char *line;
-  align **data;
-
-  line   = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-  data   = (align **)mCalloc(io->n_otu,sizeof(align *));
-  
-  for(i=0;i<io->n_otu;i++)
-    {
-      data[i]        = (align *)mCalloc(1,sizeof(align));
-      data[i]->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-      data[i]->state = (char *)mCalloc(io->init_len*io->state_len+1,sizeof(char));
-
-      data[i]->is_ambigu = NULL;
-      data[i]->len = 0;
-      
-      Random_String(data[i]->name,5);
-
-      while(data[i]->len < io->init_len * io->state_len)
-        {
-          data[i]->state[data[i]->len] = 'X';
-          data[i]->len++;
-        }
-    }
-
-  for(i=0;i<io->n_otu;i++) data[i]->state[data[i]->len] = '\0';
-
-  Free(line);
-
-  return data;
-}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

@@ -2547,7 +2547,6 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
 phydbl Get_Lk(t_tree *tree);
 phydbl Get_d2Lk(t_tree *tree);
 phydbl Get_dLk(t_tree *tree);
-align **Make_Empty_Alignment(option *io);
 void Connect_Edges_To_Nodes_Serial(t_tree *tree);
 phydbl Mean_Identity(calign *data);
 phydbl Pairwise_Identity(int i, int j, calign *data);
@@ -2643,6 +2642,7 @@ int Add_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl add, int *n_nodes, int d
 int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree);
 t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree);
 void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
+char D_State_To_Character(int d_state, t_tree *tree);
 
 
 #include "xml.h"

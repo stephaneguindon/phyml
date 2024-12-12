@@ -90,11 +90,11 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = aarch64-apple-darwin23.6.0
 host_triplet = aarch64-apple-darwin23.6.0
-bin_PROGRAMS = phyml$(EXEEXT)
-#bin_PROGRAMS = date$(EXEEXT)
-#bin_PROGRAMS = phyrexsim$(EXEEXT)
-#bin_PROGRAMS = phyrex$(EXEEXT)
-#bin_PROGRAMS = evolve$(EXEEXT)
+#bin_PROGRAMS = phyml$(EXEEXT)
+##bin_PROGRAMS = date$(EXEEXT)
+##bin_PROGRAMS = phyrexsim$(EXEEXT)
+##bin_PROGRAMS = phyrex$(EXEEXT)
+bin_PROGRAMS = evolve$(EXEEXT)
 #bin_PROGRAMS = test$(EXEEXT)
 #bin_PROGRAMS = phyml-windows$(EXEEXT)
 #bin_PROGRAMS = phyml-mpi$(EXEEXT)
@@ -121,35 +121,35 @@ am__date_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	mcmc.h times.c times.h mg.c mg.h io.c io.h make.c make.h \
 	nexus.c nexus.h init.c init.h xml.c xml.h tbe.c tbe.h mixt.c \
 	mixt.h date.c date.h
-#am_date_OBJECTS = main.$(OBJEXT) \
-#	utilities.$(OBJEXT) \
-#	optimiz.$(OBJEXT) \
-#	lk.$(OBJEXT) \
-#	bionj.$(OBJEXT) \
-#	models.$(OBJEXT) \
-#	free.$(OBJEXT) \
-#	help.$(OBJEXT) \
-#	simu.$(OBJEXT) \
-#	eigen.$(OBJEXT) \
-#	pars.$(OBJEXT) \
-#	alrt.$(OBJEXT) \
-#	interface.$(OBJEXT) \
-#	cl.$(OBJEXT) \
-#	spr.$(OBJEXT) \
-#	draw.$(OBJEXT) \
-#	stats.$(OBJEXT) \
-#	rates.$(OBJEXT) \
-#	mcmc.$(OBJEXT) \
-#	times.$(OBJEXT) \
-#	mg.$(OBJEXT) \
-#	io.$(OBJEXT) \
-#	make.$(OBJEXT) \
-#	nexus.$(OBJEXT) \
-#	init.$(OBJEXT) \
-#	xml.$(OBJEXT) \
-#	tbe.$(OBJEXT) \
-#	mixt.$(OBJEXT) \
-#	date.$(OBJEXT)
+##am_date_OBJECTS = main.$(OBJEXT) \
+##	utilities.$(OBJEXT) \
+##	optimiz.$(OBJEXT) \
+##	lk.$(OBJEXT) \
+##	bionj.$(OBJEXT) \
+##	models.$(OBJEXT) \
+##	free.$(OBJEXT) \
+##	help.$(OBJEXT) \
+##	simu.$(OBJEXT) \
+##	eigen.$(OBJEXT) \
+##	pars.$(OBJEXT) \
+##	alrt.$(OBJEXT) \
+##	interface.$(OBJEXT) \
+##	cl.$(OBJEXT) \
+##	spr.$(OBJEXT) \
+##	draw.$(OBJEXT) \
+##	stats.$(OBJEXT) \
+##	rates.$(OBJEXT) \
+##	mcmc.$(OBJEXT) \
+##	times.$(OBJEXT) \
+##	mg.$(OBJEXT) \
+##	io.$(OBJEXT) \
+##	make.$(OBJEXT) \
+##	nexus.$(OBJEXT) \
+##	init.$(OBJEXT) \
+##	xml.$(OBJEXT) \
+##	tbe.$(OBJEXT) \
+##	mixt.$(OBJEXT) \
+##	date.$(OBJEXT)
 date_OBJECTS = $(am_date_OBJECTS)
 date_LDADD = $(LDADD)
 am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
@@ -159,46 +159,8 @@ am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	spr.h draw.c draw.h tbe.c tbe.h stats.c stats.h rates.c \
 	rates.h mcmc.c mcmc.h times.c times.h mg.c mg.h io.c io.h \
 	make.c make.h nexus.c nexus.h init.c init.h xml.c xml.h mixt.c \
-	mixt.h
-#am_evolve_OBJECTS = main.$(OBJEXT) \
-#	utilities.$(OBJEXT) \
-#	optimiz.$(OBJEXT) \
-#	lk.$(OBJEXT) \
-#	bionj.$(OBJEXT) \
-#	models.$(OBJEXT) \
-#	free.$(OBJEXT) \
-#	help.$(OBJEXT) \
-#	simu.$(OBJEXT) \
-#	eigen.$(OBJEXT) \
-#	pars.$(OBJEXT) \
-#	alrt.$(OBJEXT) \
-#	interface.$(OBJEXT) \
-#	cl.$(OBJEXT) \
-#	spr.$(OBJEXT) \
-#	draw.$(OBJEXT) \
-#	tbe.$(OBJEXT) \
-#	stats.$(OBJEXT) \
-#	rates.$(OBJEXT) \
-#	mcmc.$(OBJEXT) \
-#	times.$(OBJEXT) \
-#	mg.$(OBJEXT) \
-#	io.$(OBJEXT) \
-#	make.$(OBJEXT) \
-#	nexus.$(OBJEXT) \
-#	init.$(OBJEXT) \
-#	xml.$(OBJEXT) \
-#	mixt.$(OBJEXT)
-evolve_OBJECTS = $(am_evolve_OBJECTS)
-evolve_LDADD = $(LDADD)
-am__phyml_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
-	optimiz.h lk.c lk.h bionj.c bionj.h models.c models.h free.c \
-	free.h help.c help.h simu.c simu.h eigen.c eigen.h pars.c \
-	pars.h alrt.c alrt.h interface.c interface.h cl.c cl.h spr.c \
-	spr.h draw.c draw.h stats.c stats.h io.c io.h make.c make.h \
-	nexus.c nexus.h init.c init.h xml.c xml.h sse.c sse.h avx.c \
-	avx.h tbe.c tbe.h ancestral.c ancestral.h mixt.c mixt.h cv.c \
-	cv.h
-am_phyml_OBJECTS = main.$(OBJEXT) \
+	mixt.h ancestral.c ancestral.h date.c date.h evolve.c evolve.h
+am_evolve_OBJECTS = main.$(OBJEXT) \
 	utilities.$(OBJEXT) \
 	optimiz.$(OBJEXT) \
 	lk.$(OBJEXT) \
@@ -214,18 +176,59 @@ am_phyml_OBJECTS = main.$(OBJEXT) \
 	cl.$(OBJEXT) \
 	spr.$(OBJEXT) \
 	draw.$(OBJEXT) \
+	tbe.$(OBJEXT) \
 	stats.$(OBJEXT) \
+	rates.$(OBJEXT) \
+	mcmc.$(OBJEXT) \
+	times.$(OBJEXT) \
+	mg.$(OBJEXT) \
 	io.$(OBJEXT) \
 	make.$(OBJEXT) \
 	nexus.$(OBJEXT) \
 	init.$(OBJEXT) \
 	xml.$(OBJEXT) \
-	sse.$(OBJEXT) \
-	avx.$(OBJEXT) \
-	tbe.$(OBJEXT) \
-	ancestral.$(OBJEXT) \
 	mixt.$(OBJEXT) \
-	cv.$(OBJEXT)
+	ancestral.$(OBJEXT) \
+	date.$(OBJEXT) \
+	evolve.$(OBJEXT)
+evolve_OBJECTS = $(am_evolve_OBJECTS)
+evolve_LDADD = $(LDADD)
+am__phyml_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
+	optimiz.h lk.c lk.h bionj.c bionj.h models.c models.h free.c \
+	free.h help.c help.h simu.c simu.h eigen.c eigen.h pars.c \
+	pars.h alrt.c alrt.h interface.c interface.h cl.c cl.h spr.c \
+	spr.h draw.c draw.h stats.c stats.h io.c io.h make.c make.h \
+	nexus.c nexus.h init.c init.h xml.c xml.h sse.c sse.h avx.c \
+	avx.h tbe.c tbe.h ancestral.c ancestral.h mixt.c mixt.h cv.c \
+	cv.h
+#am_phyml_OBJECTS = main.$(OBJEXT) \
+#	utilities.$(OBJEXT) \
+#	optimiz.$(OBJEXT) \
+#	lk.$(OBJEXT) \
+#	bionj.$(OBJEXT) \
+#	models.$(OBJEXT) \
+#	free.$(OBJEXT) \
+#	help.$(OBJEXT) \
+#	simu.$(OBJEXT) \
+#	eigen.$(OBJEXT) \
+#	pars.$(OBJEXT) \
+#	alrt.$(OBJEXT) \
+#	interface.$(OBJEXT) \
+#	cl.$(OBJEXT) \
+#	spr.$(OBJEXT) \
+#	draw.$(OBJEXT) \
+#	stats.$(OBJEXT) \
+#	io.$(OBJEXT) \
+#	make.$(OBJEXT) \
+#	nexus.$(OBJEXT) \
+#	init.$(OBJEXT) \
+#	xml.$(OBJEXT) \
+#	sse.$(OBJEXT) \
+#	avx.$(OBJEXT) \
+#	tbe.$(OBJEXT) \
+#	ancestral.$(OBJEXT) \
+#	mixt.$(OBJEXT) \
+#	cv.$(OBJEXT)
 phyml_OBJECTS = $(am_phyml_OBJECTS)
 phyml_LDADD = $(LDADD)
 am__phyml_mpi_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
@@ -320,46 +323,46 @@ am__phyrex_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	phyrex.h location.c location.h slfv.c slfv.h rw.c rw.h rrw.c \
 	rrw.h ibm.c ibm.h iwn.c iwn.h iou.c iou.h velocity.c \
 	velocity.h
-#am_phyrex_OBJECTS = main.$(OBJEXT) \
-#	utilities.$(OBJEXT) \
-#	optimiz.$(OBJEXT) \
-#	lk.$(OBJEXT) \
-#	bionj.$(OBJEXT) \
-#	models.$(OBJEXT) \
-#	free.$(OBJEXT) \
-#	help.$(OBJEXT) \
-#	simu.$(OBJEXT) \
-#	eigen.$(OBJEXT) \
-#	pars.$(OBJEXT) \
-#	alrt.$(OBJEXT) \
-#	interface.$(OBJEXT) \
-#	cl.$(OBJEXT) \
-#	spr.$(OBJEXT) \
-#	draw.$(OBJEXT) \
-#	stats.$(OBJEXT) \
-#	rates.$(OBJEXT) \
-#	times.$(OBJEXT) \
-#	mcmc.$(OBJEXT) \
-#	io.$(OBJEXT) \
-#	make.$(OBJEXT) \
-#	nexus.$(OBJEXT) \
-#	init.$(OBJEXT) \
-#	xml.$(OBJEXT) \
-#	mixt.$(OBJEXT) \
-#	date.$(OBJEXT) \
-#	tbe.$(OBJEXT) \
-#	sse.$(OBJEXT) \
-#	avx.$(OBJEXT) \
-#	ancestral.$(OBJEXT) \
-#	phyrex.$(OBJEXT) \
-#	location.$(OBJEXT) \
-#	slfv.$(OBJEXT) \
-#	rw.$(OBJEXT) \
-#	rrw.$(OBJEXT) \
-#	ibm.$(OBJEXT) \
-#	iwn.$(OBJEXT) \
-#	iou.$(OBJEXT) \
-#	velocity.$(OBJEXT)
+##am_phyrex_OBJECTS = main.$(OBJEXT) \
+##	utilities.$(OBJEXT) \
+##	optimiz.$(OBJEXT) \
+##	lk.$(OBJEXT) \
+##	bionj.$(OBJEXT) \
+##	models.$(OBJEXT) \
+##	free.$(OBJEXT) \
+##	help.$(OBJEXT) \
+##	simu.$(OBJEXT) \
+##	eigen.$(OBJEXT) \
+##	pars.$(OBJEXT) \
+##	alrt.$(OBJEXT) \
+##	interface.$(OBJEXT) \
+##	cl.$(OBJEXT) \
+##	spr.$(OBJEXT) \
+##	draw.$(OBJEXT) \
+##	stats.$(OBJEXT) \
+##	rates.$(OBJEXT) \
+##	times.$(OBJEXT) \
+##	mcmc.$(OBJEXT) \
+##	io.$(OBJEXT) \
+##	make.$(OBJEXT) \
+##	nexus.$(OBJEXT) \
+##	init.$(OBJEXT) \
+##	xml.$(OBJEXT) \
+##	mixt.$(OBJEXT) \
+##	date.$(OBJEXT) \
+##	tbe.$(OBJEXT) \
+##	sse.$(OBJEXT) \
+##	avx.$(OBJEXT) \
+##	ancestral.$(OBJEXT) \
+##	phyrex.$(OBJEXT) \
+##	location.$(OBJEXT) \
+##	slfv.$(OBJEXT) \
+##	rw.$(OBJEXT) \
+##	rrw.$(OBJEXT) \
+##	ibm.$(OBJEXT) \
+##	iwn.$(OBJEXT) \
+##	iou.$(OBJEXT) \
+##	velocity.$(OBJEXT)
 phyrex_OBJECTS = $(am_phyrex_OBJECTS)
 phyrex_LDADD = $(LDADD)
 am__phyrexsim_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
@@ -373,46 +376,46 @@ am__phyrexsim_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	phyrex.h location.c location.h slfv.c slfv.h rw.c rw.h rrw.c \
 	rrw.h ibm.c ibm.h iwn.c iwn.h iou.c iou.h velocity.c \
 	velocity.h
-#am_phyrexsim_OBJECTS = main.$(OBJEXT) \
-#	utilities.$(OBJEXT) \
-#	optimiz.$(OBJEXT) \
-#	lk.$(OBJEXT) \
-#	bionj.$(OBJEXT) \
-#	models.$(OBJEXT) \
-#	free.$(OBJEXT) \
-#	help.$(OBJEXT) \
-#	simu.$(OBJEXT) \
-#	eigen.$(OBJEXT) \
-#	pars.$(OBJEXT) \
-#	alrt.$(OBJEXT) \
-#	interface.$(OBJEXT) \
-#	cl.$(OBJEXT) \
-#	spr.$(OBJEXT) \
-#	draw.$(OBJEXT) \
-#	stats.$(OBJEXT) \
-#	rates.$(OBJEXT) \
-#	times.$(OBJEXT) \
-#	mcmc.$(OBJEXT) \
-#	io.$(OBJEXT) \
-#	make.$(OBJEXT) \
-#	nexus.$(OBJEXT) \
-#	init.$(OBJEXT) \
-#	xml.$(OBJEXT) \
-#	mixt.$(OBJEXT) \
-#	date.$(OBJEXT) \
-#	tbe.$(OBJEXT) \
-#	sse.$(OBJEXT) \
-#	avx.$(OBJEXT) \
-#	ancestral.$(OBJEXT) \
-#	phyrex.$(OBJEXT) \
-#	location.$(OBJEXT) \
-#	slfv.$(OBJEXT) \
-#	rw.$(OBJEXT) \
-#	rrw.$(OBJEXT) \
-#	ibm.$(OBJEXT) \
-#	iwn.$(OBJEXT) \
-#	iou.$(OBJEXT) \
-#	velocity.$(OBJEXT)
+##am_phyrexsim_OBJECTS = main.$(OBJEXT) \
+##	utilities.$(OBJEXT) \
+##	optimiz.$(OBJEXT) \
+##	lk.$(OBJEXT) \
+##	bionj.$(OBJEXT) \
+##	models.$(OBJEXT) \
+##	free.$(OBJEXT) \
+##	help.$(OBJEXT) \
+##	simu.$(OBJEXT) \
+##	eigen.$(OBJEXT) \
+##	pars.$(OBJEXT) \
+##	alrt.$(OBJEXT) \
+##	interface.$(OBJEXT) \
+##	cl.$(OBJEXT) \
+##	spr.$(OBJEXT) \
+##	draw.$(OBJEXT) \
+##	stats.$(OBJEXT) \
+##	rates.$(OBJEXT) \
+##	times.$(OBJEXT) \
+##	mcmc.$(OBJEXT) \
+##	io.$(OBJEXT) \
+##	make.$(OBJEXT) \
+##	nexus.$(OBJEXT) \
+##	init.$(OBJEXT) \
+##	xml.$(OBJEXT) \
+##	mixt.$(OBJEXT) \
+##	date.$(OBJEXT) \
+##	tbe.$(OBJEXT) \
+##	sse.$(OBJEXT) \
+##	avx.$(OBJEXT) \
+##	ancestral.$(OBJEXT) \
+##	phyrex.$(OBJEXT) \
+##	location.$(OBJEXT) \
+##	slfv.$(OBJEXT) \
+##	rw.$(OBJEXT) \
+##	rrw.$(OBJEXT) \
+##	ibm.$(OBJEXT) \
+##	iwn.$(OBJEXT) \
+##	iou.$(OBJEXT) \
+##	velocity.$(OBJEXT)
 phyrexsim_OBJECTS = $(am_phyrexsim_OBJECTS)
 phyrexsim_LDADD = $(LDADD)
 am__phytime_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
@@ -543,8 +546,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/alrt.Po ./$(DEPDIR)/ancestral.Po \
 	./$(DEPDIR)/avx.Po ./$(DEPDIR)/bionj.Po ./$(DEPDIR)/cl.Po \
 	./$(DEPDIR)/cv.Po ./$(DEPDIR)/date.Po ./$(DEPDIR)/draw.Po \
-	./$(DEPDIR)/eigen.Po ./$(DEPDIR)/free.Po ./$(DEPDIR)/help.Po \
-	./$(DEPDIR)/ibm.Po ./$(DEPDIR)/init.Po \
+	./$(DEPDIR)/eigen.Po ./$(DEPDIR)/evolve.Po ./$(DEPDIR)/free.Po \
+	./$(DEPDIR)/help.Po ./$(DEPDIR)/ibm.Po ./$(DEPDIR)/init.Po \
 	./$(DEPDIR)/interface.Po ./$(DEPDIR)/io.Po ./$(DEPDIR)/iou.Po \
 	./$(DEPDIR)/iwn.Po ./$(DEPDIR)/lk.Po ./$(DEPDIR)/location.Po \
 	./$(DEPDIR)/main.Po ./$(DEPDIR)/make.Po ./$(DEPDIR)/mcmc.Po \
@@ -703,11 +706,11 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-PROG = PHYML
-#PROG = DATE
-#PROG = PHYREXSIM
-#PROG = PHYREX
-#PROG = EVOLVE
+#PROG = PHYML
+##PROG = DATE
+##PROG = PHYREXSIM
+##PROG = PHYREX
+PROG = EVOLVE
 #PROG = TEST
 #PROG = PHYML
 #PROG = PHYML
@@ -920,152 +923,7 @@ PROG = PHYML
 #date.c date.h
 
 # test_LDADD = -lm
-#evolve_SOURCES = main.c\
-#utilities.c  utilities.h\
-#optimiz.c  optimiz.h\
-#lk.c  lk.h\
-#bionj.c bionj.h\
-#models.c  models.h\
-#free.c  free.h\
-#help.c  help.h\
-#simu.c  simu.h\
-#eigen.c  eigen.h\
-#pars.c  pars.h\
-#alrt.c  alrt.h\
-#interface.c  interface.h\
-#cl.c  cl.h\
-#spr.c spr.h\
-#draw.c  draw.h\
-#tbe.c tbe.h \
-#stats.c stats.h\
-#rates.c rates.h\
-#mcmc.c mcmc.h\
-#times.c times.h\
-#mg.c mg.h\
-#io.c io.h\
-#make.c make.h\
-#nexus.c nexus.h\
-#init.c init.h\
-#xml.c xml.h\
-#mixt.c mixt.h
-
-# evolve_LDADD = -lm 
-#phyrex_SOURCES = main.c\
-#utilities.c  utilities.h\
-#optimiz.c  optimiz.h\
-#lk.c  lk.h\
-#bionj.c bionj.h\
-#models.c  models.h\
-#free.c  free.h\
-#help.c  help.h\
-#simu.c  simu.h\
-#eigen.c  eigen.h\
-#pars.c  pars.h\
-#alrt.c  alrt.h\
-#interface.c  interface.h\
-#cl.c  cl.h\
-#spr.c spr.h\
-#draw.c  draw.h\
-#stats.c stats.h\
-#rates.c rates.h\
-#times.c times.h\
-#mcmc.c mcmc.h\
-#io.c io.h\
-#make.c make.h\
-#nexus.c nexus.h\
-#init.c init.h\
-#xml.c xml.h\
-#mixt.c mixt.h\
-#date.c date.h\
-#tbe.c tbe.h \
-#sse.c sse.h\
-#avx.c avx.h\
-#ancestral.c ancestral.h\
-#phyrex.c phyrex.h\
-#location.c location.h\
-#slfv.c slfv.h\
-#rw.c rw.h\
-#rrw.c rrw.h\
-#ibm.c ibm.h\
-#iwn.c iwn.h\
-#iou.c iou.h\
-#velocity.c velocity.h
-
-# phyrex_LDADD = -lm 
-#phyrexsim_SOURCES = main.c\
-#utilities.c  utilities.h\
-#optimiz.c  optimiz.h\
-#lk.c  lk.h\
-#bionj.c bionj.h\
-#models.c  models.h\
-#free.c  free.h\
-#help.c  help.h\
-#simu.c  simu.h\
-#eigen.c  eigen.h\
-#pars.c  pars.h\
-#alrt.c  alrt.h\
-#interface.c  interface.h\
-#cl.c  cl.h\
-#spr.c spr.h\
-#draw.c  draw.h\
-#stats.c stats.h\
-#rates.c rates.h\
-#times.c times.h\
-#mcmc.c mcmc.h\
-#io.c io.h\
-#make.c make.h\
-#nexus.c nexus.h\
-#init.c init.h\
-#xml.c xml.h\
-#mixt.c mixt.h\
-#date.c date.h\
-#tbe.c tbe.h \
-#sse.c sse.h\
-#avx.c avx.h\
-#ancestral.c ancestral.h\
-#phyrex.c phyrex.h\
-#location.c location.h\
-#slfv.c slfv.h\
-#rw.c rw.h\
-#rrw.c rrw.h\
-#ibm.c ibm.h\
-#iwn.c iwn.h\
-#iou.c iou.h\
-#velocity.c velocity.h
-
-# phyrexsim_LDADD = -lm
-#date_SOURCES = main.c \
-#utilities.c  utilities.h\
-#optimiz.c  optimiz.h\
-#lk.c  lk.h\
-#bionj.c bionj.h\
-#models.c  models.h\
-#free.c  free.h\
-#help.c  help.h\
-#simu.c  simu.h\
-#eigen.c  eigen.h\
-#pars.c  pars.h\
-#alrt.c  alrt.h\
-#interface.c  interface.h\
-#cl.c  cl.h\
-#spr.c spr.h\
-#draw.c  draw.h\
-#stats.c stats.h\
-#rates.c rates.h\
-#mcmc.c mcmc.h\
-#times.c times.h\
-#mg.c mg.h\
-#io.c io.h\
-#make.c make.h\
-#nexus.c nexus.h\
-#init.c init.h\
-#xml.c xml.h\
-#tbe.c tbe.h \
-#mixt.c mixt.h\
-#date.c date.h
-
-# date_LDADD = -lm
-phyml_SOURCES = main.c \
+evolve_SOURCES = main.c\
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
 lk.c  lk.h\
@@ -1081,18 +939,166 @@ interface.c  interface.h\
 cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
+tbe.c tbe.h \
 stats.c stats.h\
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
+mg.c mg.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sse.c sse.h\
-avx.c avx.h\
-tbe.c tbe.h \
-ancestral.c ancestral.h \
-mixt.c mixt.h \
-cv.c cv.h
+mixt.c mixt.h\
+ancestral.c ancestral.h\
+date.c date.h\
+evolve.c evolve.h
+
+# evolve_LDADD = -lm 
+##phyrex_SOURCES = main.c\
+##utilities.c  utilities.h\
+##optimiz.c  optimiz.h\
+##lk.c  lk.h\
+##bionj.c bionj.h\
+##models.c  models.h\
+##free.c  free.h\
+##help.c  help.h\
+##simu.c  simu.h\
+##eigen.c  eigen.h\
+##pars.c  pars.h\
+##alrt.c  alrt.h\
+##interface.c  interface.h\
+##cl.c  cl.h\
+##spr.c spr.h\
+##draw.c  draw.h\
+##stats.c stats.h\
+##rates.c rates.h\
+##times.c times.h\
+##mcmc.c mcmc.h\
+##io.c io.h\
+##make.c make.h\
+##nexus.c nexus.h\
+##init.c init.h\
+##xml.c xml.h\
+##mixt.c mixt.h\
+##date.c date.h\
+##tbe.c tbe.h \
+##sse.c sse.h\
+##avx.c avx.h\
+##ancestral.c ancestral.h\
+##phyrex.c phyrex.h\
+##location.c location.h\
+##slfv.c slfv.h\
+##rw.c rw.h\
+##rrw.c rrw.h\
+##ibm.c ibm.h\
+##iwn.c iwn.h\
+##iou.c iou.h\
+##velocity.c velocity.h
+
+# phyrex_LDADD = -lm 
+##phyrexsim_SOURCES = main.c\
+##utilities.c  utilities.h\
+##optimiz.c  optimiz.h\
+##lk.c  lk.h\
+##bionj.c bionj.h\
+##models.c  models.h\
+##free.c  free.h\
+##help.c  help.h\
+##simu.c  simu.h\
+##eigen.c  eigen.h\
+##pars.c  pars.h\
+##alrt.c  alrt.h\
+##interface.c  interface.h\
+##cl.c  cl.h\
+##spr.c spr.h\
+##draw.c  draw.h\
+##stats.c stats.h\
+##rates.c rates.h\
+##times.c times.h\
+##mcmc.c mcmc.h\
+##io.c io.h\
+##make.c make.h\
+##nexus.c nexus.h\
+##init.c init.h\
+##xml.c xml.h\
+##mixt.c mixt.h\
+##date.c date.h\
+##tbe.c tbe.h \
+##sse.c sse.h\
+##avx.c avx.h\
+##ancestral.c ancestral.h\
+##phyrex.c phyrex.h\
+##location.c location.h\
+##slfv.c slfv.h\
+##rw.c rw.h\
+##rrw.c rrw.h\
+##ibm.c ibm.h\
+##iwn.c iwn.h\
+##iou.c iou.h\
+##velocity.c velocity.h
+
+# phyrexsim_LDADD = -lm
+##date_SOURCES = main.c \
+##utilities.c  utilities.h\
+##optimiz.c  optimiz.h\
+##lk.c  lk.h\
+##bionj.c bionj.h\
+##models.c  models.h\
+##free.c  free.h\
+##help.c  help.h\
+##simu.c  simu.h\
+##eigen.c  eigen.h\
+##pars.c  pars.h\
+##alrt.c  alrt.h\
+##interface.c  interface.h\
+##cl.c  cl.h\
+##spr.c spr.h\
+##draw.c  draw.h\
+##stats.c stats.h\
+##rates.c rates.h\
+##mcmc.c mcmc.h\
+##times.c times.h\
+##mg.c mg.h\
+##io.c io.h\
+##make.c make.h\
+##nexus.c nexus.h\
+##init.c init.h\
+##xml.c xml.h\
+##tbe.c tbe.h \
+##mixt.c mixt.h\
+##date.c date.h
+
+# date_LDADD = -lm
+#phyml_SOURCES = main.c \
+#utilities.c  utilities.h\
+#optimiz.c  optimiz.h\
+#lk.c  lk.h\
+#bionj.c bionj.h\
+#models.c  models.h\
+#free.c  free.h\
+#help.c  help.h\
+#simu.c  simu.h\
+#eigen.c  eigen.h\
+#pars.c  pars.h\
+#alrt.c  alrt.h\
+#interface.c  interface.h\
+#cl.c  cl.h\
+#spr.c spr.h\
+#draw.c  draw.h\
+#stats.c stats.h\
+#io.c io.h\
+#make.c make.h\
+#nexus.c nexus.h\
+#init.c init.h\
+#xml.c xml.h\
+#sse.c sse.h\
+#avx.c avx.h\
+#tbe.c tbe.h \
+#ancestral.c ancestral.h \
+#mixt.c mixt.h \
+#cv.c cv.h
 
 all: all-am
 
@@ -1225,6 +1231,7 @@ include ./$(DEPDIR)/cv.Po # am--include-marker
 include ./$(DEPDIR)/date.Po # am--include-marker
 include ./$(DEPDIR)/draw.Po # am--include-marker
 include ./$(DEPDIR)/eigen.Po # am--include-marker
+include ./$(DEPDIR)/evolve.Po # am--include-marker
 include ./$(DEPDIR)/free.Po # am--include-marker
 include ./$(DEPDIR)/help.Po # am--include-marker
 include ./$(DEPDIR)/ibm.Po # am--include-marker
@@ -1415,6 +1422,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/date.Po
 	-rm -f ./$(DEPDIR)/draw.Po
 	-rm -f ./$(DEPDIR)/eigen.Po
+	-rm -f ./$(DEPDIR)/evolve.Po
 	-rm -f ./$(DEPDIR)/free.Po
 	-rm -f ./$(DEPDIR)/help.Po
 	-rm -f ./$(DEPDIR)/ibm.Po
@@ -1503,6 +1511,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/date.Po
 	-rm -f ./$(DEPDIR)/draw.Po
 	-rm -f ./$(DEPDIR)/eigen.Po
+	-rm -f ./$(DEPDIR)/evolve.Po
 	-rm -f ./$(DEPDIR)/free.Po
 	-rm -f ./$(DEPDIR)/help.Po
 	-rm -f ./$(DEPDIR)/ibm.Po

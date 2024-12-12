@@ -1,4 +1,4 @@
-mg.o: mg.c ../config.h mg.h utilities.h \
+evolve.o: evolve.c evolve.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/stdio.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_stdio.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h \
@@ -99,7 +99,7 @@ mg.o: mg.c ../config.h mg.h utilities.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/arm_neon.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/arm_bf16.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libkern/OSCacheControl.h \
-  xml.h free.h spr.h lk.h optimiz.h models.h eigen.h stats.h mixt.h \
+  xml.h free.h spr.h lk.h optimiz.h models.h eigen.h stats.h mixt.h mg.h \
   tiporder.h times.h bionj.h help.h cl.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/unistd.h \
@@ -111,9 +111,9 @@ mg.o: mg.c ../config.h mg.h utilities.h \
   interface.h invitee.h date.h simu.h pars.h alrt.h m4.h draw.h rates.h \
   mcmc.h io.h avx.h sse.h make.h nexus.h init.h ancestral.h cv.h
 
-../config.h:
+evolve.h:
 
-mg.h:
+../config.h:
 
 utilities.h:
 
@@ -334,6 +334,8 @@ eigen.h:
 stats.h:
 
 mixt.h:
+
+mg.h:
 
 tiporder.h:
 

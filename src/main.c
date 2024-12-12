@@ -33,8 +33,8 @@
 #include "beagle_utils.h"
 #endif
 
-#if (defined PHYML || EVOLVE)
 
+#if (defined PHYML)
 int main(int argc, char **argv)
 {
   calign *cdata;
@@ -82,10 +82,6 @@ int main(int argc, char **argv)
       return(0);
     }
   
-#ifdef EVOLVE
-  io->colalias = NO;
-#endif
-
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
 #ifdef MPI
   srand(r_seed+Global_myRank);
@@ -245,7 +241,6 @@ int main(int argc, char **argv)
                     }
 #endif
 
-#ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
                   
@@ -286,11 +281,6 @@ int main(int argc, char **argv)
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
-
-#elif defined EVOLVE
-                  Evolve(tree->data,tree->mod,tree);
-                  Exit("\n. Exiting 'evolve'\n");
-#endif
 
                   if(!tree->n_root) Get_Best_Root_Position(tree);
 
@@ -1023,6 +1013,14 @@ int main(int argc, char **argv)
 int main(int argc, char **argv)
 {
   CHECK_Main(argc,argv);
+  return 1;
+}
+
+#elif(EVOLVE)
+#include "evolve.h"
+int main(int argc, char **argv)
+{
+  EVOLVE_Main(argc,argv);
   return 1;
 }
 

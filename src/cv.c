@@ -22,6 +22,8 @@ void CV_Tip_Cv(t_tree *tree)
     phydbl *p_lk_left,*Pij,*state_prob;
     phydbl sum;
     int argmax_state_prob;
+    int n_errors,n_characters,n_correct;
+    phydbl prob_error,prob_truth;
 
     Set_Both_Sides(YES, tree);
     Lk(NULL, tree);
@@ -33,6 +35,12 @@ void CV_Tip_Cv(t_tree *tree)
 
     ns = tree->mod->ns;
     nsncatg = ns * tree->mod->ras->n_catg;
+
+    n_errors = 0;
+    n_correct = 0;
+    n_characters = 0;
+    prob_error = 0.0;
+    prob_truth = 0.0;
 
     for (int tax_id = 0; tax_id < tree->n_otu; ++tax_id)
     {
@@ -88,13 +96,26 @@ void CV_Tip_Cv(t_tree *tree)
                     {
                         for (int state = 0; state < ns; ++state)
                         {
-                            PhyML_Printf("\n Tax.: %s site: %d obs.state: %c obs. dstate: %d prob: %f%c",
+                            PhyML_Printf("\n Tax.: %s site: %d current: %c obs.state: %c obs. dstate: %d predicted: %c prob: %f%c%c",
                                          tree->a_nodes[tax_id]->name,
-                                         site + 1, obs_state, obs_d_state, state_prob[state] / sum,
-                                         (state == argmax_state_prob) ? '*' : ' ');
+                                         site + 1, 
+                                         D_State_To_Character(state, tree),
+                                         obs_state, obs_d_state, 
+                                         D_State_To_Character(argmax_state_prob, tree),
+                                         state_prob[state] / sum,
+                                         (state == argmax_state_prob) ? '*' : ' ',
+                                         (state == obs_d_state) ? '!' : ' ');
                         }
+                        prob_error += state_prob[argmax_state_prob]/sum;                        
+                        n_errors++;
+                    }
+                    else
+                    {
+                        prob_truth += state_prob[argmax_state_prob]/sum;
+                        n_correct++;
                     }
 
+                    n_characters++;
                     tree->a_nodes[tax_id]->c_seq->state[site] = obs_state;
                     tree->a_nodes[tax_id]->c_seq->d_state[site] = obs_d_state;
                     tree->a_nodes[tax_id]->c_seq->is_ambigu[site] = NO;
@@ -105,6 +126,10 @@ void CV_Tip_Cv(t_tree *tree)
             p_lk_left += nsncatg;
         }
     }
+    
+    PhyML_Printf("\n. Avg. prob of error: %G",prob_error/n_errors);
+    PhyML_Printf("\n. Avg. prob of correct: %G",prob_truth/n_correct);
+    PhyML_Printf("\n. Error frq.: %G",(phydbl)n_errors/n_characters);
 
     Free(state_prob);
 }

@@ -296,7 +296,10 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-mixt.c mixt.h
+mixt.c mixt.h\
+ancestral.c ancestral.h\
+date.c date.h\
+evolve.c evolve.h
 # evolve_LDADD = -lm 
 else
 if WANT_PHYREX

@@ -1949,42 +1949,46 @@ void Print_CSeq(FILE *fp, int compressed, calign *cdata, t_tree *tree)
       for(i=0;i<cdata->init_len;i++) PhyML_Fprintf(fp,"\nlocus %6d",i);
       for(i=0;i<n_otu;i++)
         {
-          PhyML_Fprintf(fp,"\npop");
-          PhyML_Fprintf(fp,"%12f  %12f , ",
-                        tree->a_nodes[i]->coord->lonlat[0],
-                        tree->a_nodes[i]->coord->lonlat[1]);
-          for(j=0;j<cdata->init_len;j++)
+            PhyML_Fprintf(fp, "\npop");
+            PhyML_Fprintf(fp, "%12f  %12f , ",
+                          tree ? tree->a_nodes[i]->coord->lonlat[0] : -1.,
+                          tree ? tree->a_nodes[i]->coord->lonlat[1] : -1.);
+            
+            if (tree != NULL)
             {
-              switch(tree->a_nodes[i]->c_seq->state[j])
+                for (j = 0; j < cdata->init_len; j++)
                 {
-                case 'A' :
-                  {
-                    PhyML_Fprintf(fp,"001 ");
-                    break;
-                  }
-                case 'C' :
-                  {
-                    PhyML_Fprintf(fp,"002 ");
-                    break;
-                  }
-                case 'G' :
-                  {
-                    PhyML_Fprintf(fp,"003 ");
-                    break;
-                  }
-                case 'T' :
-                  {
-                    PhyML_Fprintf(fp,"004 ");
-                    break;
-                  }
+                    switch (tree->a_nodes[i]->c_seq->state[j])
+                    {
+                    case 'A':
+                    {
+                        PhyML_Fprintf(fp, "001 ");
+                        break;
+                    }
+                    case 'C':
+                    {
+                        PhyML_Fprintf(fp, "002 ");
+                        break;
+                    }
+                    case 'G':
+                    {
+                        PhyML_Fprintf(fp, "003 ");
+                        break;
+                    }
+                    case 'T':
+                    {
+                        PhyML_Fprintf(fp, "004 ");
+                        break;
+                    }
+                    }
                 }
-            }   
+            }
         }
     }
-  /*   PhyML_Printf("\t"); */
-  /*   for(j=0;j<cdata->crunch_len;j++) */
-  /*     PhyML_Printf("%.0f ",cdata->wght[j]); */
-  /*   PhyML_Printf("\n"); */
+    /*   PhyML_Printf("\t"); */
+    /*   for(j=0;j<cdata->crunch_len;j++) */
+    /*     PhyML_Printf("%.0f ",cdata->wght[j]); */
+    /*   PhyML_Printf("\n"); */
 }
 
 //////////////////////////////////////////////////////////////

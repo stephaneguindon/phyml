@@ -291,7 +291,7 @@ void Launch_Interface_Input(option *io)
 #endif
 
 #ifdef EVOLVE
-  if(Filexists("evolve_out.txt"));
+  if(Filexists("evolve_out.txt"))
 #elif OPTIMIZ
   if(Filexists("optimiz_out.txt"))
 #elif defined(PHYML) || defined(PART) || defined(PHYML_INSERT)

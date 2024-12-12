@@ -167,6 +167,43 @@ void Make_Tree_For_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+align **Make_Empty_Alignment(option *io)
+{
+  int i;
+  char *line;
+  align **data;
+
+  line   = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  data   = (align **)mCalloc(io->n_otu,sizeof(align *));
+  
+  for(i=0;i<io->n_otu;i++)
+    {
+      data[i]        = (align *)mCalloc(1,sizeof(align));
+      data[i]->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+      data[i]->state = (char *)mCalloc(io->init_len*io->state_len+1,sizeof(char));
+
+      data[i]->is_ambigu = NULL;
+      data[i]->len = 0;
+      
+      Random_String(data[i]->name,5);
+
+      while(data[i]->len < io->init_len * io->state_len)
+        {
+          data[i]->state[data[i]->len] = 'X';
+          data[i]->len++;
+        }
+    }
+
+  for(i=0;i<io->n_otu;i++) data[i]->state[data[i]->len] = '\0';
+
+  Free(line);
+
+  return data;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Make_Tree_For_Pars(t_tree *tree)
 {
   int i;
