@@ -110,7 +110,7 @@ models.o: models.c models.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
   interface.h invitee.h date.h simu.h eigen.h pars.h alrt.h m4.h draw.h \
   rates.h mcmc.h stats.h io.h mixt.h avx.h sse.h make.h nexus.h init.h \
-  ancestral.h cv.h
+  ancestral.h cv.h evolve.h
 
 models.h:
 
@@ -395,3 +395,5 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:

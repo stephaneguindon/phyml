@@ -1,0 +1,139 @@
+
+
+. Command line: ./phyml -i ./10_evolve_data.txt --no_colalias -m JC69 -c 10 --freerates 
+
+
+
+
+
+  ////////////////////////////////////.\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\.//////////////////////////////////////////
+
+        . Sequence filename:				 10_evolve_data.txt
+        . Data type:					 dna
+        . Alphabet size:				 4
+        . Sequence format:				 interleaved
+        . Number of data sets:				 1
+        . Nb of bootstrapped data sets:			 0
+        . Compute approximate likelihood ratio test:	 yes (aBayes branch supports)
+        . Model name:					 JC69
+        . Proportion of invariable sites:		 0.000000
+        . RAS model:					 FreeRate
+        . Number of subst. rate catgs:			 10
+        . Optimise tree topology:			 yes
+        . Starting tree:				 BioNJ
+        . Add random input tree:			 no
+        . Optimise branch lengths:			 yes
+        . Minimum length of an edge:			 1e-08
+        . Optimise substitution model parameters:	 yes
+        . Run ID:					 none
+        . Random seed:					 1734019835
+        . Subtree patterns aliasing:			 no
+        . Version:					 3.3.20241207
+        . Byte alignment:				 16
+        . AVX enabled:					 no
+        . SSE enabled:					 no
+
+  ////////////////////////////////////.\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\.//////////////////////////////////////////
+
+
+
+. WARNING: sequences are not compressed !
+
+. 10 patterns found (out of a total of 10 sites). 
+
+. 5 sites without polymorphism (50.00%).
+
+
+. Computing pairwise distances...
+
+. Building BioNJ tree...
+
+. Note: taxon 'utufc' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'oilrt' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'jhtrn' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'chkvl' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'bpxxr' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'bhgne' is a duplicate of taxon 'yspdt'.
+. Note: taxon 'usbrp' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'rmsmc' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'rbfhf' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'nofip' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'jwtlc' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'jptuu' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'gdcly' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'exvbx' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'dcjcf' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'cwdct' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'bwbgs' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'axjvh' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'ahqix' is a duplicate of taxon 'xsssj'.
+. Note: taxon 'mdfgw' is a duplicate of taxon 'wgbuv'.
+. Note: taxon 'utghp' is a duplicate of taxon 'wafym'.
+. Note: taxon 'upxwv' is a duplicate of taxon 'wafym'.
+. Note: taxon 'svlme' is a duplicate of taxon 'wafym'.
+. Note: taxon 'pmuxm' is a duplicate of taxon 'wafym'.
+. Note: taxon 'lwogf' is a duplicate of taxon 'wafym'.
+. Note: taxon 'lojkk' is a duplicate of taxon 'wafym'.
+. Note: taxon 'hhdsy' is a duplicate of taxon 'wafym'.
+. Note: taxon 'cusyv' is a duplicate of taxon 'wafym'.
+. Note: taxon 'abpra' is a duplicate of taxon 'wafym'.
+. Note: taxon 'tmxaj' is a duplicate of taxon 'tsxne'.
+. Note: taxon 'rifwy' is a duplicate of taxon 'tsxne'.
+. Note: taxon 'jgsbh' is a duplicate of taxon 'rgpys'.
+. Init log-likelihood: -46.575487
+
+. Score of initial tree: -46.58
+
+. Starting first round of SPRs...
+
+	       0s |   1 | lnL=       -46.2 | depth=    0/   40 | improvements=   0 | delta_lnL=    0.0/ 1000.0  
+
+. Second round of optimization...
+
+	       0s |   2 | lnL=       -46.2 | depth=    1/   36 | improvements=   1 | delta_lnL=    0.0/ 1000.0  
+
+. Third round of optimization...
+
+	       0s |   3 | lnL=       -46.2 | depth=    0/   20 | improvements=   0 | delta_lnL=    0.0/ 1000.0 | triple moves=   5  
+
+. Final optimisation steps...
+
+ Tax.: yspdt site: 4 current: A obs.state: T obs. dstate: 3 predicted: A prob: 0.484946* 
+ Tax.: yspdt site: 4 current: C obs.state: T obs. dstate: 3 predicted: A prob: 0.015083  
+ Tax.: yspdt site: 4 current: G obs.state: T obs. dstate: 3 predicted: A prob: 0.484888  
+ Tax.: yspdt site: 4 current: T obs.state: T obs. dstate: 3 predicted: A prob: 0.015083 !
+ Tax.: xsssj site: 5 current: A obs.state: A obs. dstate: 0 predicted: C prob: 0.025700 !
+ Tax.: xsssj site: 5 current: C obs.state: A obs. dstate: 0 predicted: C prob: 0.398930* 
+ Tax.: xsssj site: 5 current: G obs.state: A obs. dstate: 0 predicted: C prob: 0.176464  
+ Tax.: xsssj site: 5 current: T obs.state: A obs. dstate: 0 predicted: C prob: 0.398906  
+ Tax.: rgpys site: 9 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.031133  
+ Tax.: rgpys site: 9 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.031133  
+ Tax.: rgpys site: 9 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.648962* 
+ Tax.: rgpys site: 9 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.288771 !
+ Tax.: unpju site: 9 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.000000  
+ Tax.: unpju site: 9 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.000000  
+ Tax.: unpju site: 9 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.000000 !
+ Tax.: unpju site: 9 current: T obs.state: G obs. dstate: 2 predicted: T prob: 1.000000* 
+ Tax.: wafym site: 3 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.000000  
+ Tax.: wafym site: 3 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.000000  
+ Tax.: wafym site: 3 current: G obs.state: T obs. dstate: 3 predicted: G prob: 1.000000* 
+ Tax.: wafym site: 3 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.000000 !
+ Tax.: wgbuv site: 4 current: A obs.state: A obs. dstate: 0 predicted: T prob: 0.015083 !
+ Tax.: wgbuv site: 4 current: C obs.state: A obs. dstate: 0 predicted: T prob: 0.015083  
+ Tax.: wgbuv site: 4 current: G obs.state: A obs. dstate: 0 predicted: T prob: 0.484882  
+ Tax.: wgbuv site: 4 current: T obs.state: A obs. dstate: 0 predicted: T prob: 0.484952* 
+. Score error: -29.85
+. Score correct: -324.949
+. Error frq.: 0.075
+
+. Log likelihood of the current tree: -46.20415524263862039.
+
+. Calculating fast branch supports (using 'aBayes').
+
+. Printing the most likely tree in file '10_evolve_data.txt_phyml_tree.txt'.
+
+. Time used 0h0m0s
+
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo

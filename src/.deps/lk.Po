@@ -124,7 +124,8 @@ lk.o: lk.c \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/gethostuuid.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
   interface.h invitee.h date.h simu.h pars.h alrt.h m4.h draw.h rates.h \
-  mcmc.h io.h make.h nexus.h init.h ancestral.h cv.h sse.h avx.h
+  mcmc.h io.h make.h nexus.h init.h ancestral.h cv.h evolve.h sse.h \
+  avx.h
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/assert.h:
 
@@ -433,6 +434,8 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:
 
 sse.h:
 

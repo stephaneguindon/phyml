@@ -1020,7 +1020,6 @@ void RATES_Random_Branch_Lengths(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Scale relative rates (on edges) so that they average to one */
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Normalization_Factor(t_tree *tree)
 {
   phydbl dt,rdt,T,RT;
@@ -1045,7 +1044,6 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
   /* !!!!!!!!!!!!!!!!!!!!!!!!! */
   tree->rates->norm_fact = 1.0;
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1207,7 +1205,6 @@ phydbl RATES_Lk_Jumps(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Edge_Lengths(t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1223,12 +1220,10 @@ void RATES_Update_Edge_Lengths(t_tree *tree)
   
   RATES_Update_One_Edge_Length(tree->e_root,tree);  
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   RATES_Update_One_Edge_Length(b,tree);
@@ -1242,12 +1237,10 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
 	  RATES_Update_Edge_Lengths_Pre(d,d->v[i],d->b[i],tree);
     }
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1312,12 +1305,10 @@ void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
       RATES_Update_One_Edge_Length_Core(b,tree);
     }
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
 {      
   phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
@@ -1429,7 +1420,6 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
       /* assert(FALSE); */
     }
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1692,7 +1682,6 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void RATES_Fill_Lca_Table(t_tree *tree)
 {
     int i, j, dist;
@@ -1710,7 +1699,6 @@ void RATES_Fill_Lca_Table(t_tree *tree)
         }
     }
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1891,13 +1879,11 @@ void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Realized_Substitution_Rate(t_tree *tree)
 {
   RATES_Update_Edge_Lengths(tree);
   return(Tree_Length(tree)/TIMES_Tree_Length(tree));  
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

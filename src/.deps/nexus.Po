@@ -109,7 +109,7 @@ nexus.o: nexus.c nexus.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
   interface.h invitee.h date.h simu.h pars.h alrt.h m4.h draw.h rates.h \
-  mcmc.h io.h avx.h sse.h make.h init.h ancestral.h cv.h
+  mcmc.h io.h avx.h sse.h make.h init.h ancestral.h cv.h evolve.h
 
 nexus.h:
 
@@ -394,3 +394,5 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:

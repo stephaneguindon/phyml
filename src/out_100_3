@@ -1,0 +1,269 @@
+
+
+. Command line: ./phyml -i ./100_evolve_data.txt --no_colalias -m JC69 -c 3 --freerates 
+
+
+
+
+
+  ////////////////////////////////////.\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\.//////////////////////////////////////////
+
+        . Sequence filename:				 100_evolve_data.txt
+        . Data type:					 dna
+        . Alphabet size:				 4
+        . Sequence format:				 interleaved
+        . Number of data sets:				 1
+        . Nb of bootstrapped data sets:			 0
+        . Compute approximate likelihood ratio test:	 yes (aBayes branch supports)
+        . Model name:					 JC69
+        . Proportion of invariable sites:		 0.000000
+        . RAS model:					 FreeRate
+        . Number of subst. rate catgs:			 3
+        . Optimise tree topology:			 yes
+        . Starting tree:				 BioNJ
+        . Add random input tree:			 no
+        . Optimise branch lengths:			 yes
+        . Minimum length of an edge:			 1e-08
+        . Optimise substitution model parameters:	 yes
+        . Run ID:					 none
+        . Random seed:					 1734019968
+        . Subtree patterns aliasing:			 no
+        . Version:					 3.3.20241207
+        . Byte alignment:				 16
+        . AVX enabled:					 no
+        . SSE enabled:					 no
+
+  ////////////////////////////////////.\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\.//////////////////////////////////////////
+
+
+
+. WARNING: sequences are not compressed !
+
+. 100 patterns found (out of a total of 100 sites). 
+
+. 53 sites without polymorphism (53.00%).
+
+
+. Computing pairwise distances...
+
+. Building BioNJ tree...
+
+. Note: taxon 'aoakj' is a duplicate of taxon 'xtrus'.
+. Note: taxon 'llulp' is a duplicate of taxon 'xeyec'.
+. Note: taxon 'ltqwo' is a duplicate of taxon 'xddmt'.
+. Note: taxon 'qafsa' is a duplicate of taxon 'wtqau'.
+. Note: taxon 'odyjp' is a duplicate of taxon 'wtqau'.
+. Note: taxon 'gbaos' is a duplicate of taxon 'wtqau'.
+. Note: taxon 'uadst' is a duplicate of taxon 'wqokg'.
+. Note: taxon 'jnjbu' is a duplicate of taxon 'wqokg'.
+. Note: taxon 'iaojk' is a duplicate of taxon 'wqokg'.
+. Note: taxon 'ubrhx' is a duplicate of taxon 'vpjjw'.
+. Note: taxon 'nnlhs' is a duplicate of taxon 'vpjjw'.
+. Note: taxon 'nhpdg' is a duplicate of taxon 'vpjjw'.
+. Note: taxon 'cxcdx' is a duplicate of taxon 'vpjjw'.
+. Note: taxon 'cunno' is a duplicate of taxon 'vpjjw'.
+. Note: taxon 'aogxg' is a duplicate of taxon 'voawi'.
+. Note: taxon 'ckprt' is a duplicate of taxon 'owryc'.
+. Note: taxon 'gcuxk' is a duplicate of taxon 'ouueo'.
+. Init log-likelihood: -500.290638
+
+. Score of initial tree: -500.29
+
+. Starting first round of SPRs...
+
+	       0s |   1 | lnL=      -491.0 | depth=    6/   40 | improvements=   2 | delta_lnL=    6.5/ 1000.0  
+
+. Second round of optimization...
+
+	       0s |   2 | lnL=      -490.8 | depth=    3/   36 | improvements=   6 | delta_lnL=    7.5/ 1000.0  
+	       0s |   3 | lnL=      -489.4 | depth=    3/   20 | improvements=   4 | delta_lnL=    3.3/ 1000.0   +
+
+. Third round of optimization...
+
+	       0s |   4 | lnL=      -488.8 | depth=    0/   16 | improvements=   0 | delta_lnL=    0.0/ 1000.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+ Tax.: xtrus site: 22 current: A obs.state: A obs. dstate: 0 predicted: G prob: 0.489130 !
+ Tax.: xtrus site: 22 current: C obs.state: A obs. dstate: 0 predicted: G prob: 0.002275  
+ Tax.: xtrus site: 22 current: G obs.state: A obs. dstate: 0 predicted: G prob: 0.506320* 
+ Tax.: xtrus site: 22 current: T obs.state: A obs. dstate: 0 predicted: G prob: 0.002275  
+ Tax.: cgaxg site: 9 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.004508  
+ Tax.: cgaxg site: 9 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.004508  
+ Tax.: cgaxg site: 9 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.004508 !
+ Tax.: cgaxg site: 9 current: T obs.state: G obs. dstate: 2 predicted: T prob: 0.986475* 
+ Tax.: cgaxg site: 67 current: A obs.state: C obs. dstate: 1 predicted: T prob: 0.002425  
+ Tax.: cgaxg site: 67 current: C obs.state: C obs. dstate: 1 predicted: T prob: 0.002425 !
+ Tax.: cgaxg site: 67 current: G obs.state: C obs. dstate: 1 predicted: T prob: 0.002425  
+ Tax.: cgaxg site: 67 current: T obs.state: C obs. dstate: 1 predicted: T prob: 0.992725* 
+ Tax.: tpfdc site: 49 current: A obs.state: T obs. dstate: 3 predicted: C prob: 0.000000  
+ Tax.: tpfdc site: 49 current: C obs.state: T obs. dstate: 3 predicted: C prob: 1.000000* 
+ Tax.: tpfdc site: 49 current: G obs.state: T obs. dstate: 3 predicted: C prob: 0.000000  
+ Tax.: tpfdc site: 49 current: T obs.state: T obs. dstate: 3 predicted: C prob: 0.000000 !
+ Tax.: ketes site: 46 current: A obs.state: A obs. dstate: 0 predicted: G prob: 0.000000 !
+ Tax.: ketes site: 46 current: C obs.state: A obs. dstate: 0 predicted: G prob: 0.000000  
+ Tax.: ketes site: 46 current: G obs.state: A obs. dstate: 0 predicted: G prob: 1.000000* 
+ Tax.: ketes site: 46 current: T obs.state: A obs. dstate: 0 predicted: G prob: 0.000000  
+ Tax.: voawi site: 79 current: A obs.state: C obs. dstate: 1 predicted: T prob: 0.000000  
+ Tax.: voawi site: 79 current: C obs.state: C obs. dstate: 1 predicted: T prob: 0.000000 !
+ Tax.: voawi site: 79 current: G obs.state: C obs. dstate: 1 predicted: T prob: 0.000000  
+ Tax.: voawi site: 79 current: T obs.state: C obs. dstate: 1 predicted: T prob: 1.000000* 
+ Tax.: ckpeu site: 30 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.004310  
+ Tax.: ckpeu site: 30 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.004310  
+ Tax.: ckpeu site: 30 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.959279* 
+ Tax.: ckpeu site: 30 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.032101 !
+ Tax.: dqtgf site: 56 current: A obs.state: G obs. dstate: 2 predicted: C prob: 0.008012  
+ Tax.: dqtgf site: 56 current: C obs.state: G obs. dstate: 2 predicted: C prob: 0.807195* 
+ Tax.: dqtgf site: 56 current: G obs.state: G obs. dstate: 2 predicted: C prob: 0.121982 !
+ Tax.: dqtgf site: 56 current: T obs.state: G obs. dstate: 2 predicted: C prob: 0.062810  
+ Tax.: dqtgf site: 84 current: A obs.state: C obs. dstate: 1 predicted: G prob: 0.000034  
+ Tax.: dqtgf site: 84 current: C obs.state: C obs. dstate: 1 predicted: G prob: 0.000034 !
+ Tax.: dqtgf site: 84 current: G obs.state: C obs. dstate: 1 predicted: G prob: 0.999897* 
+ Tax.: dqtgf site: 84 current: T obs.state: C obs. dstate: 1 predicted: G prob: 0.000034  
+ Tax.: wtqau site: 10 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.023257  
+ Tax.: wtqau site: 10 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.023257  
+ Tax.: wtqau site: 10 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.378700 !
+ Tax.: wtqau site: 10 current: T obs.state: G obs. dstate: 2 predicted: T prob: 0.574786* 
+ Tax.: wtqau site: 28 current: A obs.state: G obs. dstate: 2 predicted: A prob: 0.977498* 
+ Tax.: wtqau site: 28 current: C obs.state: G obs. dstate: 2 predicted: A prob: 0.007501  
+ Tax.: wtqau site: 28 current: G obs.state: G obs. dstate: 2 predicted: A prob: 0.007501 !
+ Tax.: wtqau site: 28 current: T obs.state: G obs. dstate: 2 predicted: A prob: 0.007501  
+ Tax.: wtqau site: 42 current: A obs.state: T obs. dstate: 3 predicted: C prob: 0.007500  
+ Tax.: wtqau site: 42 current: C obs.state: T obs. dstate: 3 predicted: C prob: 0.977499* 
+ Tax.: wtqau site: 42 current: G obs.state: T obs. dstate: 3 predicted: C prob: 0.007500  
+ Tax.: wtqau site: 42 current: T obs.state: T obs. dstate: 3 predicted: C prob: 0.007500 !
+ Tax.: wtqau site: 55 current: A obs.state: G obs. dstate: 2 predicted: A prob: 0.574783* 
+ Tax.: wtqau site: 55 current: C obs.state: G obs. dstate: 2 predicted: A prob: 0.023259  
+ Tax.: wtqau site: 55 current: G obs.state: G obs. dstate: 2 predicted: A prob: 0.378699 !
+ Tax.: wtqau site: 55 current: T obs.state: G obs. dstate: 2 predicted: A prob: 0.023259  
+ Tax.: wtqau site: 56 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.013964  
+ Tax.: wtqau site: 56 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.022630  
+ Tax.: wtqau site: 56 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.949441* 
+ Tax.: wtqau site: 56 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.013964 !
+ Tax.: wtqau site: 64 current: A obs.state: C obs. dstate: 1 predicted: A prob: 0.977498* 
+ Tax.: wtqau site: 64 current: C obs.state: C obs. dstate: 1 predicted: A prob: 0.007501 !
+ Tax.: wtqau site: 64 current: G obs.state: C obs. dstate: 1 predicted: A prob: 0.007501  
+ Tax.: wtqau site: 64 current: T obs.state: C obs. dstate: 1 predicted: A prob: 0.007501  
+ Tax.: ursat site: 10 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.002537  
+ Tax.: ursat site: 10 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.002537  
+ Tax.: ursat site: 10 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.992390* 
+ Tax.: ursat site: 10 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.002537 !
+ Tax.: ursat site: 27 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.016792  
+ Tax.: ursat site: 27 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.016792  
+ Tax.: ursat site: 27 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.551042* 
+ Tax.: ursat site: 27 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.415375 !
+ Tax.: ursat site: 55 current: A obs.state: A obs. dstate: 0 predicted: G prob: 0.002520 !
+ Tax.: ursat site: 55 current: C obs.state: A obs. dstate: 0 predicted: G prob: 0.002520  
+ Tax.: ursat site: 55 current: G obs.state: A obs. dstate: 0 predicted: G prob: 0.992439* 
+ Tax.: ursat site: 55 current: T obs.state: A obs. dstate: 0 predicted: G prob: 0.002520  
+ Tax.: ursat site: 56 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.017355  
+ Tax.: ursat site: 56 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.270825  
+ Tax.: ursat site: 56 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.261867 !
+ Tax.: ursat site: 56 current: T obs.state: G obs. dstate: 2 predicted: T prob: 0.449953* 
+ Tax.: ursat site: 63 current: A obs.state: C obs. dstate: 1 predicted: G prob: 0.016791  
+ Tax.: ursat site: 63 current: C obs.state: C obs. dstate: 1 predicted: G prob: 0.415376 !
+ Tax.: ursat site: 63 current: G obs.state: C obs. dstate: 1 predicted: G prob: 0.551042* 
+ Tax.: ursat site: 63 current: T obs.state: C obs. dstate: 1 predicted: G prob: 0.016791  
+ Tax.: ursat site: 86 current: A obs.state: C obs. dstate: 1 predicted: A prob: 0.551042* 
+ Tax.: ursat site: 86 current: C obs.state: C obs. dstate: 1 predicted: A prob: 0.415375 !
+ Tax.: ursat site: 86 current: G obs.state: C obs. dstate: 1 predicted: A prob: 0.016792  
+ Tax.: ursat site: 86 current: T obs.state: C obs. dstate: 1 predicted: A prob: 0.016792  
+ Tax.: nkoev site: 89 current: A obs.state: C obs. dstate: 1 predicted: T prob: 0.000000  
+ Tax.: nkoev site: 89 current: C obs.state: C obs. dstate: 1 predicted: T prob: 0.000000 !
+ Tax.: nkoev site: 89 current: G obs.state: C obs. dstate: 1 predicted: T prob: 0.000000  
+ Tax.: nkoev site: 89 current: T obs.state: C obs. dstate: 1 predicted: T prob: 1.000000* 
+ Tax.: wdchv site: 30 current: A obs.state: C obs. dstate: 1 predicted: G prob: 0.000000  
+ Tax.: wdchv site: 30 current: C obs.state: C obs. dstate: 1 predicted: G prob: 0.000000 !
+ Tax.: wdchv site: 30 current: G obs.state: C obs. dstate: 1 predicted: G prob: 1.000000* 
+ Tax.: wdchv site: 30 current: T obs.state: C obs. dstate: 1 predicted: G prob: 0.000000  
+ Tax.: wqokg site: 3 current: A obs.state: A obs. dstate: 0 predicted: C prob: 0.004503 !
+ Tax.: wqokg site: 3 current: C obs.state: A obs. dstate: 0 predicted: C prob: 0.986490* 
+ Tax.: wqokg site: 3 current: G obs.state: A obs. dstate: 0 predicted: C prob: 0.004503  
+ Tax.: wqokg site: 3 current: T obs.state: A obs. dstate: 0 predicted: C prob: 0.004503  
+ Tax.: wqokg site: 90 current: A obs.state: T obs. dstate: 3 predicted: A prob: 0.986490* 
+ Tax.: wqokg site: 90 current: C obs.state: T obs. dstate: 3 predicted: A prob: 0.004503  
+ Tax.: wqokg site: 90 current: G obs.state: T obs. dstate: 3 predicted: A prob: 0.004503  
+ Tax.: wqokg site: 90 current: T obs.state: T obs. dstate: 3 predicted: A prob: 0.004503 !
+ Tax.: nbuai site: 66 current: A obs.state: T obs. dstate: 3 predicted: A prob: 0.665665* 
+ Tax.: nbuai site: 66 current: C obs.state: T obs. dstate: 3 predicted: A prob: 0.002991  
+ Tax.: nbuai site: 66 current: G obs.state: T obs. dstate: 3 predicted: A prob: 0.002991  
+ Tax.: nbuai site: 66 current: T obs.state: T obs. dstate: 3 predicted: A prob: 0.328353 !
+ Tax.: vldei site: 66 current: A obs.state: A obs. dstate: 0 predicted: T prob: 0.000000 !
+ Tax.: vldei site: 66 current: C obs.state: A obs. dstate: 0 predicted: T prob: 0.000000  
+ Tax.: vldei site: 66 current: G obs.state: A obs. dstate: 0 predicted: T prob: 0.000000  
+ Tax.: vldei site: 66 current: T obs.state: A obs. dstate: 0 predicted: T prob: 1.000000* 
+ Tax.: owryc site: 20 current: A obs.state: C obs. dstate: 1 predicted: T prob: 0.017388  
+ Tax.: owryc site: 20 current: C obs.state: C obs. dstate: 1 predicted: T prob: 0.357749 !
+ Tax.: owryc site: 20 current: G obs.state: C obs. dstate: 1 predicted: T prob: 0.017388  
+ Tax.: owryc site: 20 current: T obs.state: C obs. dstate: 1 predicted: T prob: 0.607475* 
+ Tax.: owryc site: 22 current: A obs.state: G obs. dstate: 2 predicted: A prob: 0.985919* 
+ Tax.: owryc site: 22 current: C obs.state: G obs. dstate: 2 predicted: A prob: 0.004694  
+ Tax.: owryc site: 22 current: G obs.state: G obs. dstate: 2 predicted: A prob: 0.004694 !
+ Tax.: owryc site: 22 current: T obs.state: G obs. dstate: 2 predicted: A prob: 0.004694  
+ Tax.: owryc site: 23 current: A obs.state: A obs. dstate: 0 predicted: C prob: 0.357754 !
+ Tax.: owryc site: 23 current: C obs.state: A obs. dstate: 0 predicted: C prob: 0.607489* 
+ Tax.: owryc site: 23 current: G obs.state: A obs. dstate: 0 predicted: C prob: 0.017378  
+ Tax.: owryc site: 23 current: T obs.state: A obs. dstate: 0 predicted: C prob: 0.017378  
+ Tax.: owryc site: 34 current: A obs.state: A obs. dstate: 0 predicted: G prob: 0.002529 !
+ Tax.: owryc site: 34 current: C obs.state: A obs. dstate: 0 predicted: G prob: 0.002529  
+ Tax.: owryc site: 34 current: G obs.state: A obs. dstate: 0 predicted: G prob: 0.992414* 
+ Tax.: owryc site: 34 current: T obs.state: A obs. dstate: 0 predicted: G prob: 0.002529  
+ Tax.: owryc site: 52 current: A obs.state: G obs. dstate: 2 predicted: C prob: 0.017388  
+ Tax.: owryc site: 52 current: C obs.state: G obs. dstate: 2 predicted: C prob: 0.607475* 
+ Tax.: owryc site: 52 current: G obs.state: G obs. dstate: 2 predicted: C prob: 0.357749 !
+ Tax.: owryc site: 52 current: T obs.state: G obs. dstate: 2 predicted: C prob: 0.017388  
+ Tax.: vooge site: 20 current: A obs.state: T obs. dstate: 3 predicted: C prob: 0.009337  
+ Tax.: vooge site: 20 current: C obs.state: T obs. dstate: 3 predicted: C prob: 0.971990* 
+ Tax.: vooge site: 20 current: G obs.state: T obs. dstate: 3 predicted: C prob: 0.009337  
+ Tax.: vooge site: 20 current: T obs.state: T obs. dstate: 3 predicted: C prob: 0.009337 !
+ Tax.: vooge site: 22 current: A obs.state: A obs. dstate: 0 predicted: G prob: 0.268921 !
+ Tax.: vooge site: 22 current: C obs.state: A obs. dstate: 0 predicted: G prob: 0.019754  
+ Tax.: vooge site: 22 current: G obs.state: A obs. dstate: 0 predicted: G prob: 0.691572* 
+ Tax.: vooge site: 22 current: T obs.state: A obs. dstate: 0 predicted: G prob: 0.019754  
+ Tax.: vooge site: 23 current: A obs.state: C obs. dstate: 1 predicted: A prob: 0.984811* 
+ Tax.: vooge site: 23 current: C obs.state: C obs. dstate: 1 predicted: A prob: 0.005063 !
+ Tax.: vooge site: 23 current: G obs.state: C obs. dstate: 1 predicted: A prob: 0.005063  
+ Tax.: vooge site: 23 current: T obs.state: C obs. dstate: 1 predicted: A prob: 0.005063  
+ Tax.: vooge site: 34 current: A obs.state: G obs. dstate: 2 predicted: A prob: 0.691576* 
+ Tax.: vooge site: 34 current: C obs.state: G obs. dstate: 2 predicted: A prob: 0.019752  
+ Tax.: vooge site: 34 current: G obs.state: G obs. dstate: 2 predicted: A prob: 0.268921 !
+ Tax.: vooge site: 34 current: T obs.state: G obs. dstate: 2 predicted: A prob: 0.019752  
+ Tax.: vooge site: 52 current: A obs.state: C obs. dstate: 1 predicted: G prob: 0.009337  
+ Tax.: vooge site: 52 current: C obs.state: C obs. dstate: 1 predicted: G prob: 0.009337 !
+ Tax.: vooge site: 52 current: G obs.state: C obs. dstate: 1 predicted: G prob: 0.971990* 
+ Tax.: vooge site: 52 current: T obs.state: C obs. dstate: 1 predicted: G prob: 0.009337  
+ Tax.: ouueo site: 89 current: A obs.state: A obs. dstate: 0 predicted: T prob: 0.004508 !
+ Tax.: ouueo site: 89 current: C obs.state: A obs. dstate: 0 predicted: T prob: 0.004508  
+ Tax.: ouueo site: 89 current: G obs.state: A obs. dstate: 0 predicted: T prob: 0.004508  
+ Tax.: ouueo site: 89 current: T obs.state: A obs. dstate: 0 predicted: T prob: 0.986475* 
+ Tax.: ouueo site: 97 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.004504  
+ Tax.: ouueo site: 97 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.004504  
+ Tax.: ouueo site: 97 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.004504 !
+ Tax.: ouueo site: 97 current: T obs.state: G obs. dstate: 2 predicted: T prob: 0.986489* 
+ Tax.: nmbbe site: 25 current: A obs.state: G obs. dstate: 2 predicted: T prob: 0.002991  
+ Tax.: nmbbe site: 25 current: C obs.state: G obs. dstate: 2 predicted: T prob: 0.002991  
+ Tax.: nmbbe site: 25 current: G obs.state: G obs. dstate: 2 predicted: T prob: 0.328342 !
+ Tax.: nmbbe site: 25 current: T obs.state: G obs. dstate: 2 predicted: T prob: 0.665676* 
+ Tax.: xeyec site: 25 current: A obs.state: T obs. dstate: 3 predicted: G prob: 0.025158  
+ Tax.: xeyec site: 25 current: C obs.state: T obs. dstate: 3 predicted: G prob: 0.003789  
+ Tax.: xeyec site: 25 current: G obs.state: T obs. dstate: 3 predicted: G prob: 0.843328* 
+ Tax.: xeyec site: 25 current: T obs.state: T obs. dstate: 3 predicted: G prob: 0.127724 !
+ Tax.: oocxv site: 22 current: A obs.state: G obs. dstate: 2 predicted: A prob: 1.000000* 
+ Tax.: oocxv site: 22 current: C obs.state: G obs. dstate: 2 predicted: A prob: 0.000000  
+ Tax.: oocxv site: 22 current: G obs.state: G obs. dstate: 2 predicted: A prob: 0.000000 !
+ Tax.: oocxv site: 22 current: T obs.state: G obs. dstate: 2 predicted: A prob: 0.000000  
+. Score error: -281.083
+. Score correct: -10817.5
+. Error frq.: 0.0182609
+
+. Log likelihood of the current tree: -488.65400749924037882.
+
+. Calculating fast branch supports (using 'aBayes').
+
+. Printing the most likely tree in file '100_evolve_data.txt_phyml_tree.txt'.
+
+. Time used 0h0m0s
+
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo

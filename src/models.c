@@ -256,6 +256,7 @@ void PMat_Empirical(phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phyd
   
   assert(Pij);
   
+
   expt  = mod->eigen->e_val_im;
   uexpt = mod->eigen->r_e_vect_im;
   U     = mod->eigen->r_e_vect;

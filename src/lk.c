@@ -2257,7 +2257,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
-
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
       else
@@ -3275,6 +3274,11 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 {
   unsigned int i,j;
 
+  assert(plk0);
+  assert(plk1);
+  assert(plk2);
+  assert(Pij1);
+  assert(Pij2);
   
   for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
 
@@ -3308,6 +3312,13 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 void Partial_Lk_Exex(const phydbl *Pij1, const int state1, const phydbl *Pij2, const int state2, const int ns, phydbl *plk0)
 {
   unsigned int i;
+
+  assert(state1 >= 0);
+  assert(state2 >= 0);
+  assert(Pij1);
+  assert(Pij2);
+  assert(plk0);
+
   for(i=0;i<ns;++i)
     {
       plk0[i] = Pij1[state1]*Pij2[state2];
@@ -3323,6 +3334,12 @@ void Partial_Lk_Exin(const phydbl *Pij1, const int state1, const phydbl *Pij2, c
 {
   unsigned int i,j;
   
+  assert(state1 >= 0);
+  assert(Pij1);
+  assert(Pij2);
+  assert(plk0);
+  assert(plk2);
+
   for(i=0;i<ns;++i)
     {
       phydbl u2 = 0.0;

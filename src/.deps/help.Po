@@ -101,7 +101,8 @@ help.o: help.c help.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libkern/OSCacheControl.h \
   xml.h free.h spr.h lk.h optimiz.h models.h eigen.h stats.h mixt.h mg.h \
   tiporder.h times.h bionj.h simu.h pars.h alrt.h m4.h draw.h rates.h \
-  mcmc.h io.h avx.h sse.h make.h nexus.h init.h ancestral.h cv.h cl.h \
+  mcmc.h io.h avx.h sse.h make.h nexus.h init.h ancestral.h cv.h \
+  evolve.h cl.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_posix_vdisable.h \
@@ -372,6 +373,8 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:
 
 cl.h:
 

@@ -186,6 +186,12 @@ tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
+evolve.c evolve.h\
+rates.c rates.h\
+date.c date.h\
+times.c times.h\
+cv.c cv.h\
+evolve.c evolve.h\
 mpi_boot.c mpi_boot.h
 # phyml_mpi_LDADD = -lm
 else
@@ -447,6 +453,10 @@ avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
 mixt.c mixt.h \
+evolve.c evolve.h\
+rates.c rates.h\
+date.c date.h\
+times.c times.h\
 cv.c cv.h
 # phyml_LDADD = -lm
 endif

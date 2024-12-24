@@ -1,0 +1,51 @@
+
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+                                  ---  PhyML 3.3.20241207  ---                                             
+                            https://github.com/stephaneguindon/phyml/                      
+                             Copyright CNRS - Universite Montpellier                                 
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+. Sequence filename: 			10_evolve_data.txt
+. Data set: 				#1
+. Initial tree: 			BioNJ
+. Model of nucleotides substitution: 	JC69
+. Integrated length (IL) model: 	no
+. Number of taxa: 			40
+. Log-likelihood: 			-49108.78639
+. Unconstrained log-likelihood: 	-42585.96596
+. Composite log-likelihood: 		-277258.87222
+. Parsimony: 				8073
+. Tree size: 				1.72737
+. FreeRate model: 			Yes
+  - Number of classes: 			1
+  - Relative rate in class 1: 		1.00000 [freq=1.000000] 		
+. Nucleotides frequencies:
+  - f(A)=  0.25000
+  - f(C)=  0.25000
+  - f(G)=  0.25000
+  - f(T)=  0.25000
+
+. Run ID:				JC69
+. Random seed:				1735034329
+. Subtree patterns aliasing:		no
+. Version:				3.3.20241207
+. Time used:				0h1m46s (106 seconds)
+
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ Suggested citations:
+ S. Guindon, JF. Dufayard, V. Lefort, M. Anisimova, W. Hordijk, O. Gascuel
+ "New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0."
+ Systematic Biology. 2010. 59(3):307-321.
+
+ S. Guindon & O. Gascuel
+ "A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood"
+ Systematic Biology. 2003. 52(5):696-704.
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+
+ Please consider making a donation to support PhyML development by clicking on the following link:
+
+          https://fondation-cnrs.org/faire-un-don/
+
+              ~ Thank you ! ~
+

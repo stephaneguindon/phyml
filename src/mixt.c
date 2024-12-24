@@ -2287,7 +2287,6 @@ void MIXT_RATES_Update_Edge_Lengths(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME || PHYREXSIM || TEST || EVOLVE)
 void MIXT_RATES_Update_One_Edge_Length(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_tree *tree;
@@ -2304,7 +2303,6 @@ void MIXT_RATES_Update_One_Edge_Length(t_edge *mixt_b, t_tree *mixt_tree)
     }
   while(tree);
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -109,7 +109,7 @@ optimiz.o: optimiz.c optimiz.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
   interface.h invitee.h date.h io.h make.h nexus.h init.h mcmc.h \
-  ancestral.h cv.h mg.h tiporder.h m4.h draw.h rates.h
+  ancestral.h cv.h evolve.h mg.h tiporder.h m4.h draw.h rates.h
 
 optimiz.h:
 
@@ -384,6 +384,8 @@ mcmc.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:
 
 mg.h:
 

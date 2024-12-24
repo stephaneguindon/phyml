@@ -7628,157 +7628,6 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
-{
-  int root_state, root_rate_class;
-  int site,i;
-  phydbl *orig_l;
-  /* phydbl shape,scale,var,mean; */
-  int switch_to_yes;
-
-  
-  orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-  for(i=0;i<2*tree->n_otu-3;++i) orig_l[i] = tree->a_edges[i]->l->v;
-
-  data->n_otu = tree->n_otu;
-  data->io    = tree->io;
-
-  if(mod->use_m4mod) tree->print_labels = YES;
-
-  Set_Br_Len_Var(NULL,tree);
-
-  switch_to_yes = NO;
-  if(tree->mod->gamma_mgf_bl == YES) switch_to_yes = YES;
-
-  Set_Update_Eigen(YES,mod);                 
-
-  assert(first_site_pos < data->init_len);
-  
-  for(site=first_site_pos;site<data->init_len;++site)
-    {
-      if(!Set_Model_Parameters(mod)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        
-
-     /* Pick the rate class */
-      root_state = root_rate_class = -1;
-      root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
-
- 
-      /* /\* Get the change probability matrices *\/ */
-      /* For(i,2*tree->n_otu-3) */
-      /*   { */
-      /*     var   = MAX(0.0,tree->a_edges[i]->l_var->v) * POW(tree->mod->ras->gamma_rr->v[root_rate_class],2); */
-      /*     mean  = orig_l[i]; */
-
-      /*     shape = mean * mean / var; */
-      /*     scale = var / mean; */
-
-      /*     tree->a_edges[i]->l->v = Rgamma(shape,scale); */
-
-      /*   } */
-
-      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != NULL) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
-      
-      /* Pick the root nucleotide/aa */
-      root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
-      data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
-
-      /* printf("\n. root_state: %d root_rate_class: %d [%f %f %f %f]", */
-      /*        root_state, */
-      /*        root_rate_class, */
-      /*        mod->e_frq->pi->v[0], */
-      /*        mod->e_frq->pi->v[1], */
-      /*        mod->e_frq->pi->v[2], */
-      /*        mod->e_frq->pi->v[3]); */
-      /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-
-      /* tree->a_nodes[0] is considered as the root t_node */
-      Evolve_Recur(tree->a_nodes[0],
-                   tree->a_nodes[0]->v[0],
-                   tree->a_nodes[0]->b[0],
-                   root_state,
-                   root_rate_class,
-                   site,
-                   data,
-                   mod,
-                   tree);
-
-/*       PhyML_Printf("%s\n",Write_Tree(tree)); */
-
-      data->wght[site] = 1;
-    }
-  data->crunch_len = data->init_len;
-  /* Print_CSeq(stdout,NO,data); */
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = orig_l[i];
-  Free(orig_l);
-
-  if(switch_to_yes == YES) tree->mod->gamma_mgf_bl = YES;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-int Pick_State(int n, phydbl *prob)
-{
-  int pos;
-  phydbl uni;
-
-  do
-    {
-      pos  = rand();
-      pos  = (pos % n);
-      uni  = (phydbl)rand();
-      uni /= (phydbl)RAND_MAX;
-      if(uni < prob[pos]) break;
-    }
-  while(1);
-
-  return (int)pos;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int site_num, calign *gen_data, t_mod *mod, t_tree *tree)
-{
-    int d_state;
-    int dim1, dim2;
-
-    dim1 = tree->mod->ns * tree->mod->ns;
-    dim2 = tree->mod->ns;
-
-    d_state = Pick_State(mod->ns, b->Pij_rr + r_class * dim1 + a_state * dim2);
-
-    //   PhyML_Printf("\n>> %c (%d) L:%G %G %G %G %G",
-    //                Reciproc_Assign_State(d_state, mod->io->datatype),
-    //                d_state,
-    //                b->l->v,
-    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 0],
-    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 1],
-    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 2],
-    //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 3]);
-
-    if (d->tax)
-    {
-        gen_data->c_seq[d->num]->state[site_num] = Reciproc_Assign_State(d_state, tree->io->datatype);
-        return;
-    }
-    else
-    {
-        int i;
-        for (i = 0; i < 3; i++)
-            if (d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
-            {
-                Evolve_Recur(d, d->v[i], d->b[i],
-                             d_state, r_class, site_num, gen_data,
-                             mod, tree);
-            }
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Site_Diversity(t_tree *tree)
 {
   int i,j,k,ns;
@@ -9100,6 +8949,11 @@ void Set_Model_Name(t_mod *mod)
     case FLU:
       {
         strcpy(mod->modelname->s, "FLU");
+        break;
+      }
+      case OTHER:
+      {
+        strcpy(mod->modelname->s, "Other");
         break;
       }
     default:
@@ -10723,11 +10577,11 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
 
   do
     {
-      Evolve(tree->data,tree->mod,0,tree);
+      EVOLVE_Seq(tree->data,tree->mod,tree);
 
       Calculate_Number_Of_Diff_States(tree);
 
-      For(i,2*tree->n_otu-3)
+      for(i=0;i<2*tree->n_otu-3;++i)
         {
           for(j=0;j<tree->mod->ns;j++)
             {
@@ -11141,6 +10995,99 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
   if(sum-1 > tree->mod->ns-1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   return sum;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// ROC curve and area under ROC curve. probs is the vector of class probabilities. 
+// Each of the n_obs observations has probabilities for nclasses associated to it.
+// truth is a vector of 1/0 values. Values of truth associated to the indices of the
+// observations are set to 1. 0 otherwise. Lengths of probs and truth vectors should
+// be n_obs * n_classes
+void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs, char *tag)
+{
+  phydbl *tp, *fp, *threshold, dum, area;
+  int granularity;
+  short int sorted;
+
+  granularity = 10000;
+  threshold = (phydbl *)mCalloc(granularity, sizeof(phydbl));
+  tp = (phydbl *)mCalloc(granularity, sizeof(phydbl));
+  fp = (phydbl *)mCalloc(granularity, sizeof(phydbl));
+
+  for (int i = 0; i < granularity; ++i)
+  {
+    threshold[i] = (phydbl)i / (phydbl)granularity;
+  }
+
+  for (int i = 0; i < granularity; i++)
+  {
+    for (int j = 0; j < n_obs; ++j)
+    {
+      for (int k = 0; k < n_classes; ++k)
+      {
+        if(probs[j * n_classes + k] > threshold[i])
+        {
+          if (truth[j * n_classes + k] == 1)
+          {
+            tp[i]++;
+          }
+          else
+          {
+            fp[i]++;
+          }
+        }
+      }
+    }
+  }
+    
+    for (int i = 0; i < granularity; i++)
+    {
+      // tp[i] = tp[i] / (tree->n_pattern * tree->n_otu);
+      // fp[i] = fp[i] / ((tree->mod->ns - 1) * tree->n_pattern * tree->n_otu);
+      tp[i] = tp[i] / n_obs;
+      fp[i] = fp[i] / ((n_classes - 1) * n_obs);
+
+      PhyML_Printf("\n@@@%s,%f,%f,%f",
+                   tag ? tag : "",
+                   threshold[i],
+                   tp[i],
+                   fp[i]);
+    }
+
+  // Sort tp and fp in increasing order of values of fp
+  do
+  {
+    sorted = YES;
+    for (int i = 1; i < granularity; ++i)
+    {
+      if (fp[i] < fp[i - 1])
+      {
+        dum = fp[i];
+        fp[i] = fp[i - 1];
+        fp[i - 1] = dum;
+
+        dum = tp[i];
+        tp[i] = tp[i - 1];
+        tp[i - 1] = dum;
+
+        sorted = NO;
+      }
+    }
+  } while (sorted == NO);
+
+  // Calculate area under ROC curve
+  area = 0.0;
+  for (int i = 1; i < granularity; ++i)
+  {
+    // Rectangle area
+    assert(!(fp[i] < fp[i - 1]));
+    area += MIN(tp[i], tp[i - 1]) * (fp[i] - fp[i - 1]);
+    // Triangle area
+    area += .5 * (MAX(tp[i], tp[i - 1]) - MIN(tp[i], tp[i - 1])) * (fp[i] - fp[i - 1]);
+  }
+
+  PhyML_Printf("\n. Area under ROC curve: %f", area);
 }
 
 //////////////////////////////////////////////////////////////

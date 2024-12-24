@@ -199,8 +199,9 @@ am__phyml_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	pars.h alrt.c alrt.h interface.c interface.h cl.c cl.h spr.c \
 	spr.h draw.c draw.h stats.c stats.h io.c io.h make.c make.h \
 	nexus.c nexus.h init.c init.h xml.c xml.h sse.c sse.h avx.c \
-	avx.h tbe.c tbe.h ancestral.c ancestral.h mixt.c mixt.h cv.c \
-	cv.h
+	avx.h tbe.c tbe.h ancestral.c ancestral.h mixt.c mixt.h \
+	evolve.c evolve.h rates.c rates.h date.c date.h times.c \
+	times.h cv.c cv.h
 #am_phyml_OBJECTS = main.$(OBJEXT) \
 #	utilities.$(OBJEXT) \
 #	optimiz.$(OBJEXT) \
@@ -228,6 +229,10 @@ am__phyml_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 #	tbe.$(OBJEXT) \
 #	ancestral.$(OBJEXT) \
 #	mixt.$(OBJEXT) \
+#	evolve.$(OBJEXT) \
+#	rates.$(OBJEXT) \
+#	date.$(OBJEXT) \
+#	times.$(OBJEXT) \
 #	cv.$(OBJEXT)
 phyml_OBJECTS = $(am_phyml_OBJECTS)
 phyml_LDADD = $(LDADD)
@@ -237,8 +242,9 @@ am__phyml_mpi_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	pars.h alrt.c alrt.h interface.c interface.h cl.c cl.h spr.c \
 	spr.h draw.c draw.h stats.c stats.h io.c io.h make.c make.h \
 	nexus.c nexus.h init.c init.h xml.c xml.h mixt.c mixt.h tbe.c \
-	tbe.h sse.c sse.h avx.c avx.h ancestral.c ancestral.h \
-	mpi_boot.c mpi_boot.h
+	tbe.h sse.c sse.h avx.c avx.h ancestral.c ancestral.h evolve.c \
+	evolve.h rates.c rates.h date.c date.h times.c times.h cv.c \
+	cv.h mpi_boot.c mpi_boot.h
 #am_phyml_mpi_OBJECTS = main.$(OBJEXT) \
 #	utilities.$(OBJEXT) \
 #	optimiz.$(OBJEXT) \
@@ -266,6 +272,12 @@ am__phyml_mpi_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 #	sse.$(OBJEXT) \
 #	avx.$(OBJEXT) \
 #	ancestral.$(OBJEXT) \
+#	evolve.$(OBJEXT) \
+#	rates.$(OBJEXT) \
+#	date.$(OBJEXT) \
+#	times.$(OBJEXT) \
+#	cv.$(OBJEXT) \
+#	evolve.$(OBJEXT) \
 #	mpi_boot.$(OBJEXT)
 phyml_mpi_OBJECTS = $(am_phyml_mpi_OBJECTS)
 phyml_mpi_LDADD = $(LDADD)
@@ -615,7 +627,7 @@ AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og
+CFLAGS = -std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
@@ -843,6 +855,12 @@ PROG = EVOLVE
 #sse.c sse.h\
 #avx.c avx.h\
 #ancestral.c ancestral.h\
+#evolve.c evolve.h\
+#rates.c rates.h\
+#date.c date.h\
+#times.c times.h\
+#cv.c cv.h\
+#evolve.c evolve.h\
 #mpi_boot.c mpi_boot.h
 
 # phyml_mpi_LDADD = -lm
@@ -1098,6 +1116,10 @@ evolve.c evolve.h
 #tbe.c tbe.h \
 #ancestral.c ancestral.h \
 #mixt.c mixt.h \
+#evolve.c evolve.h\
+#rates.c rates.h\
+#date.c date.h\
+#times.c times.h\
 #cv.c cv.h
 
 all: all-am

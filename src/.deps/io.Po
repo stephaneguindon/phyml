@@ -109,7 +109,7 @@ io.o: io.c io.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
   interface.h invitee.h date.h simu.h pars.h alrt.h m4.h draw.h rates.h \
-  mcmc.h avx.h sse.h make.h nexus.h init.h ancestral.h cv.h
+  mcmc.h avx.h sse.h make.h nexus.h init.h ancestral.h cv.h evolve.h
 
 io.h:
 
@@ -394,3 +394,5 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:

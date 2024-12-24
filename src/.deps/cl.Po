@@ -125,7 +125,7 @@ cl.o: cl.c cl.h ../config.h \
   xml.h free.h spr.h lk.h optimiz.h models.h eigen.h stats.h mixt.h mg.h \
   tiporder.h times.h bionj.h help.h interface.h simu.h pars.h alrt.h \
   m4.h draw.h rates.h mcmc.h io.h avx.h sse.h make.h nexus.h init.h \
-  ancestral.h cv.h invitee.h date.h
+  ancestral.h cv.h evolve.h invitee.h date.h
 
 cl.h:
 
@@ -436,6 +436,8 @@ init.h:
 ancestral.h:
 
 cv.h:
+
+evolve.h:
 
 invitee.h:
 

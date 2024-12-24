@@ -388,6 +388,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define AB        27
 // Amino acid ordering:
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+#define OTHER     30
 
 
 #define EXPONENTIAL_PRIOR 0
@@ -2450,9 +2451,6 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu,int rooted);
 #endif
 void Random_Lineage_Rates(t_node *a,t_node *d,t_edge *b,phydbl stick_prob,phydbl *rates,int curr_rate,int n_rates,t_tree *tree);
 t_edge *Find_Edge_With_Label(char *label,t_tree *tree);
-void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree);
-int Pick_State(int n,phydbl *prob);
-void Evolve_Recur(t_node *a,t_node *d,t_edge *b,int a_state,int r_class,int site_num,calign *gen_data,t_mod *mod,t_tree *tree);
 void Site_Diversity(t_tree *tree);
 void Site_Diversity_Post(t_node *a,t_node *d,t_edge *b,t_tree *tree);
 void Site_Diversity_Pre(t_node *a,t_node *d,t_edge *b,t_tree *tree);
@@ -2643,7 +2641,7 @@ int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree);
 t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree);
 void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 char D_State_To_Character(int d_state, t_tree *tree);
-
+void ROC(phydbl *probs, short int *truth, int nclasses, int n_obs, char *tag);
 
 #include "xml.h"
 #include "free.h"
@@ -2665,6 +2663,7 @@ char D_State_To_Character(int d_state, t_tree *tree);
 #include "mcmc.h"
 #include "ancestral.h"
 #include "cv.h"
+#include "evolve.h"
 
 #ifdef GEO
 #include "geo.h"
