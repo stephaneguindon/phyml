@@ -123,7 +123,6 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->sum_min_sum_scale         = .0;
   tree->n_swap                    = 0;
   tree->best_pars                 = 1E+5;
-  tree->n_pattern                 = -1;
   tree->n_root_pos                = -1.;
   tree->print_labels              = YES;
   tree->write_br_lens             = YES;
@@ -3791,16 +3790,16 @@ void Init_Sarea(t_sarea *s)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Init_Calign(int n_otu, int crunch_len, int init_len, calign *this)
+void Init_Calign(int n_otu, int n_pattern, int init_len, calign *this)
 {
-  this->obs_pinvar  = .0;
-  this->n_otu       = n_otu;
-  this->clean_len   = -1;
-  this->crunch_len  = crunch_len;
-  this->init_len    = init_len;
-  this->format      = 0;
-  this->io_wght     = NULL;
-  
+  this->obs_pinvar = .0;
+  this->n_otu      = n_otu;
+  this->clean_len  = -1;
+  this->n_pattern  = n_pattern;
+  this->init_len   = init_len;
+  this->format     = 0;
+  this->io_wght    = NULL;
+
   for(int i=0; i<n_otu; ++i) Init_Cseq(this->c_seq[i]);
 
 }

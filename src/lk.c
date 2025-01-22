@@ -447,7 +447,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int npatterns = tree->n_pattern;
+  const unsigned int npatterns = tree->data->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
 
   
@@ -661,7 +661,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
    
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int npattern = tree->n_pattern;
+  const unsigned int npattern = tree->data->n_pattern;
 
   phydbl *dot_prod = tree->dot_prod;
   phydbl *expl = tree->expl;
@@ -1040,7 +1040,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   phydbl *dot_prod,*r_e_vect,*l_e_vect,*p_lk_left,*p_lk_rght,*pi;
   phydbl left,rght;
   
-  const unsigned int npattern = tree->n_pattern;
+  const unsigned int npattern = tree->data->n_pattern;
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int nsncatg = ns*ncatg;
@@ -1382,7 +1382,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
       Exit("\n");
     }
 
-  n_patterns = tree->n_pattern;
+  n_patterns = tree->data->n_pattern;
 
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
@@ -1610,7 +1610,7 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int ns = tree->mod->ns;
-  const unsigned int n_patterns = tree->n_pattern;
+  const unsigned int n_patterns = tree->data->n_pattern;
 
 
   if(tree->n_root && tree->ignore_root == YES &&
@@ -1791,11 +1791,11 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   phydbl *F,len;
   eigen *eigen_struct;
 
-  tmpdata         = (calign *)mCalloc(1,sizeof(calign));
-  tmpdata->c_seq  = (align **)mCalloc(2,sizeof(align *));
-  tmpdata->obs_state_frq  = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
-  tmpdata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
-  F               = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl ));
+  tmpdata                = (calign *)mCalloc(1, sizeof(calign));
+  tmpdata->c_seq         = (align **)mCalloc(2, sizeof(align *));
+  tmpdata->obs_state_frq = (phydbl *)mCalloc(mod->ns, sizeof(phydbl));
+  tmpdata->ambigu = (short int *)mCalloc(data->n_pattern, sizeof(short int));
+  F               = (phydbl *)mCalloc(mod->ns * mod->ns, sizeof(phydbl));
   eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
 
   Set_Update_Eigen(YES,mod);
@@ -1804,8 +1804,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
 
   tmpdata->n_otu = 2;
 
-  tmpdata->crunch_len = data->crunch_len;
-  tmpdata->init_len   = data->init_len;
+  tmpdata->n_pattern = data->n_pattern;
+  tmpdata->init_len  = data->init_len;
 
   mat = NULL;
   if(mod->io->datatype == NT)           mat = (mod->whichmodel < 10)?(K80_dist(data,1E+6)):(JC69_Dist(data,mod));
@@ -2034,7 +2034,7 @@ void Unconstraint_Lk(t_tree *tree)
   int i;
 
   tree->unconstraint_lk = .0;
-  for(i=0;i<tree->data->crunch_len;i++) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
+  for(i=0;i<tree->data->n_pattern;i++) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
   tree->unconstraint_lk -= tree->data->init_len*(phydbl)log(tree->data->init_len);
 }
 
@@ -2061,8 +2061,10 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
     unsigned int curr_site, i;
 
     if (tree->is_mixt_tree == YES)
-        return;
-
+    {
+      MIXT_Init_Partial_Lk_Tips_Double(tree);
+      return;
+    }
 
     for (i = 0; i < tree->n_otu; i++)
     {
@@ -2073,7 +2075,7 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
         }
     }
 
-    for (curr_site = 0; curr_site < tree->data->crunch_len; curr_site++)
+    for (curr_site = 0; curr_site < tree->data->n_pattern; curr_site++)
     {
         for (i = 0; i < tree->n_otu; i++)
         {
@@ -2128,7 +2130,7 @@ void Init_Partial_Lk_Tips_Int(t_tree *tree)
         }
     }
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+  for(curr_site=0;curr_site<tree->data->n_pattern;curr_site++)
     {
       for(i=0;i<tree->n_otu;i++)
         {
@@ -2441,7 +2443,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
   
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      for(j=0;j<tree->n_pattern;j++)
+      for(j=0;j<tree->data->n_pattern;j++)
         {
           tree->a_edges[i]->p_lk_loc_left[j] = j;
           tree->a_edges[i]->p_lk_loc_rght[j] = j;
@@ -2452,7 +2454,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
     {
       d = tree->a_nodes[i];
       patt_id_d = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
-      for(j=0;j<tree->n_pattern;j++)
+      for(j=0;j<tree->data->n_pattern;j++)
         {
           assert(tree->a_nodes[d->num]->c_seq);
           patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];

@@ -27,7 +27,7 @@ int Pars(t_edge *b, t_tree *tree)
       return tree->c_pars;
     }
 
-  n_patterns = tree->n_pattern;
+  n_patterns = tree->data->n_pattern;
 
   
   if(b == NULL)
@@ -118,7 +118,7 @@ void Init_Partial_Pars_Tips(t_tree *tree)
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+  for(curr_site=0;curr_site<tree->data->n_pattern;curr_site++)
     {
       for(i=0;i<tree->n_otu;i++)
         {
@@ -168,7 +168,7 @@ void Init_Ui_Tips(t_tree *tree)
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+  for(curr_site=0;curr_site<tree->data->n_pattern;curr_site++)
     {
       for(i=0;i<tree->n_otu;++i)
         {
@@ -222,7 +222,7 @@ void Init_Ui_Tips(t_tree *tree)
   
   for(br=0;br<2*tree->n_otu-3;++br)
     {
-      for(curr_site=0;curr_site<tree->data->crunch_len;++curr_site)
+      for(curr_site=0;curr_site<tree->data->n_pattern;++curr_site)
         {
           tree->a_edges[br]->pars_r[curr_site] = 0;
           tree->a_edges[br]->pars_l[curr_site] = 0;
@@ -256,7 +256,7 @@ void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   int v;
   
   const unsigned int ns = tree->mod->ns;
-  const unsigned int n_patterns = tree->n_pattern;
+  const unsigned int n_patterns = tree->data->n_pattern;
 
   if(tree->is_mixt_tree)
     {
@@ -450,12 +450,12 @@ int One_Pars_Step(t_edge *b,t_tree *tree)
   Set_Both_Sides(YES,tree);
   Pars(NULL,tree);
 
-  for(site=0;site<tree->n_pattern;site++)
+  for(site=0;site<tree->data->n_pattern;site++)
     {
       if(!(b->ui_l[site] & b->ui_r[site])) break;
     }
   tree->mod->s_opt->general_pars = init_general_pars;
-  if(site == tree->n_pattern) return 0;
+  if(site == tree->data->n_pattern) return 0;
   else
     {
       PhyML_Printf("\n. One parsimony step ocurred at site %4d",site);
@@ -469,7 +469,7 @@ int Pars_At_Given_Edge(t_edge *b, t_tree *tree)
   int site,n_patterns;
 
 /*   n_patterns = (int)FLOOR(tree->n_pattern*tree->prop_of_sites_to_consider); */
-  n_patterns = tree->n_pattern;
+  n_patterns = tree->data->n_pattern;
 
   tree->c_pars = .0;
   for(site=0;site<n_patterns;site++)

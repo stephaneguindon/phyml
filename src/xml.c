@@ -444,10 +444,6 @@ t_tree *XML_Process_Base(char *xml_filename)
        */
       mixt_tree->data = io->cdata;
       
-      /*! Set total number of patterns
-       */
-      mixt_tree->n_pattern = io->cdata->crunch_len;
-      
       /*! Remove branch lengths from mixt_tree */
       for(i=0;i<2*mixt_tree->n_otu-1;++i)
         {
@@ -612,11 +608,10 @@ t_tree *XML_Process_Base(char *xml_filename)
                           mod->s_opt->opt_pinvar = NO;
                           
                           tree->data      = io->cdata;
-                          tree->n_pattern = io->cdata->crunch_len;
                           tree->io        = io;
                           tree->mod       = mod;
                           
-                          if(tree->n_pattern != tree->prev->n_pattern) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                          if(tree->data->n_pattern != tree->prev->data->n_pattern) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                         }
                       
                       /*! Read a component */

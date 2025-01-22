@@ -204,7 +204,6 @@ int main(int argc, char **argv)
                   tree->mod          = mod;
                   tree->io           = io;
                   tree->data         = cdata;
-                  tree->n_pattern    = tree->data->crunch_len;
                   tree->n_root       = NULL;
                   tree->e_root       = NULL;
                   tree->n_tot_bl_opt = 0;
@@ -265,31 +264,37 @@ int main(int argc, char **argv)
                       if (tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)
                           Round_Optimize(tree, ROUND_MAX);
                   }
-                
-                CV_Tip_Cv(tree);
-                
-                  /* if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree); */
 
-                  Set_Both_Sides(YES,tree);
-                  Lk(NULL,tree);
-                  Pars(NULL,tree);
+                  phydbl *probs = CV_Tip_Cv(tree);
+                  Free(probs);
+
+                  /* if(tree->mod->gamma_mgf_bl)
+                   * Best_Root_Position_IL_Model(tree); */
+
+                  Set_Both_Sides(YES, tree);
+                  Lk(NULL, tree);
+                  Pars(NULL, tree);
                   Get_Tree_Size(tree);
-                  PhyML_Printf("\n\n. Log likelihood of the current tree: %.*f.",DECIMAL_DIG,tree->c_lnL);
+                  PhyML_Printf(
+                      "\n\n. Log likelihood of the current tree: %.*f.",
+                      DECIMAL_DIG, tree->c_lnL);
 
-                  if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
-                  
+                  if (tree->io->ancestral == YES)
+                    Ancestral_Sequences(tree, YES);
+
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
 
-                  if(!tree->n_root) Get_Best_Root_Position(tree);
+                  if (!tree->n_root) Get_Best_Root_Position(tree);
 
-                  /* Print the tree estimated using the current random (or BioNJ) starting tree */
+                  /* Print the tree estimated using the current random (or
+                   * BioNJ) starting tree */
                   /* if(io->mod->s_opt->n_rand_starts > 1) */
-                  if(orig_random_input_tree == YES)
-                    {
-                      Print_Tree(io->fp_out_trees,tree);
-                      fflush(NULL);
+                  if (orig_random_input_tree == YES)
+                  {
+                    Print_Tree(io->fp_out_trees, tree);
+                    fflush(NULL);
                     }
 
                   /* Record the most likely tree in a string of characters */

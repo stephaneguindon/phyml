@@ -1670,7 +1670,6 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   tree->data      = cdata;
   tree->mod       = mod;
   tree->io        = io;
-  tree->n_pattern = tree->data->crunch_len;
 
 
   /* Allocate migrep model */
@@ -2175,7 +2174,6 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
   tree->data      = cdata;
   tree->mod       = mod;
   tree->io        = io;
-  tree->n_pattern = tree->data->crunch_len;
 
   Init_Model(cdata,mod,io);
       

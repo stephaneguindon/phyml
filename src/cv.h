@@ -17,6 +17,11 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-void CV_Tip_Cv(t_tree *tree);
+phydbl *CV_Tip_Cv(t_tree *tree);
+void    CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth,
+                                           phydbl *weights, int *n_prob_vectors,
+                                           calign *masked_data, calign *orig_data,
+                                           t_tree *tree);
+void    CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob);
 
 #endif

@@ -59,7 +59,6 @@ int EVOLVE_Main(int argc, char **argv)
   tree->data                   = cdata;
   tree->mod                    = io->mod;
   tree->io                     = io;
-  tree->n_pattern              = tree->data->crunch_len;
   tree->times->scaled_pop_size = 1.E-0;
 
   EVOLVE_Coalescent(tree);
@@ -231,7 +230,6 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
   n_otu = tree->n_otu;
   ns    = tree->mod->ns;
 
-  state_probs_one_site = NULL;
   state_probs_all_sites =
       (phydbl *)mCalloc(ns * n_otu * data->init_len, sizeof(phydbl));
 
@@ -268,7 +266,7 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
 
-    if (site < (int)(1.0 * data->init_len))
+    if (site < (int)(0.2 * data->init_len))
     {
       // Set stationary frequencies
       for (int i = 0; i < mod->ns; ++i)
@@ -363,13 +361,14 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
     Free(state_probs_one_site);
   }
 
-  data->crunch_len = data->init_len;
+  data->n_pattern = data->init_len;
   /* Print_CSeq(stdout,NO,data); */
   for (int i = 0; i < 2 * tree->n_otu - 3; ++i)
     tree->a_edges[i]->l->v = orig_l[i];
   Free(orig_l);
 
-  ROC(state_probs_all_sites, truth, ns, n_otu * data->init_len, "SIM");
+  ROC(state_probs_all_sites, truth, ns, n_otu * data->init_len, data->wght,
+      "SIM");
 
   Free(state_probs_all_sites);
   Free(truth);
@@ -474,9 +473,8 @@ phydbl *EVOLVE_Site_Lk(int site_idx, int rate_class, calign *data, t_tree *tree)
     dum_data[i]->state[0] = data->c_seq[i]->state[site_idx];
     strcpy(dum_data[i]->name, data->c_seq[i]->name);
   }
-  
+
   tree->data      = Compact_Data(dum_data, tree->io);
-  tree->n_pattern = tree->data->crunch_len;
   Free_Seq(dum_data, tree->n_otu);
 
   Connect_CSeqs_To_Nodes(tree->data, tree->io, tree);
@@ -536,8 +534,7 @@ phydbl *EVOLVE_Site_Lk(int site_idx, int rate_class, calign *data, t_tree *tree)
 
   Free_Actual_CSeq(tree->data);
 
-  tree->data      = ori_data;
-  tree->n_pattern = tree->data->crunch_len;
+  tree->data = ori_data;
 
   Connect_CSeqs_To_Nodes(tree->data, tree->io, tree);
 

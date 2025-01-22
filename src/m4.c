@@ -118,7 +118,6 @@ int M4_main(int argc, char **argv)
 		  tree->mod         = mod;
 		  tree->io          = io;
 		  tree->data        = cdata;
-		  tree->n_pattern   = tree->data->crunch_len;
 
                   Set_Both_Sides(YES,tree);
     
@@ -530,7 +529,7 @@ void M4_Init_Partial_Lk_Tips_Double(t_tree *tree)
   dim3 = tree->mod->m4mod->n_o;
 
 
-  Fors(curr_site,tree->data->crunch_len,tree->mod->io->state_len)
+  Fors(curr_site,tree->data->n_pattern,tree->mod->io->state_len)
     {
       for(i=0;i<tree->n_otu;i++)
 	{
@@ -572,7 +571,7 @@ void M4_Init_Partial_Lk_Tips_Int(t_tree *tree)
   dim2 = tree->mod->m4mod->n_h * tree->mod->m4mod->n_o;
   dim3 = tree->mod->m4mod->n_o;
 
-  Fors(curr_site,tree->data->crunch_len,tree->mod->io->state_len)
+  Fors(curr_site,tree->data->n_pattern,tree->mod->io->state_len)
     {
       for(i=0;i<tree->n_otu;i++)
 	{
@@ -797,7 +796,7 @@ phydbl ***M4_Compute_Proba_Hidden_States_On_Edges(t_tree *tree)
   For(i,2*tree->n_otu-3)
     {
       post_probs[i] = (phydbl **)mCalloc(tree->n_pattern,sizeof(phydbl *));
-      for(tree->curr_site=0;tree->curr_site<tree->n_pattern;tree->curr_site++) 
+      for(tree->curr_site=0;tree->curr_site<tree->data->n_pattern;tree->curr_site++) 
 	post_probs[i][tree->curr_site] = (phydbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(phydbl));
     }
 
@@ -811,7 +810,7 @@ phydbl ***M4_Compute_Proba_Hidden_States_On_Edges(t_tree *tree)
 
       integral = M4_Integral_Term_On_One_Edge(tree->a_edges[i],tree);
 
-      for(tree->curr_site=0;tree->curr_site<tree->n_pattern;tree->curr_site++)
+      for(tree->curr_site=0;tree->curr_site<tree->data->n_pattern;tree->curr_site++)
 	M4_Post_Prob_H_Class_Edge_Site(tree->a_edges[i],
 				       integral,
 				       post_probs[i][tree->curr_site],
@@ -855,7 +854,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
   /* Compute the posterior mean relative rate on each branch averaged over the 
      whole set of patterns (sites) */
   len_var = 0;
-  for(patt=0;patt<tree->n_pattern;patt++) 
+  for(patt=0;patt<tree->data->n_pattern;patt++) 
     {
       if(!Is_Invar(patt,1,NT,tree->data))
 	{
@@ -931,7 +930,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
   PhyML_Fprintf(tree->io->fp_out_tree,"%s\n",s);
   Free(s);
   tree->ps_tree = DR_Make_Tdraw_Struct(tree);
-  DR_Print_Postscript_Header(tree->n_pattern,tree->io->fp_out_ps);
+  DR_Print_Postscript_Header(tree->data->n_pattern,tree->io->fp_out_ps);
   tree->ps_page_number = 0;
   DR_Print_Tree_Postscript(tree->ps_page_number++,YES,tree->io->fp_out_ps,tree);
 
@@ -941,7 +940,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
   /* Compute the posterior mean relative rate at each site, for each branch
      and each rate category. Scale branch lengths using these factors and
      print each tree (i.e., on tree per site pattern) */
-  for(patt=0;patt<tree->n_pattern;patt++) 
+  for(patt=0;patt<tree->data->n_pattern;patt++) 
     {
       For(br,2*tree->n_otu-3) 
 	{
@@ -1044,7 +1043,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
 
   For(br,2*tree->n_otu-3)
     {
-      for(tree->curr_site=0;tree->curr_site<tree->n_pattern;tree->curr_site++)
+      for(tree->curr_site=0;tree->curr_site<tree->data->n_pattern;tree->curr_site++)
 	Free(post_probs[br][tree->curr_site]);
       Free(post_probs[br]);
     }
@@ -1066,10 +1065,10 @@ phydbl **M4_Site_Branch_Classification(phydbl ***post_probs, t_tree *tree)
   phydbl **best_probs;
   phydbl post_prob_fast, post_prob_slow;
 
-  best_probs = (phydbl **)mCalloc(tree->n_pattern,sizeof(phydbl *));
+  best_probs = (phydbl **)mCalloc(tree->data->n_pattern,sizeof(phydbl *));
   for(i=0;i<tree->n_pattern;i++) best_probs[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
 
-  for(patt=0;patt<tree->n_pattern;patt++) 
+  for(patt=0;patt<tree->data->n_pattern;patt++) 
     {
       For(br,2*tree->n_otu-3) 
 	{
@@ -1172,8 +1171,7 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
   Free_Tree_Lk(tree);
   Free_Tree_Pars(tree);
 
-  tree->data      = cpy_data;
-  tree->n_pattern = tree->data->crunch_len;
+  tree->data = cpy_data;
 
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
@@ -1355,7 +1353,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   Simu_Loop(tree);
   nocov_mod = (t_mod *)Copy_Model(tree->mod); /* Record model parameters */
   For(i,2*tree->n_otu-3) nocov_bl[i] = tree->a_edges[i]->l->v; /* Record branch lengths */
-  for(i=0;i<tree->data->crunch_len;i++) site_lnl_nocov[i] = tree->cur_site_lk[i];
+  for(i=0;i<tree->data->n_pattern;i++) site_lnl_nocov[i] = tree->cur_site_lk[i];
   Print_Lk(tree,"[LnL under non-switching substitution model]");
   
   PhyML_Printf("\n. Estimate model parameters under switching substitution model.\n");
@@ -1363,12 +1361,12 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   Simu_Loop(tree);
   cov_mod = (t_mod *)Copy_Model(tree->mod); /* Record model parameters */
   For(i,2*tree->n_otu-3) cov_bl[i] = tree->a_edges[i]->l->v; /* Record branch lengths */
-  for(i=0;i<tree->data->crunch_len;i++) site_lnl_cov[i] = tree->cur_site_lk[i];
+  for(i=0;i<tree->data->n_pattern;i++) site_lnl_cov[i] = tree->cur_site_lk[i];
   Print_Lk(tree,"[LnL under switching substitution model]");
   
 
   PhyML_Printf("\n");
-  for(i=0;i<tree->data->crunch_len;i++) PhyML_Printf("TRUTH %f %f\n",site_lnl_nocov[i],site_lnl_cov[i]);
+  for(i=0;i<tree->data->n_pattern;i++) PhyML_Printf("TRUTH %f %f\n",site_lnl_nocov[i],site_lnl_cov[i]);
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   tree->mod = nocov_mod;
@@ -1381,9 +1379,8 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   Free_Tree_Lk(tree);
   Free_Tree_Pars(tree);
 
-  tree->data      = cpy_data;
-  tree->n_pattern = tree->data->crunch_len;
-  tree->mod       = cov_mod;
+  tree->data = cpy_data;
+  tree->mod  = cov_mod;
 
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
@@ -1410,17 +1407,17 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
       tree->mod = nocov_mod;
       For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = nocov_bl[i];
       Lk(NULL,tree);
-      for(i=0;i<tree->data->crunch_len;i++) site_lnl_nocov[i] = tree->cur_site_lk[i];
+      for(i=0;i<tree->data->n_pattern;i++) site_lnl_nocov[i] = tree->cur_site_lk[i];
       Print_Lk(tree,"[CPY LnL under non-switching substitution model]");
 
       tree->mod = cov_mod;
       For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = cov_bl[i];
       Lk(NULL,tree);
-      for(i=0;i<tree->data->crunch_len;i++) site_lnl_cov[i] = tree->cur_site_lk[i];
+      for(i=0;i<tree->data->n_pattern;i++) site_lnl_cov[i] = tree->cur_site_lk[i];
       Print_Lk(tree,"[CPY LnL under switching substitution model]");
 
       PhyML_Printf("\n");
-      for(i=0;i<tree->data->crunch_len;i++) PhyML_Printf("SYNTH %f %f\n",site_lnl_nocov[i],site_lnl_cov[i]);
+      for(i=0;i<tree->data->n_pattern;i++) PhyML_Printf("SYNTH %f %f\n",site_lnl_nocov[i],site_lnl_cov[i]);
     }
   while(++n_iter < 200);
 
@@ -1428,8 +1425,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   Free_Tree_Pars(tree);
 
   /* Back to the original data set to check that everything is ok */
-  tree->data      = ori_data;
-  tree->n_pattern = tree->data->crunch_len;
+  tree->data = ori_data;
 
   Make_Tree_For_Pars(tree);
   Make_Tree_For_Lk(tree);
@@ -1507,8 +1503,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   Free_Tree_Lk(tree);
   Free_Tree_Pars(tree);
 
-  tree->data      = cpy_data;
-  tree->n_pattern = tree->data->crunch_len;
+  tree->data = cpy_data;
 
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
@@ -1517,8 +1512,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   Make_Tree_For_Lk(tree);
 
   /* Go back to the original data set */
-  tree->data      = ori_data;
-  tree->n_pattern = ori_data->crunch_len;
+  tree->data = ori_data;
   
   if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
   else Init_Partial_Lk_Tips_Int(tree);
@@ -1565,8 +1559,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
 
 
   /* Go back to the original data set */
-  tree->data      = ori_data;
-  tree->n_pattern = ori_data->crunch_len;
+  tree->data = ori_data;
   
   if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
   else Init_Partial_Lk_Tips_Int(tree);

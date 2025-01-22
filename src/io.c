@@ -3418,7 +3418,7 @@ void Print_Tip_Partials(t_tree* tree, t_node* d)
   assert(d->b[0]->rght->tax);
   fprintf(stdout,"Taxa/Node %d\n",d->num);
   int site, i;
-  for(site=0;site<tree->n_pattern;++site)
+  for(site=0;site<tree->data->n_pattern;++site)
     {
       fprintf(stdout,"[%d: ",site);
       for(i=0;i<tree->mod->ns;++i)
@@ -3486,7 +3486,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     {
       fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d [rate,site,state]:\n",b->num);
       for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        for(site=0;site<tree->n_pattern;++site)
+        for(site=0;site<tree->data->n_pattern;++site)
           for(j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
             fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
@@ -3498,7 +3498,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     else //is a tip
     {
         fprintf(stdout,"Likelihoods on LEFT tip of Branch %d [site,state]:\n",b->num);
-        for(site=0;site<tree->n_pattern;++site)
+        for(site=0;site<tree->data->n_pattern;++site)
             for(j=0;j<tree->mod->ns;++j)
               fprintf(stdout,"[%d,%d]%.1f ",site,j,b->p_lk_tip_l[site*tree->mod->ns + j]);
         fflush(stdout);
@@ -3508,7 +3508,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     {
         fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d [rate,site,state]:\n",b->num);
         for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-            for(site=0;site<tree->n_pattern;++site)
+            for(site=0;site<tree->data->n_pattern;++site)
                 for(j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
                     fprintf(stdout,fmt,catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
@@ -3520,7 +3520,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     else //is a tip
     {
         fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d [site,state]:\n",b->num);
-        for(site=0;site<tree->n_pattern;++site)
+        for(site=0;site<tree->data->n_pattern;++site)
             for(j=0;j<tree->mod->ns;++j)
                 fprintf(stdout,"[%d,%d]%.1f ",site,j,b->p_lk_tip_r[site*tree->mod->ns + j]);
         fflush(stdout);
@@ -4685,6 +4685,8 @@ option *PhyML_XML(char *xml_filename)
   /*! Print the most likely tree in the output file */
   if(!mixt_tree->io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'...\n", Basename(mixt_tree->io->out_tree_file));
   PhyML_Fprintf(mixt_tree->io->fp_out_tree,"%s\n",most_likely_tree);
+
+  MIXT_Cv(mixt_tree);
 
   /*! Bootstrap analysis */
   MIXT_Bootstrap(most_likely_tree,xml_root);
