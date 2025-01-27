@@ -4126,12 +4126,12 @@ void MIXT_Cv(t_tree *mixt_tree)
       // Optimize all parameters on training data set (i.e., whole alignement
       // with masked positions)
       Init_Partial_Lk_Tips_Double(mixt_tree);
-      // Set_Both_Sides(YES, mixt_tree);
-      // Set_Update_Eigen(YES, mixt_tree->mod);
-      // Lk(NULL, mixt_tree);
-      // Set_Update_Eigen(NO, mixt_tree->mod);
-      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
-      // // Global_Spr_Search(mixt_tree);
+      Set_Both_Sides(YES, mixt_tree);
+      Set_Update_Eigen(YES, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      // Global_Spr_Search(mixt_tree);
+      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
 
       // Compute likelihoods on test set (i.e., probability of each possible
       // state at masked positions)
@@ -4140,7 +4140,9 @@ void MIXT_Cv(t_tree *mixt_tree)
                                          c_seq_cpy, mixt_tree);
 
       // Go back to the original alignment
+      Free_Calign(mixt_tree->data);
       mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
+      Free_Calign(c_seq_cpy);
 
       tree = mixt_tree->next;
       do
@@ -4151,7 +4153,6 @@ void MIXT_Cv(t_tree *mixt_tree)
 
       MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
 
-      Free_Calign(c_seq_cpy);
     }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);

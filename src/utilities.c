@@ -374,7 +374,7 @@ calign *Compact_Data(align **data, option *io)
 
   data[0]->len -= n_ambigu;
 
-  cdata_tmp->init_len   = data[0]->len;
+  cdata_tmp->init_len  = data[0]->len;
   cdata_tmp->n_pattern = n_patt;
   for (i = 0; i < n_otu; i++) cdata_tmp->c_seq[i]->len = n_patt;
   for (i = 0; i < n_otu; i++) cdata_tmp->c_seq[i]->num = i;
@@ -2294,10 +2294,11 @@ calign *Copy_Cseq(calign *ori, option *io)
     strcpy(sp_names_out[i], ori->c_seq_rm[i]->name);
   }
 
-  new       = Make_Calign(n_otu + n_rm, c_len + 1, io->state_len, ori->init_len,
+  new       = Make_Calign(n_otu + n_rm, c_len, io->state_len, ori->init_len,
                           sp_names_in, ori->n_rm, sp_names_out);
   new->n_rm = ori->n_rm;
-  Init_Calign(n_otu, c_len + 1, ori->init_len, new);
+  
+  Init_Calign(n_otu, c_len, ori->init_len, new);
 
   for (i = 0; i < ori->n_rm; ++i)
   {

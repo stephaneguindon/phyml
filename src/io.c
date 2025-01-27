@@ -4675,6 +4675,8 @@ option *PhyML_XML(char *xml_filename)
       MIXT_Init_T_End(mixt_tree);
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
 
+      MIXT_Cv(mixt_tree);
+
       Free_Best_Spr(mixt_tree);
       Free_Spr_List_One_Edge(mixt_tree);
       Free_Spr_List_All_Edge(mixt_tree);
@@ -4686,7 +4688,6 @@ option *PhyML_XML(char *xml_filename)
   if(!mixt_tree->io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'...\n", Basename(mixt_tree->io->out_tree_file));
   PhyML_Fprintf(mixt_tree->io->fp_out_tree,"%s\n",most_likely_tree);
 
-  MIXT_Cv(mixt_tree);
 
   /*! Bootstrap analysis */
   MIXT_Bootstrap(most_likely_tree,xml_root);
