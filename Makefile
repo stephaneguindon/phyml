@@ -154,7 +154,8 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in COPYING \
-	README.md compile config.guess config.sub install-sh missing
+	README.md compile config.guess config.sub depcomp install-sh \
+	missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -208,7 +209,7 @@ AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og
+CFLAGS = -march=native -Wall -std=c99 -g
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags

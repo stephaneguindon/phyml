@@ -1158,9 +1158,9 @@ t_tree *XML_Process_Base(char *xml_filename)
   if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
 
 
-  /* int r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed); */
-  /* srand(r_seed); */
-  /* io->r_seed = r_seed; */
+  int r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed); 
+  srand(r_seed); 
+  io->r_seed = r_seed; 
   
   Free(component);
   Free(class_num);

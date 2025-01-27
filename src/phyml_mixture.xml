@@ -1,4 +1,4 @@
-<phyml run.id="mixt" output.file="xxx">
+<phyml run.id="mixt" output.file="xxx" r.seed="1">
 
 	<topology>
 		<instance id="T1" init.tree="BioNJ">

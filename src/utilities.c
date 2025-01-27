@@ -419,9 +419,6 @@ calign *Compact_Data(align **data, option *io)
   Free_Calign(cdata_tmp);
   Free_Prefix_Tree(proot, T_MAX_ALPHABET);
 
-  Check_Ambiguities(cdata, io->datatype, io->state_len);
-  Set_D_States(cdata, io->datatype, io->state_len);
-
   if (io_wght != NULL) Free_Scalar_Dbl(io_wght);
 
   return cdata;
@@ -2355,11 +2352,11 @@ calign *Copy_Cseq(calign *ori, option *io)
   for (i = 0; i < T_MAX_ALPHABET; i++)
     new->obs_state_frq[i] = ori->obs_state_frq[i];
 
-  new->init_len   = ori->init_len;
-  new->clean_len  = ori->clean_len;
+  new->init_len  = ori->init_len;
+  new->clean_len = ori->clean_len;
   new->n_pattern = ori->n_pattern;
-  new->n_otu      = ori->n_otu;
-  new->io         = ori->io;
+  new->n_otu     = ori->n_otu;
+  new->io        = ori->io;
 
   for (i = n_otu; i < n_otu + n_rm; ++i)
     new->c_seq[i] = new->c_seq_rm[i - n_otu];
@@ -2369,6 +2366,9 @@ calign *Copy_Cseq(calign *ori, option *io)
 
   for (i = 0; i < ori->n_rm; i++) Free(sp_names_out[i]);
   Free(sp_names_out);
+
+  Check_Ambiguities(new, io->datatype, io->state_len);
+  Set_D_States(new, io->datatype, io->state_len);
 
   return new;
 }

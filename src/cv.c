@@ -151,16 +151,22 @@ void CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob)
 {
   phydbl u;
 
-  for (int tax_id = 0; tax_id < data->n_otu; ++tax_id)
+  for (int site = 0; site < data->n_pattern; ++site)
   {
-    for (int site = 0; site < data->n_pattern; ++site)
+    for (int tax_id = 0; tax_id < data->n_otu; ++tax_id)
     {
       u = Uni();
 
       if (!(u > mask_prob))
       {
-        data->c_seq[tax_id]->state[site]   = '?';
-        data->c_seq[tax_id]->d_state[site] = -1;
+
+        // PhyML_Printf("\n Hidding '%c' for taxon %s at site %d",
+        //              data->c_seq[tax_id]->state[site],
+        //              data->c_seq[tax_id]->name, site);
+
+        data->c_seq[tax_id]->state[site]     = '?';
+        data->c_seq[tax_id]->d_state[site]   = -1;
+        data->c_seq[tax_id]->is_ambigu[site] = YES;
       }
     }
   }
@@ -169,7 +175,7 @@ void CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, phydbl *weights, int *n_prob_vectors, calign *masked_data, calign *orig_data, t_tree *tree)
+void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth, phydbl **weights, int *n_prob_vectors, calign *masked_data, calign *orig_data, t_tree *tree)
 {
   t_tree *orig_tree;
   phydbl  r_mat_weight_sum, e_frq_weight_sum, sum_probas;
@@ -181,8 +187,9 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
   r_mat_weight_sum = -1.;
   e_frq_weight_sum = -1.;
   sum_probas       = -1.;
-  ns               = tree->mod->ns;
   
+  ns = tree->mod->ns;
+
   if (tree->is_mixt_tree == YES)
   {
     r_mat_weight_sum =
@@ -199,36 +206,43 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
     {
       if(masked_data->c_seq[tax_id]->state[site] != orig_data->c_seq[tax_id]->state[site]) // position was masked
       {
+
+        // PhyML_Printf("\n. tax_id: %d site: %d", tax_id, site);
+        
         assert(!strcmp(tree->a_nodes[tax_id]->name,
                        masked_data->c_seq[tax_id]->name));
-
+        
+        // PhyML_Printf("\n. state_probs: %p %p", state_probs, state_probs ? state_probs[0] : NULL);
+        
         if (*n_prob_vectors == 0)
         {
-          state_probs = (phydbl *)mCalloc(tree->mod->ns, sizeof(phydbl));
-          truth       = (short int *)mCalloc(tree->mod->ns, sizeof(short int));
-          weights     = (phydbl *)mCalloc(1, sizeof(phydbl));
+          (*state_probs) = (phydbl *)mCalloc(ns, sizeof(phydbl));
+          (*truth)       = (short int *)mCalloc(ns, sizeof(short int));
+          (*weights)     = (phydbl *)mCalloc(1, sizeof(phydbl));
         }
         else
         {
-          state_probs = (phydbl *)mRealloc(
-              state_probs, *n_prob_vectors + tree->mod->ns, sizeof(phydbl));
-          truth = (short int *)mRealloc(truth, *n_prob_vectors + tree->mod->ns,
-                                  sizeof(short int));
-          weights =
-              (phydbl *)mRealloc(weights, *n_prob_vectors + 1, sizeof(phydbl));
+          (*state_probs) = (phydbl *)mRealloc(
+              *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
+          (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
+                                           sizeof(short int));
+          (*weights) =
+              (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
         }
-
+        
+        // PhyML_Printf("\n. state_probs: %p", state_probs);
+        
         for (int tip_state = 0; tip_state < ns; ++tip_state)
-          truth[*n_prob_vectors + tip_state] = 0;
+          (*truth)[*n_prob_vectors * ns + tip_state] = 0;
 
-        truth[*n_prob_vectors + orig_data->c_seq[tax_id]->d_state[site]] = 1;
+        (*truth)[*n_prob_vectors * ns + orig_data->c_seq[tax_id]->d_state[site]] = 1;
 
-        weights[*n_prob_vectors] = orig_data->wght[site];
+        (*weights)[*n_prob_vectors] = orig_data->wght[site];
 
         if (tree->is_mixt_tree == YES)
         {
           for (int tip_state = 0; tip_state < ns; ++tip_state)
-            state_probs[*n_prob_vectors + tip_state] = 0.0;
+            (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
 
           tree = tree->next;
           do
@@ -238,10 +252,9 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
 
             for (int tip_state = 0; tip_state < ns; ++tip_state)
             {
-              state_probs[*n_prob_vectors] = 0.0;
               for (int int_state = 0; int_state < ns; ++int_state)
               {
-                state_probs[*n_prob_vectors + tip_state] +=
+                (*state_probs)[*n_prob_vectors * ns + tip_state] +=
                     tree->mod->r_mat_weight->v / r_mat_weight_sum *
                     tree->mod->e_frq_weight->v / e_frq_weight_sum / sum_probas *
                     tree->mod->e_frq->pi->v[tip_state] *
@@ -259,7 +272,7 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
           p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left;
 
           for (int tip_state = 0; tip_state < ns; ++tip_state)
-            state_probs[*n_prob_vectors + tip_state] = 0.0;
+            (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
 
           for (int tip_state = 0; tip_state < ns; ++tip_state)
           {
@@ -267,7 +280,7 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
             {
               for (int catg = 0; catg < tree->mod->ras->n_catg; ++catg)
               {
-                state_probs[*n_prob_vectors + tip_state] +=
+                (*state_probs)[*n_prob_vectors + tip_state] +=
                     tree->mod->ras->gamma_r_proba->v[catg] *
                     tree->mod->e_frq->pi->v[tip_state] *
                     Pij[catg * ns * ns + tip_state * ns + int_state] *
@@ -276,7 +289,7 @@ void CV_State_Probs_At_Hidden_Positions(phydbl *state_probs, short int *truth, p
             }
           }
         }
-        *n_prob_vectors += tree->mod->ns;
+        *n_prob_vectors += 1;        
       }
     }
   }

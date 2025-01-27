@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: arm64e (ARM64E)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 8.00 gigabytes
-Default processor set: 420 tasks, 2654 threads, 8 processors
-Load average: 1.94, Mach factor: 6.05
+Default processor set: 401 tasks, 2486 threads, 8 processors
+Load average: 1.57, Mach factor: 6.42
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -505,7 +505,7 @@ AUTOMAKE='${SHELL} '\''/Users/guindon/phyml/missing'\'' automake-1.16'
 AWK='awk'
 CC='gcc'
 CCDEPMODE='depmode=gcc3'
-CFLAGS='-ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og'
+CFLAGS='-march=native -Wall -std=c99 -g'
 CPPFLAGS=''
 CSCOPE='cscope'
 CTAGS='ctags'

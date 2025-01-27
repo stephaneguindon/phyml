@@ -4098,63 +4098,80 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 
 void MIXT_Cv(t_tree *mixt_tree)
 {
-  t_tree    *tree, *next;
-  t_edge    *b;
   phydbl    *state_probs, *weights;
-  phydbl    *p_lk_left, *Pij;
   short int *truth;
-  phydbl     r_mat_weight_sum, e_frq_weight_sum, sum_probas;
   calign    *c_seq_cpy;
   int        kfold;
   int        n_prob_vectors;
+  t_tree    *tree;
 
-  state_probs             = NULL;
-  truth                   = NULL;
-  kfold                   = 5;
-  n_prob_vectors          = 0;
+  state_probs = NULL;
+  truth       = NULL;
+  weights     = NULL;
+  tree        = NULL;
+
+  kfold          = 5;
+  n_prob_vectors = 0;
   
   do
   {
     for (int i = 0; i < kfold; ++i)
-      {
-        // Create a copy of the original alignment
-        c_seq_cpy = Copy_Cseq(mixt_tree->next->data, mixt_tree->io);
+    {
+      // Create a copy of the original alignment
+      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
 
-        // Hide characters in the original alignment uniformly at random
-        CV_Hide_Characters_At_Random(mixt_tree->next->data, 1. / (phydbl)kfold);
+      // Hide characters in the original alignment uniformly at random
+      CV_Hide_Characters_At_Random(mixt_tree->data, 1. / (phydbl)kfold);
 
-        // Optimize all parameters on training data set (i.e., whole alignement
-        // with masked positions)
-        Init_Partial_Lk_Tips_Double(mixt_tree);
-        Set_Both_Sides(YES, mixt_tree);
-        Set_Update_Eigen(YES, mixt_tree->mod);
-        Lk(NULL, mixt_tree);
-        Set_Update_Eigen(NO, mixt_tree->mod);
-        Global_Spr_Search(mixt_tree);
-
-        // Compute likelihoods on test set (i.e., probability of each possible
-        // state at masked positions)
-        CV_State_Probs_At_Hidden_Positions(state_probs, truth, weights, &n_prob_vectors,
-                                           mixt_tree->next->data, c_seq_cpy,
-                                           tree);
-
-        // Go back to the original alignment
-        mixt_tree->next->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
-        Free_Calign(c_seq_cpy);
-      }
-
+      // Optimize all parameters on training data set (i.e., whole alignement
+      // with masked positions)
       Init_Partial_Lk_Tips_Double(mixt_tree);
-  
-      ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-          "MIXT");
+      // Set_Both_Sides(YES, mixt_tree);
+      // Set_Update_Eigen(YES, mixt_tree->mod);
+      // Lk(NULL, mixt_tree);
+      // Set_Update_Eigen(NO, mixt_tree->mod);
+      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+      // // Global_Spr_Search(mixt_tree);
 
-      Free(state_probs);
-      Free(truth);
-      Free(weights);
+      // Compute likelihoods on test set (i.e., probability of each possible
+      // state at masked positions)
+      CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &weights,
+                                         &n_prob_vectors, mixt_tree->data,
+                                         c_seq_cpy, mixt_tree);
 
-      tree = tree->next_mixt;
+      // Go back to the original alignment
+      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
 
-  } while (tree != NULL);
+      tree = mixt_tree->next;
+      do
+      {
+        tree->data = tree->mixt_tree->data;
+        tree       = tree->next;
+      } while (tree && tree->is_mixt_tree == NO);
+
+      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+
+      Free_Calign(c_seq_cpy);
+    }
+
+    Init_Partial_Lk_Tips_Double(mixt_tree);
+    
+    Exit("\n");
+    
+    ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
+        "MIXT");
+
+    Free(state_probs);
+    Free(truth);
+    Free(weights);
+
+    state_probs = NULL;
+    truth       = NULL;
+    weights     = NULL;
+
+    mixt_tree = mixt_tree->next_mixt;
+
+  } while (mixt_tree != NULL);
 }
 
 //////////////////////////////////////////////////////////////
