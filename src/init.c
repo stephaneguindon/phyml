@@ -715,6 +715,8 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->br_len_mult->v          = 1.0;
   mod->br_len_mult_unscaled->v = 1.0;
+
+  mod->cv_type = KFOLD;
 }
 
 //////////////////////////////////////////////////////////////
@@ -963,7 +965,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   times->neff_prior_var     = 1.0;
   times->neff_prior_distrib = FLAT_PRIOR;
   
-  times->neff_growth     = 1E-6;
+  times->neff_growth     = 1.E-10;
   times->neff_growth_min = -5.;
   times->neff_growth_max = +5.;
   
@@ -3799,6 +3801,9 @@ void Init_Calign(int n_otu, int n_pattern, int init_len, calign *this)
   this->init_len   = init_len;
   this->format     = 0;
   this->io_wght    = NULL;
+  this->n_masked   = -1;
+  this->mask_type  = MASK_TYPE_POSITION;
+  this->masked_pos = NULL;
 
   for(int i=0; i<n_otu; ++i) Init_Cseq(this->c_seq[i]);
 

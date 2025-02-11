@@ -146,8 +146,9 @@ phydbl *CV_Tip_Cv(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-void CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob)
+// Mask positions uniformly at random (more than one position may
+// be masked at any given site)
+void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
 {
   phydbl u;
 
@@ -159,15 +160,81 @@ void CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob)
 
       if (!(u > mask_prob))
       {
+        data->c_seq[tax_id]->state[site]     = '?';
+        data->c_seq[tax_id]->d_state[site]   = -1;
+        data->c_seq[tax_id]->is_ambigu[site] = YES;
 
-        // PhyML_Printf("\n Hidding '%c' for taxon %s at site %d",
-        //              data->c_seq[tax_id]->state[site],
-        //              data->c_seq[tax_id]->name, site);
+        if (data->n_masked == 0)
+          data->masked_pos = (int *)mCalloc(1, sizeof(int));
+        else
+          data->masked_pos = (int *)mRealloc(data->masked_pos,
+                                             data->n_masked + 1, sizeof(int));
 
+        data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
+        data->n_masked++;
+
+        PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
+      }
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Mask exactly one position per site 
+void CV_Hide_Align_At_Random_One_Per_Site(calign *data)
+{
+  phydbl tax_id;
+
+  for (int site = 0; site < data->n_pattern; ++site)
+  {
+    tax_id = Rand_Int(0, data->n_otu - 1);
+
+    data->c_seq[tax_id]->state[site]     = '?';
+    data->c_seq[tax_id]->d_state[site]   = -1;
+    data->c_seq[tax_id]->is_ambigu[site] = YES;
+
+    if (data->n_masked == 0)
+      data->masked_pos = (int *)mCalloc(1, sizeof(int));
+    else
+      data->masked_pos =
+          (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+
+    data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
+    data->n_masked++;
+
+    PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
+{
+  phydbl u;
+
+  for (int site = 0; site < data->n_pattern; ++site)
+  {
+    u = Uni();
+
+    if (!(u > mask_prob))
+    {
+      for (int tax_id = 0; tax_id < data->n_otu; ++tax_id)
+      {
         data->c_seq[tax_id]->state[site]     = '?';
         data->c_seq[tax_id]->d_state[site]   = -1;
         data->c_seq[tax_id]->is_ambigu[site] = YES;
       }
+
+      if (data->n_masked == 0)
+        data->masked_pos = (int *)mCalloc(1, sizeof(int));
+      else
+        data->masked_pos =
+            (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+
+      data->masked_pos[data->n_masked] = site;
+      data->n_masked++
     }
   }
 }
@@ -175,122 +242,207 @@ void CV_Hide_Characters_At_Random(calign *data, phydbl mask_prob)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth, phydbl **weights, int *n_prob_vectors, calign *masked_data, calign *orig_data, t_tree *tree)
+void CV_Hide_Align_At_Given_Pos(calign *data, int tax_id, int site)
 {
-  t_tree *orig_tree;
-  phydbl  r_mat_weight_sum, e_frq_weight_sum, sum_probas;
-  int     ns;
-  phydbl *Pij, *p_lk_left;
+  data->c_seq[tax_id]->state[site]     = '?';
+  data->c_seq[tax_id]->d_state[site]   = -1;
+  data->c_seq[tax_id]->is_ambigu[site] = YES;
 
-  orig_tree = tree;
+  if (data->n_masked == 0)
+    data->masked_pos = (int *)mCalloc(1, sizeof(int));
+  else
+    data->masked_pos =
+        (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
-  r_mat_weight_sum = -1.;
-  e_frq_weight_sum = -1.;
-  sum_probas       = -1.;
+  data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
+  data->n_masked++
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth,
+                                        phydbl **site_loglk, phydbl **weights,
+                                        int *n_prob_vectors, t_tree *tree)
+{
+
+  int tax_id, site;
   
+  for (int m = 0; m < tree->data->n_masked; ++m)
+  {
+    tax_id = floor((phydbl)tree->data->masked_pos[m] / tree->data->n_pattern);
+    site   = tree->data->masked_pos[m] - tax_id * tree->data->n_pattern;
+
+    PhyML_Printf("\n. CV prob @ %d %d", tax_id, site);
+
+    CV_State_Probs_Core(state_probs, truth, site_loglk, weights, n_prob_vectors,
+                        tax_id, site, tree->data->c_seq[tax_id]->d_state[site],
+                        tree->data->wght[site], tree);
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
+                         phydbl **site_loglk, phydbl **weights,
+                         int *n_prob_vectors, int tax_id, int site,
+                         int true_d_state, phydbl patt_weight, t_tree *tree)
+{
+  int     ns;
+  phydbl *Pij, *p_lk_left, sum;
+
   ns = tree->mod->ns;
+
+  if (*n_prob_vectors == 0)
+  {
+    (*state_probs) = (phydbl *)mCalloc(ns, sizeof(phydbl));
+    (*site_loglk)  = (phydbl *)mCalloc(1, sizeof(phydbl));
+    (*truth)       = (short int *)mCalloc(ns, sizeof(short int));
+    (*weights)     = (phydbl *)mCalloc(1, sizeof(phydbl));
+  }
+  else
+  {
+    (*state_probs) = (phydbl *)mRealloc(
+        *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
+    (*site_loglk) =
+        (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
+    (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
+                                     sizeof(short int));
+    (*weights) =
+        (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
+  }
+
+  // PhyML_Printf("\n. state_probs: %p", state_probs);
+
+  for (int tip_state = 0; tip_state < ns; ++tip_state)
+    (*truth)[*n_prob_vectors * ns + tip_state] = 0;
+
+  (*truth)[*n_prob_vectors * ns + true_d_state] = 1;
+
+  (*weights)[*n_prob_vectors] = patt_weight;
+
+  (*site_loglk)[*n_prob_vectors] = tree->c_lnL_sorted[site];
 
   if (tree->is_mixt_tree == YES)
   {
-    r_mat_weight_sum =
+    phydbl r_mat_weight_sum =
         MIXT_Get_Sum_Chained_Scalar_Dbl(tree->next->mod->r_mat_weight);
-    e_frq_weight_sum =
+
+    phydbl e_frq_weight_sum =
         MIXT_Get_Sum_Chained_Scalar_Dbl(tree->next->mod->e_frq_weight);
-    sum_probas = MIXT_Get_Sum_Of_Probas_Across_Mixtures(
+
+    phydbl sum_probas = MIXT_Get_Sum_Of_Probas_Across_Mixtures(
         r_mat_weight_sum, e_frq_weight_sum, tree);
-  }
 
-  for (int tax_id = 0; tax_id < tree->n_otu; ++tax_id) // for each row in the alignment
-  {
-    for (int site = 0; site < tree->data->n_pattern; ++site) // for each column
+    for (int tip_state = 0; tip_state < ns; ++tip_state)
+      (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
+
+    tree = tree->next;
+    do
     {
-      if(masked_data->c_seq[tax_id]->state[site] != orig_data->c_seq[tax_id]->state[site]) // position was masked
+      Pij       = tree->a_nodes[tax_id]->b[0]->Pij_rr;
+      p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left + site * ns;
+
+      // PhyML_Printf("\n. ncatg: %d truth: %d p_lk_left: %f %f %f %f Pij: %f %f
+      // %f %f",
+      //              tree->mod->ras->n_catg,
+      //              orig_data->c_seq[tax_id]->d_state[site],
+      //              p_lk_left[0],
+      //              p_lk_left[1], p_lk_left[2], p_lk_left[3],
+      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 0],
+      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 1],
+      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 2],
+      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 3]);
+
+      for (int tip_state = 0; tip_state < ns; ++tip_state)
       {
-
-        // PhyML_Printf("\n. tax_id: %d site: %d", tax_id, site);
-        
-        assert(!strcmp(tree->a_nodes[tax_id]->name,
-                       masked_data->c_seq[tax_id]->name));
-        
-        // PhyML_Printf("\n. state_probs: %p %p", state_probs, state_probs ? state_probs[0] : NULL);
-        
-        if (*n_prob_vectors == 0)
+        for (int int_state = 0; int_state < ns; ++int_state)
         {
-          (*state_probs) = (phydbl *)mCalloc(ns, sizeof(phydbl));
-          (*truth)       = (short int *)mCalloc(ns, sizeof(short int));
-          (*weights)     = (phydbl *)mCalloc(1, sizeof(phydbl));
+          (*state_probs)[*n_prob_vectors * ns + tip_state] +=
+              tree->mixt_tree->mod->ras->gamma_r_proba
+                  ->v[tree->mod->ras->parent_class_number] *
+              tree->mod->r_mat_weight->v / r_mat_weight_sum *
+              tree->mod->e_frq_weight->v / e_frq_weight_sum / sum_probas *
+              tree->mod->e_frq->pi->v[tip_state] *
+              Pij[tip_state * ns + int_state] * p_lk_left[int_state];
         }
-        else
+      }
+
+      tree = tree->next;
+    } while (tree && tree->is_mixt_tree == NO);
+    // We only consider one partition element here.
+    // Calls to this function are required for every
+    // partition element.
+  }
+  else
+  {
+    Pij       = tree->a_nodes[tax_id]->b[0]->Pij_rr;
+    p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left +
+                site * ns * tree->mod->ras->n_catg;
+
+    for (int tip_state = 0; tip_state < ns; ++tip_state)
+      (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
+
+    for (int tip_state = 0; tip_state < ns; ++tip_state)
+    {
+      for (int int_state = 0; int_state < ns; ++int_state)
+      {
+        for (int catg = 0; catg < tree->mod->ras->n_catg; ++catg)
         {
-          (*state_probs) = (phydbl *)mRealloc(
-              *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
-          (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
-                                           sizeof(short int));
-          (*weights) =
-              (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
+          (*state_probs)[*n_prob_vectors * ns + tip_state] +=
+              tree->mod->ras->gamma_r_proba->v[catg] *
+              tree->mod->e_frq->pi->v[tip_state] *
+              Pij[catg * ns * ns + tip_state * ns + int_state] *
+              p_lk_left[catg * ns + int_state];
         }
-        
-        // PhyML_Printf("\n. state_probs: %p", state_probs);
-        
-        for (int tip_state = 0; tip_state < ns; ++tip_state)
-          (*truth)[*n_prob_vectors * ns + tip_state] = 0;
-
-        (*truth)[*n_prob_vectors * ns + orig_data->c_seq[tax_id]->d_state[site]] = 1;
-
-        (*weights)[*n_prob_vectors] = orig_data->wght[site];
-
-        if (tree->is_mixt_tree == YES)
-        {
-          for (int tip_state = 0; tip_state < ns; ++tip_state)
-            (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
-
-          tree = tree->next;
-          do
-          {
-            Pij       = tree->a_nodes[tax_id]->b[0]->Pij_rr;
-            p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left;
-
-            for (int tip_state = 0; tip_state < ns; ++tip_state)
-            {
-              for (int int_state = 0; int_state < ns; ++int_state)
-              {
-                (*state_probs)[*n_prob_vectors * ns + tip_state] +=
-                    tree->mod->r_mat_weight->v / r_mat_weight_sum *
-                    tree->mod->e_frq_weight->v / e_frq_weight_sum / sum_probas *
-                    tree->mod->e_frq->pi->v[tip_state] *
-                    Pij[tip_state * ns + int_state] * p_lk_left[int_state];
-              }
-            }
-            tree = tree->next;
-          } while (tree && tree->is_mixt_tree == NO);
-
-          tree = orig_tree;
-          }
-        else
-        {
-          Pij       = tree->a_nodes[tax_id]->b[0]->Pij_rr;
-          p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left;
-
-          for (int tip_state = 0; tip_state < ns; ++tip_state)
-            (*state_probs)[*n_prob_vectors * ns + tip_state] = 0.0;
-
-          for (int tip_state = 0; tip_state < ns; ++tip_state)
-          {
-            for (int int_state = 0; int_state < ns; ++int_state)
-            {
-              for (int catg = 0; catg < tree->mod->ras->n_catg; ++catg)
-              {
-                (*state_probs)[*n_prob_vectors + tip_state] +=
-                    tree->mod->ras->gamma_r_proba->v[catg] *
-                    tree->mod->e_frq->pi->v[tip_state] *
-                    Pij[catg * ns * ns + tip_state * ns + int_state] *
-                    p_lk_left[catg * ns + int_state];
-              }
-            }
-          }
-        }
-        *n_prob_vectors += 1;        
       }
     }
   }
+
+  sum = 0.0;
+  for (int tip_state = 0; tip_state < ns; ++tip_state)
+    sum += (*state_probs)[*n_prob_vectors * ns + tip_state];
+
+  for (int tip_state = 0; tip_state < ns; ++tip_state)
+    (*state_probs)[*n_prob_vectors * ns + tip_state] /= sum;
+
+  // PhyML_Printf("\n. state_probs: %f %f %f %f truth: %d",
+  //              (*state_probs)[*n_prob_vectors * ns + 0],
+  //              (*state_probs)[*n_prob_vectors * ns + 1],
+  //              (*state_probs)[*n_prob_vectors * ns + 2],
+  //              (*state_probs)[*n_prob_vectors * ns + 3],
+  //              orig_data->c_seq[tax_id]->d_state[site]);
+
+  *n_prob_vectors += 1;
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void CV_Score_At_Hidden_Cols(phydbl **site_loglk, phydbl **weights,
+                             int *n_prob_vectors, t_tree *tree)
+{
+
+  int site;
+
+  for (int m = 0; m < tree->data->n_masked; ++m)
+  {
+    site = tree->data->masked_pos[m];
+
+    PhyML_Printf("\n. CV prob @ site %d", site);
+
+    if (*n_prob_vectors == 0)
+      (*site_loglk) = (phydbl *)mCalloc(1, sizeof(phydbl));
+    else
+      (*site_loglk) =
+          (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
+
+    (*site_loglk)[*n_prob_vectors] = tree->c_lnL_sorted[site];
+
+    (*n_prob_vectors)++;
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////

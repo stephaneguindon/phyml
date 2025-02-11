@@ -1,0 +1,175 @@
+\begin{theindex}
+
+  \item $\kappa$, \hyperpage{11}, \hyperpage{17}
+  \item *BEAST, \hyperpage{33}
+
+  \indexspace
+
+  \item ancestral reconstruction, \hyperpage{29}
+
+  \indexspace
+
+  \item BEAST, \hyperpage{63}
+  \item BEST, \hyperpage{33}
+  \item binary characters, \hyperpage{23}
+  \item BioNJ, \hyperpage{14}
+  \item bootstrap, \hyperpage{15}
+    \subitem parallel, \hyperpage{7}, \hyperpage{21}
+  \item bug, \hyperpage{6}
+
+  \indexspace
+
+  \item CAT model, \hyperpage{51}
+  \item command-line  options
+    \subitem \x{--constraint\_file}, \hyperpage{21}
+  \item command-line options
+    \subitem \x{--aa\_rate\_file}, \hyperpage{16}
+    \subitem \x{--alpha}, \hyperpage{18}
+    \subitem \x{--ancestral}, \hyperpage{21}
+    \subitem \x{--bootstrap}, \hyperpage{15}
+    \subitem \x{--codpos}, \hyperpage{19}
+    \subitem \x{--constrained\_lens}, \hyperpage{20}
+    \subitem \x{--data\_type}, \hyperpage{15}
+    \subitem \x{--free\_rates}, \hyperpage{18}
+    \subitem \x{--il}, \hyperpage{18}
+    \subitem \x{--inputtree}, \hyperpage{19}
+    \subitem \x{--input}, \hyperpage{15}
+    \subitem \x{--json\_trace}, \hyperpage{20}
+    \subitem \x{--leave\_duplicates}, \hyperpage{21}
+    \subitem \x{--model}, \hyperpage{16}
+    \subitem \x{--multiple}, \hyperpage{15}
+    \subitem \x{--n\_rand\_starts}, \hyperpage{19}
+    \subitem \x{--nclasses}, \hyperpage{18}
+    \subitem \x{--no\_colalias}, \hyperpage{20}
+    \subitem \x{--no\_memory\_check}, \hyperpage{20}
+    \subitem \x{--pars}, \hyperpage{15}
+    \subitem \x{--pinv}, \hyperpage{18}
+    \subitem \x{--print\_site\_lk}, \hyperpage{20}
+    \subitem \x{--print\_trace}, \hyperpage{20}
+    \subitem \x{--quiet}, \hyperpage{21}
+    \subitem \x{--r\_seed}, \hyperpage{19}
+    \subitem \x{--rand\_start}, \hyperpage{19}
+    \subitem \x{--run\_id}, \hyperpage{20}
+    \subitem \x{--search}, \hyperpage{19}
+    \subitem \x{--sequential}, \hyperpage{15}
+    \subitem \x{--ts/tv}, \hyperpage{17}
+    \subitem \x{--use\_median}, \hyperpage{18}
+    \subitem \x{--xml}, \hyperpage{21}
+    \subitem \x{-f}, \hyperpage{16}
+    \subitem \x{-o}, \hyperpage{19}
+  \item compilation, \hyperpage{6}
+  \item covarion, \hyperpage{18}
+  \item custom models, \hyperpage{17}
+
+  \indexspace
+
+  \item data partitions, \hyperpage{32}, \hyperpage{38}
+
+  \indexspace
+
+  \item FreeRate, \hyperpage{45}
+  \item frequencies
+    \subitem amino-acid, \hyperpage{16}
+    \subitem nucleotide, \hyperpage{16}
+
+  \indexspace
+
+  \item gamma distribution (discrete)
+    \subitem mean vs. median, \hyperpage{12}, \hyperpage{18}
+    \subitem number of categories, \hyperpage{12}, \hyperpage{18}
+    \subitem shape parameter, \hyperpage{12}, \hyperpage{18}
+  \item GARLI, \hyperpage{6}
+
+  \indexspace
+
+  \item Icylog, \hyperpage{63}
+  \item input tree, \hyperpage{19}
+  \item interleaved, \hyperpage{22}
+  \item invariable sites, \hyperpage{12}, \hyperpage{18}
+
+  \indexspace
+
+  \item lg4x, \hyperpage{48}
+  \item likelihood
+    \subitem print site likelihood, \hyperpage{20}
+
+  \indexspace
+
+  \item mixture   models, \hyperpage{38}
+  \item mixture models, \hyperpage{31}
+  \item MPEE, \hyperpage{29}
+  \item MPI, \hyperpage{7}, \hyperpage{21}
+  \item MRCA, \hyperpage{60}
+  \item multiple data sets, \hyperpage{15}, \hyperpage{27}
+  \item multiple-gene analysis, \hyperpage{32}
+
+  \indexspace
+
+  \item Newick format, \hyperpage{26}
+  \item NEXUS, \hyperpage{22}
+  \item NNI, \hyperpage{19}
+
+  \indexspace
+
+  \item optimisation
+    \subitem substitution parameters, \hyperpage{19}
+    \subitem topology, \hyperpage{19}
+
+  \indexspace
+
+  \item PAML, \hyperpage{11}, \hyperpage{27}
+  \item partitionned analysis, \hyperpage{32}, \hyperpage{38}
+  \item PHYLIP, \hyperpage{12}, \hyperpage{22}
+  \item PhyloGeo, \hyperpage{67}
+  \item PhyREX, \hyperpage{68}
+  \item PhyTime, \hyperpage{56}
+    \subitem calibration, \hyperpage{57}
+    \subitem clade, \hyperpage{58}
+    \subitem lineagerates, \hyperpage{57}
+  \item proportion of invariants, \hyperpage{12}, \hyperpage{18}
+
+  \indexspace
+
+  \item random number, \hyperpage{19}
+  \item random tree, \hyperpage{19}
+  \item RAxML, \hyperpage{6}
+  \item relaxed clock (model), \hyperpage{71}
+  \item RRW (model), \hyperpage{69}
+  \item run ID, \hyperpage{10}, \hyperpage{20}
+
+  \indexspace
+
+  \item sequence format
+    \subitem interleaved, \hyperpage{15}
+    \subitem sequential, \hyperpage{15}
+  \item sequential, \hyperpage{22}
+  \item SPR, \hyperpage{19}
+  \item stationary frequencies, \hyperpage{16}
+  \item STEM, \hyperpage{33}
+  \item substitution models
+    \subitem amino acids, \hyperpage{16}
+    \subitem DNA, \hyperpage{16}
+
+  \indexspace
+
+  \item Tracer, \hyperpage{63}
+  \item ts/tv ratio, \hyperpage{11}, \hyperpage{17}
+
+  \indexspace
+
+  \item user tree, \hyperpage{19}
+
+  \indexspace
+
+  \item XML, \hyperpage{31}
+  \item XML options
+    \subitem {\tt branchlengths} component, \hyperpage{44}
+    \subitem {\tt equfreqs} component, \hyperpage{43}
+    \subitem {\tt mixtureelem} component, \hyperpage{46}
+    \subitem {\tt partitionelem}   component, \hyperpage{46}
+    \subitem {\tt phyml} component, \hyperpage{40}
+    \subitem {\tt ratematrices} component, \hyperpage{42}
+    \subitem {\tt siterates} component, \hyperpage{44}
+    \subitem {\tt topology} component, \hyperpage{41}
+
+\end{theindex}

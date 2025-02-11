@@ -59,8 +59,9 @@ int EVOLVE_Main(int argc, char **argv)
   tree->data                   = cdata;
   tree->mod                    = io->mod;
   tree->io                     = io;
-  tree->times->scaled_pop_size = 1.E-0;
-
+  tree->times->scaled_pop_size = 1.E+3;
+  tree->times->neff_growth     = 0.5;
+  
   EVOLVE_Coalescent(tree);
 
   Init_Model(tree->data, tree->mod, io);
@@ -192,6 +193,14 @@ void EVOLVE_Coalescent(t_tree *tree)
   Connect_One_Edge_To_Two_Nodes(tree->n_root->v[1], tree->n_root->v[2],
                                 tree->a_edges[idx_edge], tree);
   tree->e_root = tree->a_edges[idx_edge];
+  
+  // Transform of times for exponentially growning or declining pop size
+  phydbl g = tree->times->neff_growth;
+  for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
+  {
+    tree->times->nd_t[i] = -((1. / g) * log(1. + g * -tree->times->nd_t[i]));
+    assert(!isnan(tree->times->nd_t[i]));
+  }
 
   Update_Ancestors(tree->n_root, tree->n_root->v[2], tree->n_root->b[2], tree);
   Update_Ancestors(tree->n_root, tree->n_root->v[1], tree->n_root->b[1], tree);
@@ -199,7 +208,7 @@ void EVOLVE_Coalescent(t_tree *tree)
 
   phydbl L                = TIMES_Tree_Length(tree);
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.05 / L * (2 * tree->n_otu - 2);
+  tree->rates->clock_r    = 0.1 / L * (2 * tree->n_otu - 2);
   tree->rates->model_id   = STRICTCLOCK;
 
   RATES_Update_Edge_Lengths(tree);
@@ -263,17 +272,22 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
 
     r_mult = Rgamma(shape, scale);
 
+    // RAS : all edges multiplied by gamma distributed scaling factor
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
 
-    if (site < (int)(0.2 * data->init_len))
+    if (site < (int)(0.4 * data->init_len))
     {
+      // GTR model 
+      
       // Set stationary frequencies
       for (int i = 0; i < mod->ns; ++i)
         tree->mod->e_frq->pi_unscaled->v[i] = i + 3.0;
+
       sum = 0.0;
       for (int i = 0; i < mod->ns; ++i)
         sum += tree->mod->e_frq->pi_unscaled->v[i];
+
       for (int i = 0; i < mod->ns; ++i)
         tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
 

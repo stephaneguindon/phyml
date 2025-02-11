@@ -367,6 +367,13 @@ static inline int isinf_ld(long double x) { return isnan(x - x); }
 #define MIN_VAR_BL 1.E-8
 #define MAX_VAR_BL 1.E+3
 
+#define KFOLD_POS 0
+#define KFOLD_COL 1
+#define MAXFOLD 2
+
+#define MASK_TYPE_POSITION // Individual positions (i.e., site x taxon) are masked
+#define MASK_TYPE_COLUMN   // Columns (i.e., site x .) are masked
+
 #define JC69 1
 #define K80 2
 #define F81 3
@@ -1137,13 +1144,19 @@ typedef struct __Calign
   int    n_otu;        /*! number of taxa */
   int    n_rm;         /*! number of taxa removed */
   int    clean_len;    /*! uncrunched sequences lenghts without gaps */
-  int    n_pattern;   /*! crunched sequences lengths */
+  int    n_pattern;    /*! crunched sequences lengths */
   int    init_len;     /*! length of the uncompressed sequences */
   int   *sitepatt;     /*! this array maps the position of the patterns in the
                       compressed alignment to the positions in the uncompressed
                       one */
   int         format;  /*! 0 (default): PHYLIP. 1: NEXUS. */
   scalar_dbl *io_wght; /*! weight of each *site* (not pattern) given as input */
+
+  int n_masked;         /* Number of masked positions (or columns, depending on
+                           mask_type) */
+  short int mask_type;  /* MASK_TYPE_POSITION or MASK_TYPE_COLUMN */
+  int      *masked_pos; /* Vector of masked positions/columns */
+
 } calign;
 
 /*!********************************************************/
@@ -1274,7 +1287,8 @@ typedef struct __Model
 
   int update_eigen; /*! update_eigen=1-> eigen values/vectors need to be updated
                      */
-
+  int cv_type; /* Type of cross-validation method */
+  
   int whichmodel;
   int is_mixt_mod;
   int augmented;
@@ -1818,6 +1832,7 @@ typedef struct __T_Rate
   int   is_allocated;
   int   met_within_gibbs;
 
+  
   int update_mean_l;
   int update_cov_l;
 

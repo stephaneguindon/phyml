@@ -123,7 +123,13 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree),t_tree *mixt_tree);
 void MIXT_Free_Tree(t_tree *mixt_tree);
 void MIXT_RATES_Update_One_Edge_Length(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Set_Scalar_Dbl(scalar_dbl *this, phydbl value);
-void MIXT_Cv(t_tree *mixt_tree);
+void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree);
+void MIXT_Kfold_Col_Cv(t_tree *mixt_tree);
+void MIXT_Maxfold_Cv(t_tree *mixt_tree);
 void MIXT_Init_Partial_Lk_Tips_Double(t_tree *mixt_tree);
+void MIXT_Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site,
+                                                    t_tree *mixt_tree);
+void MIXT_Init_Partial_Lk_Tips_Double_One_Site(int site, t_tree *mixt_tree);
+void MIXT_Cv(t_tree *mixt_tree);
 
 #endif

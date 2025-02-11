@@ -159,7 +159,8 @@ am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	spr.h draw.c draw.h tbe.c tbe.h stats.c stats.h rates.c \
 	rates.h mcmc.c mcmc.h times.c times.h mg.c mg.h io.c io.h \
 	make.c make.h nexus.c nexus.h init.c init.h xml.c xml.h mixt.c \
-	mixt.h ancestral.c ancestral.h date.c date.h evolve.c evolve.h
+	mixt.h ancestral.c ancestral.h date.c date.h cv.c cv.h \
+	evolve.c evolve.h
 #am_evolve_OBJECTS = main.$(OBJEXT) \
 #	utilities.$(OBJEXT) \
 #	optimiz.$(OBJEXT) \
@@ -190,6 +191,7 @@ am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 #	mixt.$(OBJEXT) \
 #	ancestral.$(OBJEXT) \
 #	date.$(OBJEXT) \
+#	cv.$(OBJEXT) \
 #	evolve.$(OBJEXT)
 evolve_OBJECTS = $(am_evolve_OBJECTS)
 evolve_LDADD = $(LDADD)
@@ -242,9 +244,9 @@ am__phyml_mpi_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	pars.h alrt.c alrt.h interface.c interface.h cl.c cl.h spr.c \
 	spr.h draw.c draw.h stats.c stats.h io.c io.h make.c make.h \
 	nexus.c nexus.h init.c init.h xml.c xml.h mixt.c mixt.h tbe.c \
-	tbe.h sse.c sse.h avx.c avx.h ancestral.c ancestral.h evolve.c \
-	evolve.h rates.c rates.h date.c date.h times.c times.h cv.c \
-	cv.h mpi_boot.c mpi_boot.h
+	tbe.h sse.c sse.h avx.c avx.h ancestral.c ancestral.h rates.c \
+	rates.h date.c date.h times.c times.h cv.c cv.h evolve.c \
+	evolve.h mpi_boot.c mpi_boot.h
 #am_phyml_mpi_OBJECTS = main.$(OBJEXT) \
 #	utilities.$(OBJEXT) \
 #	optimiz.$(OBJEXT) \
@@ -272,7 +274,6 @@ am__phyml_mpi_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 #	sse.$(OBJEXT) \
 #	avx.$(OBJEXT) \
 #	ancestral.$(OBJEXT) \
-#	evolve.$(OBJEXT) \
 #	rates.$(OBJEXT) \
 #	date.$(OBJEXT) \
 #	times.$(OBJEXT) \
@@ -855,7 +856,6 @@ PROG = PHYML
 #sse.c sse.h\
 #avx.c avx.h\
 #ancestral.c ancestral.h\
-#evolve.c evolve.h\
 #rates.c rates.h\
 #date.c date.h\
 #times.c times.h\
@@ -971,6 +971,7 @@ PROG = PHYML
 #mixt.c mixt.h\
 #ancestral.c ancestral.h\
 #date.c date.h\
+#cv.c cv.h\
 #evolve.c evolve.h
 
 # evolve_LDADD = -lm 

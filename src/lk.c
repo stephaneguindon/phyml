@@ -2058,54 +2058,96 @@ void Composite_Lk(t_tree *tree)
 
 void Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
-    unsigned int curr_site, i;
 
-    if (tree->is_mixt_tree == YES)
-    {
-      MIXT_Init_Partial_Lk_Tips_Double(tree);
-      return;
-    }
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double(tree);
+    return;
+  }
 
-    for (i = 0; i < tree->n_otu; i++)
+  for (int tax_id = 0; tax_id < tree->n_otu; tax_id++)
+  {
+    if (!tree->a_nodes[tax_id]->c_seq ||
+        strcmp(tree->a_nodes[tax_id]->c_seq->name, tree->a_nodes[tax_id]->name))
     {
-        if (!tree->a_nodes[i]->c_seq || strcmp(tree->a_nodes[i]->c_seq->name, tree->a_nodes[i]->name))
-        {
-            PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n", __FILE__, __LINE__, __FUNCTION__);
-            Exit("");
-        }
+      PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n",
+                    __FILE__, __LINE__, __FUNCTION__);
+      Exit("");
     }
+  }
 
-    for (curr_site = 0; curr_site < tree->data->n_pattern; curr_site++)
+  for (int site = 0; site < tree->data->n_pattern; site++)
+  {
+    for (int tax_id = 0; tax_id < tree->n_otu; tax_id++)
     {
-      for (i = 0; i < tree->n_otu; i++)
-      {
-        Init_Partial_Lk_Tips_Double_One_Character(i, curr_site, tree);
-      }
+      Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, tree);
     }
+  }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-void Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site, t_tree *tree)
+
+void Init_Partial_Lk_Tips_Double_One_Character(int node_id, int site, t_tree *tree)
 {
-    int dim1;
+  int dim1;
 
-    dim1 = tree->mod->ns;
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double_One_Character(node_id, site, tree);
+    return;
+  }
 
+  dim1 = tree->mod->ns;
+
+  if (tree->io->datatype == NT)
+    Init_Tips_At_One_Site_Nucleotides_Float(
+        tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  else if (tree->io->datatype == AA)
+    Init_Tips_At_One_Site_AA_Float(
+        tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  else if (tree->io->datatype == GENERIC)
+    Init_Tips_At_One_Site_Generic_Float(
+        tree->a_nodes[node_id]->c_seq->state +
+            site * tree->mod->io->state_len,
+        tree->mod->ns, tree->mod->io->state_len, site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_Partial_Lk_Tips_Double_One_Site(int site, t_tree *tree)
+{
+  int dim1;
+
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double_One_Site(site, tree);
+    return;
+  }
+
+  dim1 = tree->mod->ns;
+
+  for (int node_id = 0; node_id < tree->n_otu; node_id++)
+  {
     if (tree->io->datatype == NT)
       Init_Tips_At_One_Site_Nucleotides_Float(
-          tree->a_nodes[node_idx]->c_seq->state[curr_site], curr_site * dim1,
-          tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
+          tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+          tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
     else if (tree->io->datatype == AA)
-        Init_Tips_At_One_Site_AA_Float(tree->a_nodes[node_idx]->c_seq->state[curr_site],
-                                       curr_site * dim1,
-                                       tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
+      Init_Tips_At_One_Site_AA_Float(tree->a_nodes[node_id]->c_seq->state[site],
+                                     site * dim1,
+                                     tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
     else if (tree->io->datatype == GENERIC)
-        Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[node_idx]->c_seq->state + curr_site * tree->mod->io->state_len,
-                                            tree->mod->ns,
-                                            tree->mod->io->state_len,
-                                            curr_site * dim1,
-                                            tree->a_nodes[node_idx]->b[0]->p_lk_tip_r);
+      Init_Tips_At_One_Site_Generic_Float(
+          tree->a_nodes[node_id]->c_seq->state +
+              site * tree->mod->io->state_len,
+          tree->mod->ns, tree->mod->io->state_len, site * dim1,
+          tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2113,69 +2155,80 @@ void Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site, t_tr
 
 void Init_Partial_Lk_Tips_Int(t_tree *tree)
 {
-  int curr_site,i,dim1;
+  int curr_site, i, dim1;
 
-  if(tree->is_mixt_tree == YES) return;
+  if (tree->is_mixt_tree == YES) return;
 
   dim1 = tree->mod->ns;
 
-  for(i=0;i<tree->n_otu;i++)
+  for (i = 0; i < tree->n_otu; i++)
+  {
+    if (!tree->a_nodes[i]->c_seq ||
+        strcmp(tree->a_nodes[i]->c_seq->name, tree->a_nodes[i]->name))
     {
-      if(!tree->a_nodes[i]->c_seq || 
-	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
-        {
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("");
-        }
+      PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n",
+                    __FILE__, __LINE__, __FUNCTION__);
+      Exit("");
     }
+  }
 
-  for(curr_site=0;curr_site<tree->data->n_pattern;curr_site++)
+  for (curr_site = 0; curr_site < tree->data->n_pattern; curr_site++)
+  {
+    for (i = 0; i < tree->n_otu; i++)
     {
-      for(i=0;i<tree->n_otu;i++)
-        {
-          /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
-          /* printf("\n. init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
-          if(tree->io->datatype == NT)
-            {
-              Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                                    curr_site*dim1,
-                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
-              /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
-              /* 					    curr_site*dim1, */
-              /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-            }
-          else if(tree->io->datatype == AA)
-            Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                           curr_site*dim1,
-                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
-          /* 				 curr_site*dim1,					    */
-          /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-          
-          else if(tree->io->datatype == GENERIC)
-            {
-              Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                                                  tree->mod->ns,
-                                                  tree->mod->io->state_len,
-                                                  curr_site*dim1,
-                                                  tree->a_nodes[i]->b[0]->p_lk_tip_r);
-              
-              /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
-              /* 					tree->mod->ns, */
-              /* 					tree->mod->io->state_len, */
-              /* 					curr_site*dim1, */
-              /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-            }
-#ifdef BEAGLE
-          //Recall that tip partials are stored on the branch leading
-          //to the tip, rather than on the tip itself (hence `p_lk_tip_idx`
-          //is a field of the branch (i.e. b[0]) rather than the node.
-          //Secondly, the BEAGLE's partial buffers are laid out as
-          //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
-        tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
-#endif
+      /* printf("\n. site: %3d
+       * %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
+      /* printf("\n. init at %s
+       * %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r);
+       * fflush(NULL); */
+      if (tree->io->datatype == NT)
+      {
+        Init_Tips_At_One_Site_Nucleotides_Float(
+            tree->a_nodes[i]->c_seq->state[curr_site], curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+        /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],
+         */
+        /* 					    curr_site*dim1, */
+        /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r);
+         */
       }
+      else if (tree->io->datatype == AA)
+        Init_Tips_At_One_Site_AA_Float(
+            tree->a_nodes[i]->c_seq->state[curr_site], curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+      /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
+      /* 				 curr_site*dim1,
+       */
+      /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
+
+      else if (tree->io->datatype == GENERIC)
+      {
+        Init_Tips_At_One_Site_Generic_Float(
+            tree->a_nodes[i]->c_seq->state +
+                curr_site * tree->mod->io->state_len,
+            tree->mod->ns, tree->mod->io->state_len, curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+
+        /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len,
+         */
+        /* 					tree->mod->ns, */
+        /* 					tree->mod->io->state_len, */
+        /* 					curr_site*dim1, */
+        /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r);
+         */
+      }
+#ifdef BEAGLE
+      // Recall that tip partials are stored on the branch leading
+      // to the tip, rather than on the tip itself (hence `p_lk_tip_idx`
+      // is a field of the branch (i.e. b[0]) rather than the node.
+      // Secondly, the BEAGLE's partial buffers are laid out as
+      // BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left,
+      // b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M
+      // branches)
+      tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
+#endif
     }
+  }
 }
 
 //////////////////////////////////////////////////////////////

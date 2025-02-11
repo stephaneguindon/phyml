@@ -1077,6 +1077,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         tree = tree->next;
         b    = b->next;
       } while (tree && tree->is_mixt_tree == NO);
+      
 
       /* Scaling for invariants */
       if (mixt_tree->mod->ras->invar == YES)
@@ -1147,9 +1148,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         mixt_tree->cur_site_lk[site] = site_lk;
       }
 
-      /* Multiply log likelihood by the number of times this site pattern is
-       * found in the data */
-      mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site] * log_site_lk;
+      mixt_tree->c_lnL_sorted[site] = log_site_lk;
 
       mixt_tree->c_lnL += mixt_tree->data->wght[site] * log_site_lk;
     }
@@ -2662,7 +2661,41 @@ void MIXT_Init_Partial_Lk_Tips_Double(t_tree *mixt_tree)
   {
     Init_Partial_Lk_Tips_Double(tree);
     tree = tree->next;
-  } while (tree && tree->is_mixt_tree == NO);
+    if (tree != NULL && tree->is_mixt_tree == YES) tree = tree->next;
+  } while (tree != NULL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site,
+                                                    t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree->next;
+  do
+  {
+    Init_Partial_Lk_Tips_Double_One_Character(node_idx, curr_site,tree);
+    tree = tree->next;
+    if (tree != NULL && tree->is_mixt_tree == YES) tree = tree->next;
+  } while (tree != NULL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Init_Partial_Lk_Tips_Double_One_Site(int site, t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree->next;
+  do
+  {
+    Init_Partial_Lk_Tips_Double_One_Site(site, tree);
+    tree = tree->next;
+    if (tree != NULL && tree->is_mixt_tree == YES) tree = tree->next;
+  } while (tree != NULL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4098,7 +4131,110 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 
 void MIXT_Cv(t_tree *mixt_tree)
 {
+  switch(mixt_tree->mod->cv_type)
+  {
+  case KFOLD_POS : 
+  {
+    MIXT_Kfold_Pos_Cv(mixt_tree);
+    break;
+  }
+  case KFOLD_COL:
+  {
+    MIXT_Kfold_Col_Cv(mixt_tree);
+    break;
+  }
+  case MAXFOLD:
+  {
+    MIXT_Maxfold_Cv(mixt_tree);
+    break;    
+  }
+  default :
+    assert(false);
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Maxfold_Cv(t_tree *mixt_tree) 
+{
   phydbl    *state_probs, *weights;
+  short int *truth;
+  int        n_prob_vectors;
+  char       init_char;
+  
+  state_probs = NULL;
+  truth       = NULL;
+  weights     = NULL;
+
+  n_prob_vectors = 0;
+
+  do
+  {
+    Set_Both_Sides(YES, mixt_tree);
+    Set_Update_Eigen(YES, mixt_tree->mod);
+    Lk(NULL, mixt_tree);
+    Set_Update_Eigen(NO, mixt_tree->mod);
+
+    for (int site = 0; site < mixt_tree->data->n_pattern; ++site)
+    {
+      for (int tax_id = 0; tax_id < mixt_tree->data->n_otu; ++tax_id)
+      {
+        if (mixt_tree->data->c_seq[tax_id]->is_ambigu[site] == NO)
+        {
+          init_char = mixt_tree->data->c_seq[tax_id]->state[site];
+
+          // Hide characters in the original alignment uniformly at random
+          CV_Hide_Align_At_Given_Pos(mixt_tree->data, tax_id, site);
+
+          Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, mixt_tree);
+
+          MIXT_Br_Len_Opt(mixt_tree->a_nodes[tax_id]->b[0], mixt_tree);
+          PhyML_Printf("\n. site:%d tax_id: %d  lnL: %f", site, tax_id, mixt_tree->c_lnL);
+
+          // Compute likelihoods on test set (i.e., probability of each possible
+          // state at masked positions)
+          // CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &weights,
+          //                                    &n_prob_vectors, mixt_tree->data,
+          //                                    c_seq_cpy, mixt_tree);
+
+          // Go back to the original alignment
+          mixt_tree->data->c_seq[tax_id]->state[site] = init_char;
+
+          mixt_tree->data->c_seq[tax_id]->d_state[site] = Assign_State(
+              mixt_tree->data->c_seq[tax_id]->state + site,
+              mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
+
+          Check_Ambiguities(mixt_tree->data, mixt_tree->mod->io->datatype,
+                            mixt_tree->mod->io->state_len);
+
+          Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, mixt_tree);
+        }
+      }
+    }
+
+    ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
+        "MAXFOLD");
+
+    Free(state_probs);
+    Free(truth);
+    Free(weights);
+
+    state_probs = NULL;
+    truth       = NULL;
+    weights     = NULL;
+
+    mixt_tree = mixt_tree->next_mixt;
+  } while (mixt_tree != NULL);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
+{
+  phydbl    *state_probs, *site_loglk, *weights;
   short int *truth;
   calign    *c_seq_cpy;
   int        kfold;
@@ -4106,6 +4242,7 @@ void MIXT_Cv(t_tree *mixt_tree)
   t_tree    *tree;
 
   state_probs = NULL;
+  site_loglk  = NULL;
   truth       = NULL;
   weights     = NULL;
   tree        = NULL;
@@ -4121,23 +4258,22 @@ void MIXT_Cv(t_tree *mixt_tree)
       c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
 
       // Hide characters in the original alignment uniformly at random
-      CV_Hide_Characters_At_Random(mixt_tree->data, 1. / (phydbl)kfold);
+      CV_Hide_Align_At_Random_One_Per_Site(mixt_tree->data);
 
       // Optimize all parameters on training data set (i.e., whole alignement
       // with masked positions)
       Init_Partial_Lk_Tips_Double(mixt_tree);
+      Global_Spr_Search(mixt_tree);
       Set_Both_Sides(YES, mixt_tree);
       Set_Update_Eigen(YES, mixt_tree->mod);
       Lk(NULL, mixt_tree);
       Set_Update_Eigen(NO, mixt_tree->mod);
-      // Global_Spr_Search(mixt_tree);
       PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
 
       // Compute likelihoods on test set (i.e., probability of each possible
       // state at masked positions)
-      CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &weights,
-                                         &n_prob_vectors, mixt_tree->data,
-                                         c_seq_cpy, mixt_tree);
+      CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk, &weights,
+                                         &n_prob_vectors, mixt_tree);
 
       // Go back to the original alignment
       Free_Calign(mixt_tree->data);
@@ -4156,17 +4292,17 @@ void MIXT_Cv(t_tree *mixt_tree)
     }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);
-    
-    Exit("\n");
-    
+        
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-        "MIXT");
+        "KFOLDPOS");
 
     Free(state_probs);
+    Free(site_loglk);
     Free(truth);
     Free(weights);
 
     state_probs = NULL;
+    site_loglk  = NULL;
     truth       = NULL;
     weights     = NULL;
 
@@ -4177,5 +4313,95 @@ void MIXT_Cv(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
+{
+  phydbl    *state_probs, *site_loglk, *weights;
+  short int *truth;
+  calign    *c_seq_cpy;
+  int        kfold;
+  int        n_prob_vectors;
+  t_tree    *tree;
+
+  state_probs = NULL;
+  site_loglk  = NULL;
+  truth       = NULL;
+  weights     = NULL;
+  tree        = NULL;
+
+  kfold          = 5;
+  n_prob_vectors = 0;
+
+  do
+  {
+    for (int i = 0; i < kfold; ++i)
+    {
+      // Create a copy of the original alignment
+      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
+
+      // Hide characters in the original alignment uniformly at random
+      CV_Hide_Align_At_Random_Col(mixt_tree->data, 1. / (phydbl)kfold);
+
+      // Optimize all parameters on training data set (i.e., whole alignement
+      // with masked positions)
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      Global_Spr_Search(mixt_tree);
+      Set_Both_Sides(YES, mixt_tree);
+      Set_Update_Eigen(YES, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+      // Go back to the original alignment
+      Free_Calign(mixt_tree->data);
+      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
+      Free_Calign(c_seq_cpy);
+
+      tree = mixt_tree->next;
+      do
+      {
+        tree->data = tree->mixt_tree->data;
+        tree       = tree->next;
+      } while (tree && tree->is_mixt_tree == NO);
+
+      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      Set_Both_Sides(NO, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+      // Compute likelihoods on test set (i.e., probability of each possible
+      // state at masked positions)
+      CV_State_Probs_At_Hidden_Cols(&state_probs, &truth, &site_loglk, &weights,
+                                    &n_prob_vectors, mixt_tree->data, c_seq_cpy,
+                                    mixt_tree);
+
+    }
+
+    Init_Partial_Lk_Tips_Double(mixt_tree);
+
+    ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
+        "KFOLDCOL");
+
+    Free(state_probs);
+    Free(site_loglk);
+    Free(truth);
+    Free(weights);
+
+    state_probs = NULL;
+    site_loglk  = NULL;
+    truth       = NULL;
+    weights     = NULL;
+
+    mixt_tree = mixt_tree->next_mixt;
+
+  } while (mixt_tree != NULL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -1088,50 +1088,51 @@ phydbl Statistics_To_Probabilities(phydbl in)
 */
 phydbl Statistics_to_RELL(t_tree *tree)
 {
-  int i;
-  int occurence=10000;
-  phydbl nb=0.0;
-  phydbl res,*pi;
-  int site;
-  phydbl lk0=0.0;
-  phydbl lk1=0.0;
-  phydbl lk2=0.0;
-  int position = -1;
+  int     i;
+  int     occurence = 10000;
+  phydbl  nb        = 0.0;
+  phydbl  res, *pi;
+  int     site;
+  phydbl  lk0      = 0.0;
+  phydbl  lk1      = 0.0;
+  phydbl  lk2      = 0.0;
+  int     position = -1;
   t_tree *buff_tree;
-  int* samples;
+  int    *samples;
 
   /*! 1000 times */
-  for(i=0;i<occurence;i++)
+  for (i = 0; i < occurence; i++)
+  {
+    lk0 = 0.0;
+    lk1 = 0.0;
+    lk2 = 0.0;
+
+    /*! Shuffle the data and increment the support, if needed */
+    buff_tree = tree;
+    do
     {
-      lk0=0.0;
-      lk1=0.0;
-      lk2=0.0;
+      pi = (phydbl *)mCalloc(tree->data->n_pattern, sizeof(phydbl));
+      for (site = 0; site < tree->data->n_pattern; site++)
+        pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
 
-      /*! Shuffle the data and increment the support, if needed */
-      buff_tree = tree;
-      do
-        {
-          pi = (phydbl *)mCalloc(tree->data->n_pattern,sizeof(phydbl));
-          for(site=0;site<tree->data->n_pattern;site++) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
+      samples = Sample_n_i_With_Proba_pi(pi, tree->data->n_pattern,
+                                         tree->data->init_len);
+      for (site = 0; site < tree->data->init_len; ++site)
+      {
+        position = samples[site];
+        lk0 += tree->log_lks_aLRT[0][position];
+        lk1 += tree->log_lks_aLRT[1][position];
+        lk2 += tree->log_lks_aLRT[2][position];
+      }
+      if (lk0 >= lk1 && lk0 >= lk2) nb++;
+      tree = tree->next_mixt;
+      Free(samples);
+      Free(pi);
+    } while (tree);
+    tree = buff_tree;
+  }
 
-	  samples = Sample_n_i_With_Proba_pi(pi,tree->data->n_pattern,tree->data->init_len);
-          For(site, tree->data->init_len)
-            {
-              position = samples[site];
-              lk0+=tree->log_lks_aLRT[0][position];
-              lk1+=tree->log_lks_aLRT[1][position];
-              lk2+=tree->log_lks_aLRT[2][position];
-            }
-          if (lk0>=lk1 && lk0>=lk2) nb++;
-          tree = tree->next_mixt;
-	  Free(samples);
-          Free(pi);
-        }
-      while(tree);
-      tree = buff_tree;
-    }
-
-  res= nb/(phydbl)occurence;
+  res = nb / (phydbl)occurence;
 
   return res;
 }

@@ -186,7 +186,6 @@ tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
-evolve.c evolve.h\
 rates.c rates.h\
 date.c date.h\
 times.c times.h\
@@ -305,6 +304,7 @@ xml.c xml.h\
 mixt.c mixt.h\
 ancestral.c ancestral.h\
 date.c date.h\
+cv.c cv.h\
 evolve.c evolve.h
 # evolve_LDADD = -lm 
 else

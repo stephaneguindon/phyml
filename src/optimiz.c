@@ -3485,36 +3485,30 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
   if(mixt_tree->is_mixt_tree == NO) return;
 
   r_mat_weight = mixt_tree->next->mod->r_mat_weight;
-  
-  if(mixt_tree->next->mod->s_opt->opt_rmat_weight == YES)
-    {
-      do
-        {
-          phydbl a,c;
-          
-          a = r_mat_weight->v * .1;
-          c = r_mat_weight->v * 10.;
-          
-          Generic_Brent_Lk(&(r_mat_weight->v),
-                           a,c,
-                           mixt_tree->mod->s_opt->min_diff_lk_local,
-                           mixt_tree->mod->s_opt->brent_it_max,
-                           mixt_tree->mod->s_opt->quickdirty,
-                           Wrap_Lk,NULL,mixt_tree,NULL,NO,NO);      
 
-          if(verbose)
-            {
-              Print_Lk(mixt_tree,"[Rate mat. weights  ]");
-            }
-          
-          r_mat_weight = r_mat_weight->next;
-        }
-      while(r_mat_weight);
-    }
+  if (mixt_tree->next->mod->s_opt->opt_rmat_weight == YES)
+  {
+    do
+    {
+      phydbl a, c;
+
+      a = r_mat_weight->v * .1;
+      c = r_mat_weight->v * 10.;
+
+      Generic_Brent_Lk(&(r_mat_weight->v), a, c,
+                       mixt_tree->mod->s_opt->min_diff_lk_local,
+                       mixt_tree->mod->s_opt->brent_it_max,
+                       mixt_tree->mod->s_opt->quickdirty, Wrap_Lk, NULL,
+                       mixt_tree, NULL, NO, NO);
+
+      if (verbose) Print_Lk(mixt_tree, "[Rate mat. weights  ]");
+
+      r_mat_weight = r_mat_weight->next;
+    } while (r_mat_weight);
+  }
 
   Set_Update_Eigen(NO,mixt_tree->mod);
-
-}
+  }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

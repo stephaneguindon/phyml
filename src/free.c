@@ -202,16 +202,20 @@ void Free_Calign(calign *data)
   Free(data->ambigu);
   Free(data->obs_state_frq);
   Free(data->sitepatt);
-  for(i=0;i<data->n_otu;i++)
+
+  if (data->masked_post) Free(data->masked_pos);
+  
+
+  for (i = 0; i < data->n_otu; i++)
+  {
+    Free(data->c_seq[i]->name);
+    if (data->c_seq[i]->state)
     {
-      Free(data->c_seq[i]->name);
-      if(data->c_seq[i]->state)
-        {
-          Free(data->c_seq[i]->state);
-          Free(data->c_seq[i]->d_state);
-          if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
-        }
-      Free(data->c_seq[i]);
+      Free(data->c_seq[i]->state);
+      Free(data->c_seq[i]->d_state);
+      if (data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
+    }
+    Free(data->c_seq[i]);
     }
 
 

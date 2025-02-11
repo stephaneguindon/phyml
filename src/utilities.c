@@ -2294,10 +2294,15 @@ calign *Copy_Cseq(calign *ori, option *io)
     strcpy(sp_names_out[i], ori->c_seq_rm[i]->name);
   }
 
-  new       = Make_Calign(n_otu + n_rm, c_len, io->state_len, ori->init_len,
-                          sp_names_in, ori->n_rm, sp_names_out);
+  new = Make_Calign(n_otu + n_rm, c_len, io->state_len, ori->init_len,
+                    sp_names_in, ori->n_rm, sp_names_out);
+
+  new->masked_pos = (int *)mCalloc(ori->n_masked, sizeof(int));
+  new->n_masked   = ori->n_masked;
+  for (i = 0; i < ori->n_masked; ++i) new->masked_pos[i] = ori->masked_pos[i];
+
   new->n_rm = ori->n_rm;
-  
+
   Init_Calign(n_otu, c_len, ori->init_len, new);
 
   for (i = 0; i < ori->n_rm; ++i)
