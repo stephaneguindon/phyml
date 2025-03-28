@@ -1,0 +1,2808 @@
+
+. 53 patterns found (out of a total of 100 sites). 
+
+. 51 sites without polymorphism (51.00%).
+
+. Starting tree: BioNJ
+
+. Processing 1 data set ( /Users/guindon/phyml/src/100_evolve_data.txt )
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+| /Users/guindon/phyml/src/100_evolve_data.txt      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		                   3
+. Model of rate variation:		           FreeRates
+. Relative average rate:		            1.000000
+
+. Mixture class 1
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.666667
+   Rate class number:		                   0
+   Substitution model:		                 GTR
+   Optimise subst. rates:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 2
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.166667
+   Rate class number:		                   1
+   Substitution model:		                 GTR
+   Optimise subst. rates:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 3
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.166667
+   Rate class number:		                   2
+   Substitution model:		                 GTR
+   Optimise subst. rates:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ---------------------------
+  Partition element  0  0  0 
+  ---------------------------
+  State frequencies  a  a  a 
+     Branch lengths  a  a  a 
+        Rate matrix  a  a  a 
+  ---------------------------
+
+
+. Computing pairwise distances...
+
+. Building BioNJ tree...
+
+. Score of initial tree: -2004.38
+
+. Starting first round of SPRs...
+
+	       0s |   1 | lnL=     -1587.0 | depth=    5/   40 | improvements=  15 | delta_lnL=   16.2/ 1000.0  
+
+. Second round of optimization...
+
+	       0s |   2 | lnL=     -1576.8 | depth=    6/   36 | improvements=  27 | delta_lnL=   11.3/ 1000.0   +
+	       0s |   3 | lnL=     -1590.4 | depth=    4/   20 | improvements=  35 | delta_lnL=   32.7/ 1000.0  
+	       0s |   4 | lnL=     -1578.0 | depth=    5/   16 | improvements=  36 | delta_lnL=   10.3/ 1000.0  
+	       0s |   5 | lnL=     -1581.5 | depth=    3/   12 | improvements=  24 | delta_lnL=   17.0/ 1000.0  
+	       0s |   6 | lnL=     -1582.5 | depth=    4/    9 | improvements=  31 | delta_lnL=   18.1/   65.3  
+	       0s |   7 | lnL=     -1579.6 | depth=    5/    8 | improvements=  24 | delta_lnL=    6.3/   65.3  
+	       0s |   8 | lnL=     -1594.2 | depth=    7/    9 | improvements=  39 | delta_lnL=    6.5/   65.3  
+	       1s |   9 | lnL=     -1592.7 | depth=    7/   11 | improvements=  46 | delta_lnL=   15.2/   65.3  
+	       1s |  10 | lnL=     -1579.1 | depth=    5/   11 | improvements=  41 | delta_lnL=   25.4/   36.2  
+	       1s |  11 | lnL=     -1570.3 | depth=    2/    9 | improvements=  22 | delta_lnL=    0.1/   36.2   +
+	       1s |  12 | lnL=     -1580.2 | depth=    6/    7 | improvements=  20 | delta_lnL=   18.8/   36.2  
+	       1s |  13 | lnL=     -1580.9 | depth=    5/   10 | improvements=  29 | delta_lnL=    6.4/   36.2  
+	       1s |  14 | lnL=     -1582.8 | depth=    4/    9 | improvements=  37 | delta_lnL=   10.1/   50.9  
+	       1s |  15 | lnL=     -1584.5 | depth=    5/    8 | improvements=  37 | delta_lnL=    7.9/   50.9  
+	       1s |  16 | lnL=     -1582.2 | depth=    4/    9 | improvements=  32 | delta_lnL=    6.5/   50.9  
+	       1s |  17 | lnL=     -1576.4 | depth=    4/    8 | improvements=  28 | delta_lnL=    5.6/   50.9  
+	       1s |  18 | lnL=     -1577.0 | depth=    2/    8 | improvements=  27 | delta_lnL=    3.5/   20.2  
+	       1s |  19 | lnL=     -1577.7 | depth=    3/    6 | improvements=  30 | delta_lnL=   14.0/   20.2  
+	       1s |  20 | lnL=     -1572.9 | depth=    2/    7 | improvements=  20 | delta_lnL=   10.4/   20.2  
+
+. Third round of optimization...
+
+	       2s |  21 | lnL=     -1569.6 | depth=    2/   10 | improvements=  11 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       2s |  22 | lnL=     -1569.5 | depth=    2/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       2s |  23 | lnL=     -1569.1 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       2s |  24 | lnL=     -1568.3 | depth=    1/    5 | improvements=   5 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       2s |  25 | lnL=     -1568.1 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       3s |  26 | lnL=     -1568.0 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+
+. Log-likelihood = -1568.014674
+
+. Calculating fast branch supports (using 'aBayes').
+
+. Score of initial tree: -1568.01
+
+. Starting first round of SPRs...
+
+	       3s |   1 | lnL=     -1288.3 | depth=    4/   40 | improvements=   8 | delta_lnL=    4.0/ 1000.0   +
+
+. Second round of optimization...
+
+	       3s |   2 | lnL=     -1292.9 | depth=    9/   36 | improvements=  37 | delta_lnL=   18.0/ 1000.0  
+	       4s |   3 | lnL=     -1292.1 | depth=    4/   20 | improvements=  22 | delta_lnL=    9.6/ 1000.0  
+	       4s |   4 | lnL=     -1304.5 | depth=   10/   16 | improvements=  28 | delta_lnL=   13.8/ 1000.0  
+	       4s |   5 | lnL=     -1291.5 | depth=    4/   14 | improvements=  41 | delta_lnL=    5.6/ 1000.0  
+	       4s |   6 | lnL=     -1298.0 | depth=    4/   11 | improvements=  26 | delta_lnL=    8.4/   36.0  
+	       4s |   7 | lnL=     -1296.9 | depth=    6/    8 | improvements=  31 | delta_lnL=    6.4/   36.0  
+	       4s |   8 | lnL=     -1305.6 | depth=    6/   10 | improvements=  35 | delta_lnL=   36.3/   36.0  
+	       4s |   9 | lnL=     -1298.4 | depth=    5/   10 | improvements=  41 | delta_lnL=    4.7/   36.0  
+	       4s |  10 | lnL=     -1298.8 | depth=    4/    9 | improvements=  37 | delta_lnL=   11.2/   72.6  
+	       5s |  11 | lnL=     -1287.3 | depth=    6/    8 | improvements=  20 | delta_lnL=   10.4/   72.6   +
+	       5s |  12 | lnL=     -1292.5 | depth=    4/   10 | improvements=  31 | delta_lnL=    4.0/   72.6  
+	       5s |  13 | lnL=     -1292.4 | depth=    2/    8 | improvements=  23 | delta_lnL=    1.1/   72.6  
+	       5s |  14 | lnL=     -1288.9 | depth=    5/    6 | improvements=  23 | delta_lnL=   11.4/   22.3  
+	       5s |  15 | lnL=     -1288.8 | depth=    6/    9 | improvements=  25 | delta_lnL=    8.6/   22.3  
+	       5s |  16 | lnL=     -1294.7 | depth=    3/   10 | improvements=  23 | delta_lnL=   14.5/   22.3  
+	       5s |  17 | lnL=     -1298.9 | depth=    3/    8 | improvements=  28 | delta_lnL=    4.8/   22.3  
+	       5s |  18 | lnL=     -1289.0 | depth=    6/    7 | improvements=  30 | delta_lnL=    6.8/   29.0  
+	       5s |  19 | lnL=     -1291.1 | depth=    4/   10 | improvements=  25 | delta_lnL=    3.8/   29.0  
+	       5s |  20 | lnL=     -1290.8 | depth=    4/    8 | improvements=  18 | delta_lnL=    5.8/   29.0  
+
+. Third round of optimization...
+
+	       6s |  21 | lnL=     -1286.0 | depth=    3/   10 | improvements=  13 | delta_lnL=    2.6/  100.0 | triple moves=   5   +
+	       6s |  22 | lnL=     -1285.4 | depth=    2/    8 | improvements=   1 | delta_lnL=    0.3/  100.0 | triple moves=   5   +
+	       6s |  23 | lnL=     -1285.4 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:0  lnL: -1285.397235
+. j:0  lnL: -1592.099958
+
+. Score of initial tree: -1592.10
+
+. Starting first round of SPRs...
+
+	       6s |   1 | lnL=     -1291.5 | depth=    8/   40 | improvements=  25 | delta_lnL=   34.5/ 1000.0  
+	       7s |   2 | lnL=     -1291.1 | depth=    6/   24 | improvements=  18 | delta_lnL=   10.1/ 1000.0  
+	       7s |   3 | lnL=     -1296.2 | depth=    3/   14 | improvements=  21 | delta_lnL=    6.1/ 1000.0  
+	       7s |   4 | lnL=     -1287.2 | depth=    3/    9 | improvements=  16 | delta_lnL=    6.8/ 1000.0   +
+	       7s |   5 | lnL=     -1287.9 | depth=    3/    9 | improvements=   6 | delta_lnL=    1.9/ 1000.0  
+
+. Second round of optimization...
+
+	       7s |   6 | lnL=     -1288.3 | depth=    7/   13 | improvements=  22 | delta_lnL=    8.1/   68.9  
+	       7s |   7 | lnL=     -1286.7 | depth=    2/   11 | improvements=  16 | delta_lnL=    3.4/   68.9   +
+	       7s |   8 | lnL=     -1289.3 | depth=    5/    8 | improvements=  26 | delta_lnL=    8.1/   68.9  
+	       7s |   9 | lnL=     -1294.6 | depth=    7/    9 | improvements=  25 | delta_lnL=    5.3/   68.9  
+	       7s |  10 | lnL=     -1299.6 | depth=    3/   11 | improvements=  32 | delta_lnL=    9.3/   20.0  
+	       7s |  11 | lnL=     -1287.7 | depth=    4/    8 | improvements=  28 | delta_lnL=   15.1/   20.0  
+	       7s |  12 | lnL=     -1289.5 | depth=    3/    8 | improvements=  27 | delta_lnL=    3.9/   20.0  
+	       7s |  13 | lnL=     -1293.5 | depth=    3/    7 | improvements=  17 | delta_lnL=   13.2/   20.0  
+	       7s |  14 | lnL=     -1288.7 | depth=    6/    7 | improvements=  23 | delta_lnL=   13.1/   30.2  
+	       8s |  15 | lnL=     -1293.9 | depth=    5/   10 | improvements=  16 | delta_lnL=    1.8/   30.2  
+	       8s |  16 | lnL=     -1292.5 | depth=    6/    9 | improvements=  22 | delta_lnL=    4.1/   30.2  
+
+. Third round of optimization...
+
+	       8s |  17 | lnL=     -1284.2 | depth=    3/   10 | improvements=  21 | delta_lnL=    1.0/  100.0 | triple moves=   5   +
+	       8s |  18 | lnL=     -1283.8 | depth=    1/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       8s |  19 | lnL=     -1283.5 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       8s |  20 | lnL=     -1283.2 | depth=    1/    5 | improvements=   3 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	       9s |  21 | lnL=     -1282.5 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:1  lnL: -1282.440466
+. j:1  lnL: -1601.738273
+
+. Score of initial tree: -1601.74
+
+. Starting first round of SPRs...
+
+	       9s |   1 | lnL=     -1192.0 | depth=    3/   40 | improvements=   9 | delta_lnL=    7.3/ 1000.0   +
+
+. Second round of optimization...
+
+	       9s |   2 | lnL=     -1198.5 | depth=    5/   36 | improvements=  32 | delta_lnL=   13.0/ 1000.0  
+	       9s |   3 | lnL=     -1197.3 | depth=    4/   20 | improvements=  41 | delta_lnL=   21.7/ 1000.0  
+	      10s |   4 | lnL=     -1196.4 | depth=    6/   16 | improvements=  23 | delta_lnL=    5.2/ 1000.0  
+	      10s |   5 | lnL=     -1189.3 | depth=    5/   12 | improvements=  36 | delta_lnL=    4.0/ 1000.0   +
+	      10s |   6 | lnL=     -1191.3 | depth=    3/    9 | improvements=  24 | delta_lnL=    3.9/   43.3  
+	      10s |   7 | lnL=     -1193.5 | depth=    4/    7 | improvements=  26 | delta_lnL=    2.9/   43.3  
+	      10s |   8 | lnL=     -1199.2 | depth=    2/    8 | improvements=  25 | delta_lnL=    3.5/   43.3  
+	      10s |   9 | lnL=     -1200.2 | depth=    6/    6 | improvements=  36 | delta_lnL=    7.3/   43.3  
+	      10s |  10 | lnL=     -1194.6 | depth=    5/   10 | improvements=  43 | delta_lnL=    5.0/   20.0  
+	      10s |  11 | lnL=     -1186.4 | depth=    7/    9 | improvements=  28 | delta_lnL=   11.2/   20.0   +
+	      10s |  12 | lnL=     -1195.0 | depth=    2/   11 | improvements=  32 | delta_lnL=    5.4/   20.0  
+	      10s |  13 | lnL=     -1190.9 | depth=    2/    8 | improvements=  26 | delta_lnL=    1.0/   20.0  
+	      10s |  14 | lnL=     -1194.7 | depth=    4/    6 | improvements=  24 | delta_lnL=    3.7/   22.4  
+	      10s |  15 | lnL=     -1191.8 | depth=    2/    8 | improvements=  32 | delta_lnL=    2.6/   22.4  
+	      10s |  16 | lnL=     -1193.9 | depth=    5/    6 | improvements=  34 | delta_lnL=    6.5/   22.4  
+	      10s |  17 | lnL=     -1196.7 | depth=    9/    9 | improvements=  25 | delta_lnL=   16.1/   22.4  
+	      10s |  18 | lnL=     -1189.3 | depth=    4/   13 | improvements=  14 | delta_lnL=    4.3/   20.0  
+	      11s |  19 | lnL=     -1190.8 | depth=    6/   10 | improvements=  28 | delta_lnL=    9.5/   20.0  
+	      11s |  20 | lnL=     -1191.7 | depth=    7/   10 | improvements=  25 | delta_lnL=    4.1/   20.0  
+
+. Third round of optimization...
+
+	      11s |  21 | lnL=     -1186.6 | depth=    3/   11 | improvements=  17 | delta_lnL=    2.1/  100.0 | triple moves=   5  
+	      11s |  22 | lnL=     -1185.4 | depth=    2/    8 | improvements=   1 | delta_lnL=    0.9/  100.0 | triple moves=   8   +
+	      11s |  23 | lnL=     -1185.4 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:2  lnL: -1185.336392
+. j:2  lnL: -1598.121284
+
+. Score of initial tree: -1598.12
+
+. Starting first round of SPRs...
+
+	      12s |   1 | lnL=     -1348.5 | depth=    4/   40 | improvements=  26 | delta_lnL=   14.9/ 1000.0  
+	      12s |   2 | lnL=     -1349.9 | depth=    9/   24 | improvements=  10 | delta_lnL=    6.0/ 1000.0  
+
+. Second round of optimization...
+
+	      12s |   3 | lnL=     -1347.7 | depth=    8/   22 | improvements=  24 | delta_lnL=    2.7/ 1000.0  
+	      12s |   4 | lnL=     -1348.2 | depth=    2/   17 | improvements=  21 | delta_lnL=    1.7/ 1000.0  
+	      12s |   5 | lnL=     -1348.5 | depth=   10/   13 | improvements=  26 | delta_lnL=    8.2/ 1000.0  
+	      12s |   6 | lnL=     -1346.9 | depth=    6/   14 | improvements=  23 | delta_lnL=    9.1/   20.0  
+	      12s |   7 | lnL=     -1343.5 | depth=    2/   11 | improvements=  19 | delta_lnL=    2.7/   20.0   +
+	      12s |   8 | lnL=     -1348.0 | depth=    7/    8 | improvements=  23 | delta_lnL=    9.9/   20.0  
+	      12s |   9 | lnL=     -1349.1 | depth=    7/   11 | improvements=  30 | delta_lnL=    8.4/   20.0  
+	      12s |  10 | lnL=     -1346.6 | depth=    4/   11 | improvements=  32 | delta_lnL=    7.2/   20.0  
+	      13s |  11 | lnL=     -1340.3 | depth=    3/    8 | improvements=  26 | delta_lnL=    0.4/   20.0   +
+	      13s |  12 | lnL=     -1344.6 | depth=    3/    7 | improvements=  19 | delta_lnL=    3.6/   20.0  
+	      13s |  13 | lnL=     -1349.6 | depth=    6/    7 | improvements=  29 | delta_lnL=    2.8/   20.0  
+	      13s |  14 | lnL=     -1347.8 | depth=    4/   10 | improvements=  30 | delta_lnL=    7.5/   20.0  
+	      13s |  15 | lnL=     -1350.0 | depth=    4/    8 | improvements=  39 | delta_lnL=    9.3/   20.0  
+	      13s |  16 | lnL=     -1344.0 | depth=    3/    8 | improvements=  28 | delta_lnL=    7.1/   20.0  
+	      13s |  17 | lnL=     -1349.4 | depth=    6/    7 | improvements=  31 | delta_lnL=    5.8/   20.0  
+	      13s |  18 | lnL=     -1348.3 | depth=    4/   10 | improvements=  22 | delta_lnL=    6.7/   20.0  
+	      13s |  19 | lnL=     -1358.0 | depth=    4/    8 | improvements=  30 | delta_lnL=    2.9/   20.0  
+	      13s |  20 | lnL=     -1347.4 | depth=    5/    8 | improvements=  21 | delta_lnL=    4.4/   20.0  
+
+. Third round of optimization...
+
+	      13s |  21 | lnL=     -1337.1 | depth=    5/   10 | improvements=  23 | delta_lnL=    1.2/  100.0 | triple moves=   5   +
+	      13s |  22 | lnL=     -1336.1 | depth=    1/   10 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      14s |  23 | lnL=     -1336.0 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      14s |  24 | lnL=     -1336.0 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:3  lnL: -1335.930849
+. j:3  lnL: -1584.850661
+
+. Score of initial tree: -1584.85
+
+. Starting first round of SPRs...
+
+	      14s |   1 | lnL=     -1325.5 | depth=    9/   40 | improvements=  16 | delta_lnL=    6.0/ 1000.0  
+	      14s |   2 | lnL=     -1320.6 | depth=    2/   24 | improvements=  14 | delta_lnL=    3.9/ 1000.0   +
+
+. Second round of optimization...
+
+	      14s |   3 | lnL=     -1331.1 | depth=   10/   21 | improvements=  33 | delta_lnL=   14.9/ 1000.0  
+	      14s |   4 | lnL=     -1325.9 | depth=    4/   16 | improvements=  37 | delta_lnL=    8.6/ 1000.0  
+	      15s |   5 | lnL=     -1329.9 | depth=    9/   12 | improvements=  34 | delta_lnL=   17.9/ 1000.0  
+	      15s |   6 | lnL=     -1331.4 | depth=    6/   13 | improvements=  37 | delta_lnL=    4.3/   29.8  
+	      15s |   7 | lnL=     -1334.7 | depth=    8/   10 | improvements=  47 | delta_lnL=   25.8/   29.8  
+	      15s |   8 | lnL=     -1322.8 | depth=    8/   12 | improvements=  36 | delta_lnL=   17.0/   29.8  
+	      15s |   9 | lnL=     -1324.4 | depth=    4/   12 | improvements=  22 | delta_lnL=    5.9/   29.8  
+	      15s |  10 | lnL=     -1329.9 | depth=    7/    9 | improvements=  37 | delta_lnL=    4.9/   51.5  
+	      15s |  11 | lnL=     -1319.9 | depth=    8/   11 | improvements=  34 | delta_lnL=    7.0/   51.5   +
+	      15s |  12 | lnL=     -1322.0 | depth=    6/   12 | improvements=  23 | delta_lnL=    1.4/   51.5  
+	      15s |  13 | lnL=     -1334.1 | depth=    8/   10 | improvements=  41 | delta_lnL=   21.3/   51.5  
+	      15s |  14 | lnL=     -1322.5 | depth=    4/   12 | improvements=  40 | delta_lnL=    8.3/   20.0  
+	      15s |  15 | lnL=     -1321.2 | depth=    9/    9 | improvements=  39 | delta_lnL=    7.6/   20.0  
+	      15s |  16 | lnL=     -1320.7 | depth=    4/   13 | improvements=  21 | delta_lnL=    3.0/   20.0  
+	      15s |  17 | lnL=     -1322.7 | depth=    1/   10 | improvements=  13 | delta_lnL=    0.0/   20.0  
+	      15s |  18 | lnL=     -1322.8 | depth=    2/    8 | improvements=  26 | delta_lnL=    5.2/   20.0  
+	      16s |  19 | lnL=     -1322.6 | depth=    2/    6 | improvements=  23 | delta_lnL=    0.2/   20.0  
+	      16s |  20 | lnL=     -1326.1 | depth=    5/    6 | improvements=  27 | delta_lnL=   12.3/   20.0  
+
+. Third round of optimization...
+
+	      16s |  21 | lnL=     -1315.2 | depth=    3/   10 | improvements=  24 | delta_lnL=    3.9/  100.0 | triple moves=   5   +
+	      16s |  22 | lnL=     -1315.2 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      16s |  23 | lnL=     -1315.2 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      17s |  24 | lnL=     -1315.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:4  lnL: -1315.165044
+. j:4  lnL: -1597.126309
+
+. Score of initial tree: -1597.13
+
+. Starting first round of SPRs...
+
+	      17s |   1 | lnL=     -1282.1 | depth=    4/   40 | improvements=  14 | delta_lnL=    3.4/ 1000.0   +
+
+. Second round of optimization...
+
+	      17s |   2 | lnL=     -1286.0 | depth=    4/   36 | improvements=  29 | delta_lnL=    2.6/ 1000.0  
+	      17s |   3 | lnL=     -1283.4 | depth=    6/   20 | improvements=  23 | delta_lnL=    6.7/ 1000.0  
+	      17s |   4 | lnL=     -1275.9 | depth=    2/   16 | improvements=  28 | delta_lnL=    2.6/ 1000.0   +
+	      17s |   5 | lnL=     -1280.9 | depth=    8/   12 | improvements=  25 | delta_lnL=    5.7/ 1000.0  
+	      17s |   6 | lnL=     -1293.7 | depth=    8/   12 | improvements=  39 | delta_lnL=    5.5/   20.0  
+	      17s |   7 | lnL=     -1279.9 | depth=    8/   12 | improvements=  37 | delta_lnL=    9.3/   20.0  
+	      17s |   8 | lnL=     -1282.6 | depth=    7/   12 | improvements=  34 | delta_lnL=    9.2/   20.0  
+	      18s |   9 | lnL=     -1291.8 | depth=    7/   11 | improvements=  46 | delta_lnL=   10.2/   20.0  
+	      18s |  10 | lnL=     -1282.1 | depth=    2/   11 | improvements=  26 | delta_lnL=    9.0/   20.0  
+	      18s |  11 | lnL=     -1274.7 | depth=    8/    8 | improvements=  30 | delta_lnL=    6.0/   20.0   +
+	      18s |  12 | lnL=     -1289.8 | depth=    8/   12 | improvements=  30 | delta_lnL=    5.8/   20.0  
+	      18s |  13 | lnL=     -1277.7 | depth=    6/   12 | improvements=  30 | delta_lnL=    1.5/   20.0  
+	      18s |  14 | lnL=     -1279.7 | depth=    3/   10 | improvements=  29 | delta_lnL=    5.4/   20.0  
+	      18s |  15 | lnL=     -1278.9 | depth=    5/    8 | improvements=  23 | delta_lnL=    7.2/   20.0  
+	      18s |  16 | lnL=     -1280.6 | depth=    2/    9 | improvements=  27 | delta_lnL=   13.6/   20.0  
+	      18s |  17 | lnL=     -1277.3 | depth=    3/    7 | improvements=  26 | delta_lnL=    3.6/   20.0  
+	      18s |  18 | lnL=     -1276.6 | depth=    5/    7 | improvements=  22 | delta_lnL=    0.8/   27.3  
+	      18s |  19 | lnL=     -1276.9 | depth=    5/    9 | improvements=  29 | delta_lnL=   16.7/   27.3  
+	      18s |  20 | lnL=     -1274.1 | depth=    3/    9 | improvements=  22 | delta_lnL=    2.5/   27.3   +
+	      18s |  21 | lnL=     -1275.7 | depth=    5/    7 | improvements=  22 | delta_lnL=    4.7/   27.3  
+	      18s |  22 | lnL=     -1278.1 | depth=    8/    9 | improvements=  29 | delta_lnL=    6.1/   33.5  
+	      19s |  23 | lnL=     -1273.2 | depth=    7/   12 | improvements=  24 | delta_lnL=    7.9/   33.5   +
+	      19s |  24 | lnL=     -1283.5 | depth=    4/   11 | improvements=  24 | delta_lnL=   22.8/   33.5  
+	      19s |  25 | lnL=     -1272.0 | depth=    3/    8 | improvements=  25 | delta_lnL=    1.5/   33.5   +
+	      19s |  26 | lnL=     -1272.4 | depth=    3/    7 | improvements=  23 | delta_lnL=    1.3/   45.6  
+	      19s |  27 | lnL=     -1269.0 | depth=    2/    7 | improvements=  26 | delta_lnL=    2.3/   45.6   +
+	      19s |  28 | lnL=     -1272.6 | depth=    6/    6 | improvements=  16 | delta_lnL=    3.7/   45.6  
+	      19s |  29 | lnL=     -1271.5 | depth=    3/   10 | improvements=  28 | delta_lnL=    6.8/   45.6  
+	      19s |  30 | lnL=     -1272.7 | depth=    3/    8 | improvements=  22 | delta_lnL=    3.0/   20.0  
+	      19s |  31 | lnL=     -1274.2 | depth=    4/    7 | improvements=  16 | delta_lnL=    7.7/   20.0  
+	      19s |  32 | lnL=     -1277.2 | depth=    3/    8 | improvements=  22 | delta_lnL=    4.1/   20.0  
+	      19s |  33 | lnL=     -1275.3 | depth=    4/    7 | improvements=  19 | delta_lnL=    6.6/   20.0  
+	      19s |  34 | lnL=     -1280.7 | depth=    4/    8 | improvements=  38 | delta_lnL=    4.6/   20.0  
+	      19s |  35 | lnL=     -1288.8 | depth=    5/    8 | improvements=  32 | delta_lnL=   16.2/   20.0  
+	      19s |  36 | lnL=     -1274.8 | depth=    4/    9 | improvements=  29 | delta_lnL=    6.1/   20.0  
+
+. Third round of optimization...
+
+	      20s |  37 | lnL=     -1266.6 | depth=    2/   10 | improvements=  23 | delta_lnL=    2.6/  100.0 | triple moves=   5   +
+	      20s |  38 | lnL=     -1265.4 | depth=    2/    8 | improvements=   5 | delta_lnL=    0.1/  100.0 | triple moves=   5   +
+	      20s |  39 | lnL=     -1265.0 | depth=    1/    6 | improvements=   5 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      20s |  40 | lnL=     -1264.1 | depth=    2/    5 | improvements=   2 | delta_lnL=    0.4/  100.0 | triple moves=   5   +
+	      20s |  41 | lnL=     -1263.0 | depth=    1/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      20s |  42 | lnL=     -1263.0 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:5  lnL: -1263.015305
+. j:5  lnL: -1584.424702
+
+. Score of initial tree: -1584.42
+
+. Starting first round of SPRs...
+
+	      21s |   1 | lnL=     -1104.9 | depth=    6/   40 | improvements=  16 | delta_lnL=    7.4/ 1000.0  
+	      21s |   2 | lnL=     -1099.1 | depth=    5/   24 | improvements=  13 | delta_lnL=    6.4/ 1000.0   +
+
+. Second round of optimization...
+
+	      21s |   3 | lnL=     -1114.2 | depth=    6/   21 | improvements=  29 | delta_lnL=   13.2/ 1000.0  
+	      21s |   4 | lnL=     -1105.0 | depth=    7/   16 | improvements=  30 | delta_lnL=   20.8/ 1000.0  
+	      21s |   5 | lnL=     -1105.2 | depth=    4/   12 | improvements=  28 | delta_lnL=    8.8/ 1000.0  
+	      21s |   6 | lnL=     -1104.2 | depth=    8/    9 | improvements=  26 | delta_lnL=   16.6/   41.6  
+	      21s |   7 | lnL=     -1104.6 | depth=    6/   12 | improvements=  24 | delta_lnL=    9.3/   41.6  
+	      21s |   8 | lnL=     -1100.0 | depth=    7/   10 | improvements=  25 | delta_lnL=    8.3/   41.6  
+	      21s |   9 | lnL=     -1108.7 | depth=    5/   11 | improvements=  25 | delta_lnL=    8.2/   41.6  
+	      21s |  10 | lnL=     -1107.6 | depth=    7/    9 | improvements=  23 | delta_lnL=    8.2/   33.3  
+	      22s |  11 | lnL=     -1100.7 | depth=    6/   11 | improvements=  23 | delta_lnL=    4.7/   33.3  
+	      22s |  12 | lnL=     -1097.2 | depth=    7/   10 | improvements=  13 | delta_lnL=   12.7/   33.3   +
+	      22s |  13 | lnL=     -1110.2 | depth=    6/   11 | improvements=  39 | delta_lnL=    9.0/   33.3  
+	      22s |  14 | lnL=     -1103.6 | depth=    7/   10 | improvements=  33 | delta_lnL=   10.2/   25.5  
+	      22s |  15 | lnL=     -1101.6 | depth=    5/   11 | improvements=  22 | delta_lnL=    5.7/   25.5  
+	      22s |  16 | lnL=     -1105.1 | depth=    5/    9 | improvements=  22 | delta_lnL=    7.6/   25.5  
+	      22s |  17 | lnL=     -1109.3 | depth=    4/    9 | improvements=  30 | delta_lnL=    9.1/   25.5  
+	      22s |  18 | lnL=     -1111.4 | depth=    8/    8 | improvements=  31 | delta_lnL=   17.1/   20.4  
+	      22s |  19 | lnL=     -1104.7 | depth=    8/   12 | improvements=  26 | delta_lnL=   19.2/   20.4  
+	      22s |  20 | lnL=     -1099.7 | depth=    5/   12 | improvements=  27 | delta_lnL=    4.4/   20.4  
+	      22s |  21 | lnL=     -1095.1 | depth=    7/    9 | improvements=  16 | delta_lnL=    6.9/   20.4   +
+	      22s |  22 | lnL=     -1104.1 | depth=   11/   11 | improvements=  15 | delta_lnL=   19.9/   38.4  
+	      22s |  23 | lnL=     -1103.8 | depth=    4/   15 | improvements=  27 | delta_lnL=    5.5/   38.4  
+	      22s |  24 | lnL=     -1106.9 | depth=    8/   12 | improvements=  22 | delta_lnL=    9.0/   38.4  
+	      22s |  25 | lnL=     -1103.1 | depth=    4/   12 | improvements=  27 | delta_lnL=    4.9/   38.4  
+	      22s |  26 | lnL=     -1103.1 | depth=    2/    9 | improvements=  29 | delta_lnL=    3.7/   39.9  
+	      23s |  27 | lnL=     -1102.4 | depth=    3/    7 | improvements=  24 | delta_lnL=    4.3/   39.9  
+	      23s |  28 | lnL=     -1102.2 | depth=    2/    7 | improvements=  19 | delta_lnL=    1.1/   39.9  
+	      23s |  29 | lnL=     -1110.7 | depth=    3/    6 | improvements=  25 | delta_lnL=    7.1/   39.9  
+	      23s |  30 | lnL=     -1102.6 | depth=    4/    7 | improvements=  21 | delta_lnL=    4.0/   20.0  
+
+. Third round of optimization...
+
+	      23s |  31 | lnL=     -1095.6 | depth=    3/   10 | improvements=  17 | delta_lnL=    3.0/  100.0 | triple moves=   5  
+	      23s |  32 | lnL=     -1095.5 | depth=    1/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   6  
+	      23s |  33 | lnL=     -1095.1 | depth=    2/    6 | improvements=   2 | delta_lnL=    1.3/  100.0 | triple moves=   5   +
+	      23s |  34 | lnL=     -1095.0 | depth=    1/    5 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      24s |  35 | lnL=     -1095.0 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:6  lnL: -1094.942243
+. j:6  lnL: -1615.578721
+
+. Score of initial tree: -1615.58
+
+. Starting first round of SPRs...
+
+	      24s |   1 | lnL=     -1233.1 | depth=    4/   40 | improvements=  21 | delta_lnL=   12.0/ 1000.0  
+	      24s |   2 | lnL=     -1236.3 | depth=    4/   24 | improvements=  11 | delta_lnL=   16.1/ 1000.0  
+
+. Second round of optimization...
+
+	      24s |   3 | lnL=     -1232.6 | depth=    8/   21 | improvements=  26 | delta_lnL=    3.2/ 1000.0  
+	      24s |   4 | lnL=     -1239.3 | depth=    4/   16 | improvements=  36 | delta_lnL=    7.7/ 1000.0  
+	      24s |   5 | lnL=     -1236.4 | depth=    6/   12 | improvements=  36 | delta_lnL=    4.3/ 1000.0  
+	      24s |   6 | lnL=     -1237.2 | depth=    9/   10 | improvements=  35 | delta_lnL=   12.1/   20.0  
+	      24s |   7 | lnL=     -1232.9 | depth=    5/   13 | improvements=  34 | delta_lnL=    5.1/   20.0  
+	      24s |   8 | lnL=     -1227.3 | depth=    4/   10 | improvements=  24 | delta_lnL=    2.2/   20.0   +
+	      25s |   9 | lnL=     -1231.0 | depth=    4/    8 | improvements=  23 | delta_lnL=    5.5/   20.0  
+	      25s |  10 | lnL=     -1229.4 | depth=    7/    8 | improvements=  29 | delta_lnL=    6.8/   24.1  
+	      25s |  11 | lnL=     -1221.5 | depth=    4/   11 | improvements=  37 | delta_lnL=    6.2/   24.1   +
+	      25s |  12 | lnL=     -1224.8 | depth=    7/    8 | improvements=  19 | delta_lnL=    5.1/   24.1  
+	      25s |  13 | lnL=     -1225.5 | depth=    7/   11 | improvements=  26 | delta_lnL=    9.7/   24.1  
+	      25s |  14 | lnL=     -1231.1 | depth=   10/   11 | improvements=  26 | delta_lnL=    3.6/   20.0  
+	      25s |  15 | lnL=     -1226.3 | depth=    6/   14 | improvements=  35 | delta_lnL=    1.6/   20.0  
+	      25s |  16 | lnL=     -1227.1 | depth=    3/   11 | improvements=  20 | delta_lnL=    5.4/   20.0  
+	      25s |  17 | lnL=     -1231.4 | depth=    4/    8 | improvements=  20 | delta_lnL=    5.8/   20.0  
+	      25s |  18 | lnL=     -1232.5 | depth=    8/    8 | improvements=  24 | delta_lnL=    7.5/   20.0  
+	      25s |  19 | lnL=     -1227.8 | depth=   10/   12 | improvements=  29 | delta_lnL=   14.6/   20.0  
+	      25s |  20 | lnL=     -1237.4 | depth=    5/   14 | improvements=  32 | delta_lnL=    9.8/   20.0  
+
+. Third round of optimization...
+
+	      26s |  21 | lnL=     -1222.5 | depth=    5/   11 | improvements=  36 | delta_lnL=    3.7/  100.0 | triple moves=   5  
+	      26s |  22 | lnL=     -1219.0 | depth=    6/   10 | improvements=   7 | delta_lnL=    3.9/  100.0 | triple moves=   5   +
+	      26s |  23 | lnL=     -1218.8 | depth=    0/   12 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:7  lnL: -1218.657951
+. j:7  lnL: -1586.555198
+
+. Score of initial tree: -1586.56
+
+. Starting first round of SPRs...
+
+	      26s |   1 | lnL=     -1407.1 | depth=    5/   40 | improvements=  14 | delta_lnL=   12.5/ 1000.0  
+
+. Second round of optimization...
+
+	      26s |   2 | lnL=     -1408.5 | depth=    5/   36 | improvements=  28 | delta_lnL=    5.2/ 1000.0  
+	      27s |   3 | lnL=     -1408.3 | depth=    6/   20 | improvements=  31 | delta_lnL=   20.5/ 1000.0  
+	      27s |   4 | lnL=     -1404.6 | depth=    5/   16 | improvements=  35 | delta_lnL=   14.4/ 1000.0   +
+	      27s |   5 | lnL=     -1415.1 | depth=    3/   12 | improvements=  36 | delta_lnL=    9.2/ 1000.0  
+	      27s |   6 | lnL=     -1419.2 | depth=    8/    9 | improvements=  45 | delta_lnL=    7.0/   41.0  
+	      27s |   7 | lnL=     -1415.7 | depth=    4/   12 | improvements=  40 | delta_lnL=    2.5/   41.0  
+	      27s |   8 | lnL=     -1409.9 | depth=    4/    9 | improvements=  47 | delta_lnL=    9.8/   41.0  
+	      27s |   9 | lnL=     -1405.2 | depth=    5/    8 | improvements=  30 | delta_lnL=   12.7/   41.0  
+	      27s |  10 | lnL=     -1407.1 | depth=    4/    9 | improvements=  28 | delta_lnL=    5.2/   20.0  
+	      27s |  11 | lnL=     -1405.4 | depth=    4/    8 | improvements=  27 | delta_lnL=    7.4/   20.0  
+	      27s |  12 | lnL=     -1407.1 | depth=    3/    8 | improvements=  26 | delta_lnL=    8.7/   20.0  
+	      27s |  13 | lnL=     -1407.9 | depth=    5/    7 | improvements=  25 | delta_lnL=    4.1/   20.0  
+
+. Third round of optimization...
+
+	      27s |  14 | lnL=     -1399.0 | depth=    5/   10 | improvements=  26 | delta_lnL=    1.7/  100.0 | triple moves=   5   +
+	      27s |  15 | lnL=     -1397.7 | depth=    1/   10 | improvements=   4 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      28s |  16 | lnL=     -1397.3 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      28s |  17 | lnL=     -1397.2 | depth=    1/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      28s |  18 | lnL=     -1397.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:8  lnL: -1396.911146
+. j:8  lnL: -1585.676437
+
+. Score of initial tree: -1585.68
+
+. Starting first round of SPRs...
+
+	      28s |   1 | lnL=     -1325.6 | depth=    5/   40 | improvements=  21 | delta_lnL=   13.6/ 1000.0  
+	      28s |   2 | lnL=     -1327.2 | depth=    3/   24 | improvements=  16 | delta_lnL=   43.1/ 1000.0  
+	      29s |   3 | lnL=     -1330.4 | depth=    5/   14 | improvements=  13 | delta_lnL=   10.3/ 1000.0  
+
+. Second round of optimization...
+
+	      29s |   4 | lnL=     -1324.5 | depth=    5/   16 | improvements=  29 | delta_lnL=   11.0/ 1000.0   +
+	      29s |   5 | lnL=     -1321.7 | depth=    5/   12 | improvements=  20 | delta_lnL=    4.8/ 1000.0   +
+	      29s |   6 | lnL=     -1321.8 | depth=    5/    9 | improvements=  19 | delta_lnL=    2.7/   22.0  
+	      29s |   7 | lnL=     -1323.3 | depth=    4/    9 | improvements=  25 | delta_lnL=    5.2/   22.0  
+	      29s |   8 | lnL=     -1325.0 | depth=    2/    8 | improvements=  27 | delta_lnL=    2.1/   22.0  
+	      29s |   9 | lnL=     -1332.1 | depth=    5/    6 | improvements=  26 | delta_lnL=    7.6/   22.0  
+	      29s |  10 | lnL=     -1328.5 | depth=    5/    9 | improvements=  29 | delta_lnL=   10.1/   20.0  
+	      29s |  11 | lnL=     -1320.2 | depth=    2/    9 | improvements=  19 | delta_lnL=    4.3/   20.0   +
+	      29s |  12 | lnL=     -1324.9 | depth=    2/    7 | improvements=  19 | delta_lnL=    3.4/   20.0  
+	      29s |  13 | lnL=     -1324.4 | depth=    3/    6 | improvements=  24 | delta_lnL=    4.6/   20.0  
+	      29s |  14 | lnL=     -1330.6 | depth=    4/    7 | improvements=  26 | delta_lnL=   18.2/   20.3  
+	      29s |  15 | lnL=     -1337.1 | depth=    8/    8 | improvements=  26 | delta_lnL=    8.0/   20.3  
+	      29s |  16 | lnL=     -1330.9 | depth=    5/   12 | improvements=  32 | delta_lnL=    4.4/   20.3  
+	      29s |  17 | lnL=     -1329.6 | depth=    5/    9 | improvements=  29 | delta_lnL=    3.5/   20.3  
+	      29s |  18 | lnL=     -1326.6 | depth=    8/    9 | improvements=  18 | delta_lnL=   17.5/   36.5  
+	      30s |  19 | lnL=     -1325.9 | depth=    1/   12 | improvements=  19 | delta_lnL=    0.0/   36.5  
+	      30s |  20 | lnL=     -1328.7 | depth=    6/    9 | improvements=  32 | delta_lnL=   15.8/   36.5  
+
+. Third round of optimization...
+
+	      30s |  21 | lnL=     -1318.5 | depth=    7/   10 | improvements=  16 | delta_lnL=    5.0/  100.0 | triple moves=   5   +
+	      30s |  22 | lnL=     -1318.1 | depth=    1/   14 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   6   +
+	      30s |  23 | lnL=     -1318.1 | depth=    0/   11 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:9  lnL: -1318.064850
+. j:9  lnL: -1586.233217
+
+. Score of initial tree: -1586.23
+
+. Starting first round of SPRs...
+
+	      31s |   1 | lnL=     -1115.0 | depth=   13/   40 | improvements=  21 | delta_lnL=   13.9/ 1000.0  
+	      31s |   2 | lnL=     -1121.5 | depth=    6/   24 | improvements=  17 | delta_lnL=    8.3/ 1000.0  
+	      31s |   3 | lnL=     -1124.2 | depth=   12/   14 | improvements=  20 | delta_lnL=   20.5/ 1000.0  
+	      31s |   4 | lnL=     -1132.2 | depth=   14/   18 | improvements=  10 | delta_lnL=   37.6/ 1000.0  
+
+. Second round of optimization...
+
+	      31s |   5 | lnL=     -1123.3 | depth=   15/   30 | improvements=  37 | delta_lnL=   18.3/ 1000.0  
+	      31s |   6 | lnL=     -1120.2 | depth=    4/   20 | improvements=  32 | delta_lnL=   12.8/   20.0  
+	      31s |   7 | lnL=     -1129.4 | depth=    7/   16 | improvements=  34 | delta_lnL=   11.6/   20.0  
+	      31s |   8 | lnL=     -1128.1 | depth=    7/   12 | improvements=  29 | delta_lnL=    4.7/   20.0  
+	      31s |   9 | lnL=     -1118.4 | depth=    9/   11 | improvements=  33 | delta_lnL=   12.9/   20.0  
+	      31s |  10 | lnL=     -1116.4 | depth=    3/   13 | improvements=  27 | delta_lnL=    4.0/   25.5  
+	      31s |  11 | lnL=     -1112.3 | depth=    3/   10 | improvements=  30 | delta_lnL=    8.2/   25.5   +
+	      32s |  12 | lnL=     -1114.6 | depth=    8/    8 | improvements=  29 | delta_lnL=   12.1/   25.5  
+	      32s |  13 | lnL=     -1112.7 | depth=    6/   12 | improvements=  21 | delta_lnL=    6.6/   25.5  
+	      32s |  14 | lnL=     -1112.4 | depth=    3/   10 | improvements=  26 | delta_lnL=    3.3/   24.2  
+	      32s |  15 | lnL=     -1115.4 | depth=    3/    8 | improvements=  28 | delta_lnL=    4.5/   24.2  
+	      32s |  16 | lnL=     -1112.0 | depth=    3/    7 | improvements=  31 | delta_lnL=    3.8/   24.2   +
+	      32s |  17 | lnL=     -1110.3 | depth=    3/    7 | improvements=  19 | delta_lnL=    1.3/   24.2   +
+	      32s |  18 | lnL=     -1111.9 | depth=    7/    7 | improvements=  25 | delta_lnL=    9.5/   20.0  
+	      32s |  19 | lnL=     -1110.6 | depth=    3/   11 | improvements=  16 | delta_lnL=    1.0/   20.0  
+	      32s |  20 | lnL=     -1112.1 | depth=    3/    8 | improvements=  19 | delta_lnL=    1.6/   20.0  
+	      32s |  21 | lnL=     -1110.0 | depth=    5/    7 | improvements=  29 | delta_lnL=    5.8/   20.0   +
+	      32s |  22 | lnL=     -1112.7 | depth=    3/    9 | improvements=  21 | delta_lnL=    2.2/   20.0  
+	      32s |  23 | lnL=     -1111.5 | depth=    4/    7 | improvements=  17 | delta_lnL=    8.8/   20.0  
+	      32s |  24 | lnL=     -1113.3 | depth=    4/    8 | improvements=  21 | delta_lnL=    4.8/   20.0  
+	      32s |  25 | lnL=     -1111.7 | depth=    4/    8 | improvements=  20 | delta_lnL=    5.4/   20.0  
+	      32s |  26 | lnL=     -1114.4 | depth=    5/    8 | improvements=  21 | delta_lnL=    8.3/   20.0  
+	      32s |  27 | lnL=     -1108.6 | depth=    4/    9 | improvements=  22 | delta_lnL=    2.0/   20.0   +
+	      33s |  28 | lnL=     -1113.2 | depth=    6/    8 | improvements=  31 | delta_lnL=   16.0/   20.0  
+	      33s |  29 | lnL=     -1107.7 | depth=    5/   10 | improvements=  25 | delta_lnL=    3.9/   20.0   +
+	      33s |  30 | lnL=     -1108.4 | depth=    9/    9 | improvements=  16 | delta_lnL=    6.6/   32.0  
+	      33s |  31 | lnL=     -1107.8 | depth=    4/   13 | improvements=  12 | delta_lnL=    4.8/   32.0  
+	      33s |  32 | lnL=     -1105.6 | depth=    2/   10 | improvements=  12 | delta_lnL=    2.2/   32.0   +
+	      33s |  33 | lnL=     -1109.9 | depth=    4/    8 | improvements=  19 | delta_lnL=    3.9/   32.0  
+	      33s |  34 | lnL=     -1110.6 | depth=    5/    8 | improvements=  24 | delta_lnL=    4.6/   20.0  
+	      33s |  35 | lnL=     -1111.1 | depth=    5/    9 | improvements=  20 | delta_lnL=   18.7/   20.0  
+	      33s |  36 | lnL=     -1109.0 | depth=    6/    9 | improvements=  22 | delta_lnL=    5.6/   20.0  
+	      33s |  37 | lnL=     -1108.5 | depth=    5/   10 | improvements=  12 | delta_lnL=    5.1/   20.0  
+	      33s |  38 | lnL=     -1107.4 | depth=    4/    9 | improvements=  22 | delta_lnL=    3.2/   37.4  
+	      33s |  39 | lnL=     -1112.5 | depth=    3/    8 | improvements=  18 | delta_lnL=    1.9/   37.4  
+	      33s |  40 | lnL=     -1111.7 | depth=    4/    7 | improvements=  23 | delta_lnL=    7.5/   37.4  
+	      34s |  41 | lnL=     -1107.7 | depth=    6/    8 | improvements=  25 | delta_lnL=    2.0/   37.4  
+
+. Third round of optimization...
+
+	      34s |  42 | lnL=     -1106.2 | depth=    4/   10 | improvements=   3 | delta_lnL=    1.5/  100.0 | triple moves=   5  
+	      34s |  43 | lnL=     -1105.8 | depth=    5/    8 | improvements=   3 | delta_lnL=    0.4/  100.0 | triple moves=   5  
+	      34s |  44 | lnL=     -1105.7 | depth=    0/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	      34s |  45 | lnL=     -1105.7 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	      35s |  46 | lnL=     -1105.3 | depth=    3/    6 | improvements=   2 | delta_lnL=    0.7/  100.0 | triple moves=   5   +
+	      35s |  47 | lnL=     -1105.1 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      35s |  48 | lnL=     -1105.1 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:10  lnL: -1104.675715
+. j:10  lnL: -1613.030007
+
+. Score of initial tree: -1613.03
+
+. Starting first round of SPRs...
+
+	      35s |   1 | lnL=     -1123.5 | depth=    6/   40 | improvements=   7 | delta_lnL=    9.2/ 1000.0   +
+
+. Second round of optimization...
+
+	      36s |   2 | lnL=     -1129.3 | depth=    8/   36 | improvements=  38 | delta_lnL=    5.8/ 1000.0  
+	      36s |   3 | lnL=     -1127.2 | depth=    8/   20 | improvements=  38 | delta_lnL=   10.1/ 1000.0  
+	      36s |   4 | lnL=     -1121.8 | depth=    9/   16 | improvements=  37 | delta_lnL=   17.6/ 1000.0   +
+	      36s |   5 | lnL=     -1122.4 | depth=    8/   13 | improvements=  36 | delta_lnL=    7.0/ 1000.0  
+	      36s |   6 | lnL=     -1118.1 | depth=    7/   12 | improvements=  24 | delta_lnL=    3.5/   35.3   +
+	      36s |   7 | lnL=     -1121.1 | depth=    5/   11 | improvements=  26 | delta_lnL=    0.5/   35.3  
+	      36s |   8 | lnL=     -1123.5 | depth=    8/    9 | improvements=  30 | delta_lnL=   19.3/   35.3  
+	      36s |   9 | lnL=     -1118.2 | depth=   10/   12 | improvements=  36 | delta_lnL=   10.0/   35.3  
+	      36s |  10 | lnL=     -1120.6 | depth=    6/   14 | improvements=  27 | delta_lnL=    7.3/   38.6  
+	      36s |  11 | lnL=     -1113.6 | depth=    8/   11 | improvements=  37 | delta_lnL=   24.6/   38.6   +
+	      36s |  12 | lnL=     -1115.3 | depth=    4/   12 | improvements=  35 | delta_lnL=    2.8/   38.6  
+	      36s |  13 | lnL=     -1116.6 | depth=    8/    9 | improvements=  29 | delta_lnL=    4.9/   38.6  
+	      36s |  14 | lnL=     -1118.6 | depth=    8/   12 | improvements=  29 | delta_lnL=    7.4/   49.2  
+	      37s |  15 | lnL=     -1117.4 | depth=    9/   12 | improvements=  29 | delta_lnL=   22.4/   49.2  
+	      37s |  16 | lnL=     -1116.7 | depth=    5/   13 | improvements=  22 | delta_lnL=    4.1/   49.2  
+	      37s |  17 | lnL=     -1115.4 | depth=    7/   10 | improvements=  35 | delta_lnL=    9.0/   49.2  
+	      37s |  18 | lnL=     -1116.8 | depth=    7/   11 | improvements=  19 | delta_lnL=    1.4/   44.9  
+	      37s |  19 | lnL=     -1121.3 | depth=    3/   11 | improvements=  33 | delta_lnL=    2.2/   44.9  
+	      37s |  20 | lnL=     -1119.5 | depth=    7/    8 | improvements=  38 | delta_lnL=    5.4/   44.9  
+
+. Third round of optimization...
+
+	      37s |  21 | lnL=     -1112.3 | depth=    8/   11 | improvements=  21 | delta_lnL=    2.5/  100.0 | triple moves=   5   +
+	      37s |  22 | lnL=     -1110.7 | depth=    5/   16 | improvements=   5 | delta_lnL=    2.8/  100.0 | triple moves=   6   +
+	      37s |  23 | lnL=     -1110.5 | depth=    6/   12 | improvements=   1 | delta_lnL=    3.1/  100.0 | triple moves=   6   +
+	      38s |  24 | lnL=     -1110.5 | depth=    0/   12 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:11  lnL: -1110.264179
+. j:11  lnL: -1640.431287
+
+. Score of initial tree: -1640.43
+
+. Starting first round of SPRs...
+
+	      38s |   1 | lnL=     -1069.4 | depth=   11/   40 | improvements=  41 | delta_lnL=   72.6/ 1000.0   +
+	      38s |   2 | lnL=     -1052.0 | depth=    7/   24 | improvements=  29 | delta_lnL=   31.1/ 1000.0   +
+	      38s |   3 | lnL=     -1053.9 | depth=    4/   14 | improvements=  12 | delta_lnL=   12.8/ 1000.0  
+
+. Second round of optimization...
+
+	      38s |   4 | lnL=     -1041.3 | depth=    8/   15 | improvements=  28 | delta_lnL=    6.1/ 1000.0   +
+	      38s |   5 | lnL=     -1050.4 | depth=    4/   12 | improvements=  29 | delta_lnL=    4.6/ 1000.0  
+	      38s |   6 | lnL=     -1049.7 | depth=    4/    9 | improvements=  34 | delta_lnL=   18.9/   20.0  
+	      39s |   7 | lnL=     -1049.4 | depth=    8/    8 | improvements=  31 | delta_lnL=    5.3/   20.0  
+	      39s |   8 | lnL=     -1048.5 | depth=    6/   12 | improvements=  34 | delta_lnL=    9.1/   20.0  
+	      39s |   9 | lnL=     -1049.9 | depth=    5/   10 | improvements=  31 | delta_lnL=    2.9/   20.0  
+	      39s |  10 | lnL=     -1044.0 | depth=    5/    9 | improvements=  23 | delta_lnL=    3.2/   37.8  
+	      39s |  11 | lnL=     -1034.4 | depth=    9/    9 | improvements=  29 | delta_lnL=   13.6/   37.8   +
+	      39s |  12 | lnL=     -1040.1 | depth=    5/   13 | improvements=  19 | delta_lnL=   13.2/   37.8  
+	      39s |  13 | lnL=     -1041.5 | depth=    4/   10 | improvements=  37 | delta_lnL=   11.6/   37.8  
+	      39s |  14 | lnL=     -1035.5 | depth=    3/    8 | improvements=  31 | delta_lnL=    3.7/   27.2  
+	      39s |  15 | lnL=     -1034.4 | depth=    3/    7 | improvements=  22 | delta_lnL=    6.4/   27.2   +
+	      39s |  16 | lnL=     -1036.3 | depth=    3/    7 | improvements=  31 | delta_lnL=    8.1/   27.2  
+	      39s |  17 | lnL=     -1040.6 | depth=    6/    7 | improvements=  23 | delta_lnL=   10.0/   27.2  
+	      39s |  18 | lnL=     -1040.1 | depth=    3/   10 | improvements=  24 | delta_lnL=   15.9/   20.0  
+	      39s |  19 | lnL=     -1037.5 | depth=    5/    8 | improvements=  23 | delta_lnL=    5.7/   20.0  
+	      39s |  20 | lnL=     -1037.7 | depth=    2/    9 | improvements=  22 | delta_lnL=    0.8/   20.0  
+	      40s |  21 | lnL=     -1034.7 | depth=    7/    7 | improvements=  32 | delta_lnL=   12.5/   20.0  
+	      40s |  22 | lnL=     -1039.5 | depth=    4/   11 | improvements=  24 | delta_lnL=    7.5/   31.8  
+	      40s |  23 | lnL=     -1038.7 | depth=    6/    8 | improvements=  23 | delta_lnL=    4.5/   31.8  
+	      40s |  24 | lnL=     -1036.0 | depth=    6/   10 | improvements=  16 | delta_lnL=    7.4/   31.8  
+
+. Third round of optimization...
+
+	      40s |  25 | lnL=     -1032.7 | depth=    2/   10 | improvements=  14 | delta_lnL=    0.3/  100.0 | triple moves=   5   +
+	      40s |  26 | lnL=     -1032.4 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      40s |  27 | lnL=     -1032.3 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      40s |  28 | lnL=     -1032.3 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      41s |  29 | lnL=     -1032.3 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:12  lnL: -1032.114032
+. j:12  lnL: -1636.830567
+
+. Score of initial tree: -1636.83
+
+. Starting first round of SPRs...
+
+	      41s |   1 | lnL=     -1328.1 | depth=    2/   40 | improvements=  27 | delta_lnL=   10.4/ 1000.0   +
+	      41s |   2 | lnL=     -1323.8 | depth=    9/   24 | improvements=  26 | delta_lnL=    9.3/ 1000.0   +
+	      41s |   3 | lnL=     -1322.0 | depth=    5/   15 | improvements=  12 | delta_lnL=    1.9/ 1000.0   +
+
+. Second round of optimization...
+
+	      41s |   4 | lnL=     -1323.8 | depth=   10/   16 | improvements=  26 | delta_lnL=    9.1/ 1000.0  
+	      41s |   5 | lnL=     -1319.1 | depth=    4/   14 | improvements=  28 | delta_lnL=    2.6/ 1000.0   +
+	      41s |   6 | lnL=     -1319.6 | depth=    4/   11 | improvements=  35 | delta_lnL=    4.3/   20.0  
+	      41s |   7 | lnL=     -1322.3 | depth=    3/    8 | improvements=  33 | delta_lnL=    4.1/   20.0  
+	      41s |   8 | lnL=     -1323.8 | depth=    4/    7 | improvements=  34 | delta_lnL=    7.3/   20.0  
+	      41s |   9 | lnL=     -1329.1 | depth=    4/    8 | improvements=  36 | delta_lnL=    6.3/   20.0  
+	      42s |  10 | lnL=     -1317.3 | depth=    6/    8 | improvements=  35 | delta_lnL=    7.3/   20.0   +
+	      42s |  11 | lnL=     -1314.7 | depth=    2/   10 | improvements=  19 | delta_lnL=    2.9/   20.0   +
+	      42s |  12 | lnL=     -1318.0 | depth=    2/    8 | improvements=  15 | delta_lnL=    1.3/   20.0  
+	      42s |  13 | lnL=     -1326.8 | depth=    4/    6 | improvements=  23 | delta_lnL=    8.6/   20.0  
+	      42s |  14 | lnL=     -1330.7 | depth=    5/    8 | improvements=  33 | delta_lnL=   13.6/   20.0  
+	      42s |  15 | lnL=     -1320.9 | depth=    9/    9 | improvements=  30 | delta_lnL=    6.8/   20.0  
+	      42s |  16 | lnL=     -1314.3 | depth=    7/   13 | improvements=  18 | delta_lnL=    4.6/   20.0   +
+	      42s |  17 | lnL=     -1319.8 | depth=    4/   11 | improvements=  18 | delta_lnL=    7.4/   20.0  
+	      42s |  18 | lnL=     -1318.0 | depth=    3/    8 | improvements=  38 | delta_lnL=    5.1/   27.3  
+	      42s |  19 | lnL=     -1315.5 | depth=    2/    7 | improvements=  17 | delta_lnL=    2.1/   27.3  
+	      42s |  20 | lnL=     -1317.6 | depth=    2/    6 | improvements=  22 | delta_lnL=    3.0/   27.3  
+	      42s |  21 | lnL=     -1313.1 | depth=    3/    6 | improvements=  14 | delta_lnL=    2.5/   27.3   +
+	      42s |  22 | lnL=     -1316.7 | depth=    2/    7 | improvements=  23 | delta_lnL=    2.5/   20.0  
+	      42s |  23 | lnL=     -1316.1 | depth=    5/    6 | improvements=  24 | delta_lnL=    5.5/   20.0  
+	      42s |  24 | lnL=     -1315.1 | depth=    5/    9 | improvements=  20 | delta_lnL=    3.6/   20.0  
+	      42s |  25 | lnL=     -1316.6 | depth=    2/    9 | improvements=  12 | delta_lnL=    3.8/   20.0  
+	      42s |  26 | lnL=     -1319.3 | depth=    6/    7 | improvements=  27 | delta_lnL=    6.6/   20.0  
+	      43s |  27 | lnL=     -1320.8 | depth=    4/   10 | improvements=  26 | delta_lnL=    7.4/   20.0  
+	      43s |  28 | lnL=     -1322.1 | depth=    2/    8 | improvements=  18 | delta_lnL=    1.2/   20.0  
+	      43s |  29 | lnL=     -1316.2 | depth=    3/    6 | improvements=  15 | delta_lnL=    1.0/   20.0  
+	      43s |  30 | lnL=     -1317.7 | depth=    3/    7 | improvements=  27 | delta_lnL=    1.4/   20.0  
+
+. Third round of optimization...
+
+	      43s |  31 | lnL=     -1312.3 | depth=    2/   10 | improvements=  14 | delta_lnL=    0.3/  100.0 | triple moves=   5   +
+	      43s |  32 | lnL=     -1312.1 | depth=    2/    8 | improvements=   2 | delta_lnL=    0.6/  100.0 | triple moves=   5   +
+	      43s |  33 | lnL=     -1312.1 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:13  lnL: -1311.964836
+. j:13  lnL: -1589.683160
+
+. Score of initial tree: -1589.68
+
+. Starting first round of SPRs...
+
+	      44s |   1 | lnL=     -1245.0 | depth=    7/   40 | improvements=  24 | delta_lnL=   13.2/ 1000.0   +
+	      44s |   2 | lnL=     -1252.9 | depth=    7/   24 | improvements=  16 | delta_lnL=   12.2/ 1000.0  
+	      44s |   3 | lnL=     -1245.2 | depth=    7/   14 | improvements=  18 | delta_lnL=    4.6/ 1000.0  
+	      44s |   4 | lnL=     -1243.2 | depth=   10/   13 | improvements=  21 | delta_lnL=    7.1/ 1000.0   +
+	      44s |   5 | lnL=     -1244.6 | depth=    5/   16 | improvements=   9 | delta_lnL=    9.4/ 1000.0  
+
+. Second round of optimization...
+
+	      44s |   6 | lnL=     -1244.8 | depth=    5/   16 | improvements=  23 | delta_lnL=    4.4/   50.0  
+	      44s |   7 | lnL=     -1242.7 | depth=    6/   12 | improvements=  23 | delta_lnL=    3.9/   50.0   +
+	      44s |   8 | lnL=     -1245.8 | depth=    2/   10 | improvements=  21 | delta_lnL=    1.2/   50.0  
+	      44s |   9 | lnL=     -1237.8 | depth=    2/    8 | improvements=  18 | delta_lnL=    1.1/   50.0   +
+	      45s |  10 | lnL=     -1248.2 | depth=    2/    6 | improvements=  23 | delta_lnL=    3.2/   20.0  
+	      45s |  11 | lnL=     -1237.5 | depth=    2/    6 | improvements=  21 | delta_lnL=    1.7/   20.0   +
+	      45s |  12 | lnL=     -1238.7 | depth=    2/    6 | improvements=  13 | delta_lnL=    1.0/   20.0  
+	      45s |  13 | lnL=     -1241.5 | depth=    4/    6 | improvements=  31 | delta_lnL=   10.6/   20.0  
+	      45s |  14 | lnL=     -1246.4 | depth=    3/    8 | improvements=  25 | delta_lnL=   10.1/   20.0  
+	      45s |  15 | lnL=     -1238.9 | depth=    3/    7 | improvements=  25 | delta_lnL=    1.2/   20.0  
+	      45s |  16 | lnL=     -1243.6 | depth=    5/    7 | improvements=  22 | delta_lnL=   11.8/   20.0  
+	      45s |  17 | lnL=     -1240.5 | depth=    4/    9 | improvements=  26 | delta_lnL=    4.4/   20.0  
+	      45s |  18 | lnL=     -1242.0 | depth=    1/    8 | improvements=  16 | delta_lnL=    0.0/   23.7  
+	      45s |  19 | lnL=     -1244.2 | depth=    5/    6 | improvements=  21 | delta_lnL=    4.1/   23.7  
+	      45s |  20 | lnL=     -1238.3 | depth=    2/    9 | improvements=  29 | delta_lnL=    2.0/   23.7  
+
+. Third round of optimization...
+
+	      45s |  21 | lnL=     -1235.3 | depth=    3/   10 | improvements=  15 | delta_lnL=    2.1/  100.0 | triple moves=   5   +
+	      46s |  22 | lnL=     -1235.3 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      46s |  23 | lnL=     -1235.3 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:14  lnL: -1235.303120
+. j:14  lnL: -1587.839927
+
+. Score of initial tree: -1587.84
+
+. Starting first round of SPRs...
+
+	      46s |   1 | lnL=     -1165.3 | depth=    4/   40 | improvements=  10 | delta_lnL=    7.1/ 1000.0  
+
+. Second round of optimization...
+
+	      46s |   2 | lnL=     -1165.7 | depth=    5/   36 | improvements=  28 | delta_lnL=   12.9/ 1000.0  
+	      46s |   3 | lnL=     -1171.0 | depth=    2/   20 | improvements=  25 | delta_lnL=    1.3/ 1000.0  
+	      46s |   4 | lnL=     -1170.3 | depth=    4/   16 | improvements=  33 | delta_lnL=   13.3/ 1000.0  
+	      46s |   5 | lnL=     -1167.7 | depth=    7/   12 | improvements=  30 | delta_lnL=    4.9/ 1000.0  
+	      47s |   6 | lnL=     -1171.9 | depth=    6/   11 | improvements=  23 | delta_lnL=    6.4/   26.7  
+	      47s |   7 | lnL=     -1177.4 | depth=    6/   10 | improvements=  27 | delta_lnL=    9.9/   26.7  
+	      47s |   8 | lnL=     -1175.2 | depth=    6/   10 | improvements=  35 | delta_lnL=   10.7/   26.7  
+	      47s |   9 | lnL=     -1171.5 | depth=    5/   10 | improvements=  23 | delta_lnL=   14.8/   26.7  
+	      47s |  10 | lnL=     -1169.9 | depth=    3/    9 | improvements=  28 | delta_lnL=    4.5/   21.5  
+	      47s |  11 | lnL=     -1168.9 | depth=    3/    7 | improvements=  17 | delta_lnL=   10.1/   21.5  
+
+. Third round of optimization...
+
+	      47s |  12 | lnL=     -1166.8 | depth=    2/   10 | improvements=   6 | delta_lnL=    0.1/  100.0 | triple moves=   5  
+	      47s |  13 | lnL=     -1161.9 | depth=    5/    8 | improvements=   6 | delta_lnL=    4.0/  100.0 | triple moves=   5   +
+	      48s |  14 | lnL=     -1159.2 | depth=    5/   10 | improvements=   7 | delta_lnL=    5.2/  100.0 | triple moves=   6   +
+	      48s |  15 | lnL=     -1158.9 | depth=    1/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      48s |  16 | lnL=     -1158.9 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      48s |  17 | lnL=     -1158.9 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:15  lnL: -1158.306256
+. j:15  lnL: -1595.093794
+
+. Score of initial tree: -1595.09
+
+. Starting first round of SPRs...
+
+	      49s |   1 | lnL=     -1346.2 | depth=    3/   40 | improvements=  16 | delta_lnL=   10.2/ 1000.0   +
+	      49s |   2 | lnL=     -1347.1 | depth=    2/   24 | improvements=   7 | delta_lnL=    2.2/ 1000.0  
+
+. Second round of optimization...
+
+	      49s |   3 | lnL=     -1349.0 | depth=    2/   21 | improvements=  28 | delta_lnL=    4.4/ 1000.0  
+	      49s |   4 | lnL=     -1343.8 | depth=    2/   16 | improvements=  28 | delta_lnL=    3.8/ 1000.0   +
+	      49s |   5 | lnL=     -1362.1 | depth=    6/   12 | improvements=  31 | delta_lnL=   10.7/ 1000.0  
+	      49s |   6 | lnL=     -1350.5 | depth=    8/   10 | improvements=  48 | delta_lnL=    7.7/   20.0  
+	      49s |   7 | lnL=     -1353.5 | depth=    3/   12 | improvements=  31 | delta_lnL=    3.1/   20.0  
+	      49s |   8 | lnL=     -1348.9 | depth=    3/    9 | improvements=  24 | delta_lnL=    4.2/   20.0  
+	      49s |   9 | lnL=     -1354.6 | depth=    4/    7 | improvements=  32 | delta_lnL=    2.9/   20.0  
+	      49s |  10 | lnL=     -1348.9 | depth=    5/    8 | improvements=  32 | delta_lnL=    5.5/   20.0  
+	      49s |  11 | lnL=     -1346.3 | depth=    3/    9 | improvements=  30 | delta_lnL=    5.2/   20.0  
+	      49s |  12 | lnL=     -1349.8 | depth=    5/    7 | improvements=  26 | delta_lnL=    9.1/   20.0  
+	      49s |  13 | lnL=     -1348.5 | depth=    6/    9 | improvements=  22 | delta_lnL=    4.6/   20.0  
+
+. Third round of optimization...
+
+	      50s |  14 | lnL=     -1343.6 | depth=    5/   10 | improvements=  15 | delta_lnL=    2.5/  100.0 | triple moves=   5   +
+	      50s |  15 | lnL=     -1342.3 | depth=    3/   10 | improvements=   6 | delta_lnL=    2.1/  100.0 | triple moves=   8   +
+	      50s |  16 | lnL=     -1342.1 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      50s |  17 | lnL=     -1342.1 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:16  lnL: -1341.498365
+. j:16  lnL: -1599.043801
+
+. Score of initial tree: -1599.04
+
+. Starting first round of SPRs...
+
+	      51s |   1 | lnL=     -1272.8 | depth=   11/   40 | improvements=  21 | delta_lnL=   17.7/ 1000.0   +
+	      51s |   2 | lnL=     -1280.0 | depth=    8/   24 | improvements=  25 | delta_lnL=   21.5/ 1000.0  
+	      51s |   3 | lnL=     -1268.8 | depth=    8/   14 | improvements=  19 | delta_lnL=    7.2/ 1000.0   +
+	      51s |   4 | lnL=     -1266.8 | depth=    1/   14 | improvements=  12 | delta_lnL=    0.0/ 1000.0   +
+
+. Second round of optimization...
+
+	      51s |   5 | lnL=     -1266.9 | depth=    3/   12 | improvements=  24 | delta_lnL=    2.2/ 1000.0  
+	      51s |   6 | lnL=     -1271.8 | depth=    7/    9 | improvements=  37 | delta_lnL=   14.0/   20.0  
+	      51s |   7 | lnL=     -1268.8 | depth=    5/   11 | improvements=  36 | delta_lnL=    6.6/   20.0  
+	      51s |   8 | lnL=     -1276.4 | depth=    2/    9 | improvements=  44 | delta_lnL=   11.9/   20.0  
+	      51s |   9 | lnL=     -1272.7 | depth=    5/    7 | improvements=  33 | delta_lnL=    4.3/   20.0  
+	      51s |  10 | lnL=     -1281.5 | depth=    6/    9 | improvements=  33 | delta_lnL=   22.9/   28.1  
+	      51s |  11 | lnL=     -1265.2 | depth=    5/   10 | improvements=  26 | delta_lnL=    5.2/   28.1   +
+	      52s |  12 | lnL=     -1269.2 | depth=    8/    9 | improvements=  18 | delta_lnL=    4.7/   28.1  
+	      52s |  13 | lnL=     -1271.2 | depth=    7/   12 | improvements=  28 | delta_lnL=   13.2/   28.1  
+	      52s |  14 | lnL=     -1270.8 | depth=    8/   11 | improvements=  21 | delta_lnL=   12.8/   45.9  
+	      52s |  15 | lnL=     -1269.3 | depth=    2/   12 | improvements=  24 | delta_lnL=    1.6/   45.9  
+	      52s |  16 | lnL=     -1268.2 | depth=    7/    9 | improvements=  29 | delta_lnL=    5.0/   45.9  
+	      52s |  17 | lnL=     -1278.3 | depth=    3/   11 | improvements=  34 | delta_lnL=    6.3/   45.9  
+	      52s |  18 | lnL=     -1272.1 | depth=    6/    8 | improvements=  34 | delta_lnL=    8.8/   25.7  
+	      52s |  19 | lnL=     -1268.9 | depth=    5/   10 | improvements=  20 | delta_lnL=    7.9/   25.7  
+	      52s |  20 | lnL=     -1270.6 | depth=    6/    9 | improvements=  24 | delta_lnL=    6.0/   25.7  
+
+. Third round of optimization...
+
+	      52s |  21 | lnL=     -1261.3 | depth=   10/   10 | improvements=  26 | delta_lnL=    3.7/  100.0 | triple moves=   5   +
+	      53s |  22 | lnL=     -1261.2 | depth=    1/   20 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      53s |  23 | lnL=     -1261.2 | depth=    0/   16 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:17  lnL: -1261.145577
+. j:17  lnL: -1597.701756
+
+. Score of initial tree: -1597.70
+
+. Starting first round of SPRs...
+
+	      53s |   1 | lnL=     -1274.4 | depth=    6/   40 | improvements=  15 | delta_lnL=    8.7/ 1000.0  
+
+. Second round of optimization...
+
+	      53s |   2 | lnL=     -1271.1 | depth=    6/   36 | improvements=  34 | delta_lnL=    4.7/ 1000.0   +
+	      53s |   3 | lnL=     -1272.8 | depth=    7/   20 | improvements=  29 | delta_lnL=   14.1/ 1000.0  
+	      54s |   4 | lnL=     -1268.0 | depth=    6/   16 | improvements=  30 | delta_lnL=    3.2/ 1000.0   +
+	      54s |   5 | lnL=     -1265.8 | depth=    8/   12 | improvements=  17 | delta_lnL=    8.4/ 1000.0   +
+	      54s |   6 | lnL=     -1264.6 | depth=    1/   12 | improvements=  25 | delta_lnL=    0.0/   28.1   +
+	      54s |   7 | lnL=     -1264.7 | depth=    3/    9 | improvements=  16 | delta_lnL=    5.0/   28.1  
+	      54s |   8 | lnL=     -1266.4 | depth=    3/    7 | improvements=  21 | delta_lnL=    0.9/   28.1  
+	      54s |   9 | lnL=     -1263.3 | depth=    3/    7 | improvements=  18 | delta_lnL=    2.7/   28.1   +
+	      54s |  10 | lnL=     -1265.5 | depth=    4/    7 | improvements=  15 | delta_lnL=    4.9/   20.0  
+	      54s |  11 | lnL=     -1264.1 | depth=    2/    8 | improvements=  19 | delta_lnL=    1.0/   20.0  
+	      54s |  12 | lnL=     -1271.5 | depth=    5/    6 | improvements=  34 | delta_lnL=   12.3/   20.0  
+	      54s |  13 | lnL=     -1275.6 | depth=    5/    9 | improvements=  32 | delta_lnL=    4.8/   20.0  
+	      54s |  14 | lnL=     -1268.0 | depth=    9/    9 | improvements=  23 | delta_lnL=    8.3/   24.7  
+	      54s |  15 | lnL=     -1268.6 | depth=    6/   13 | improvements=  17 | delta_lnL=    3.7/   24.7  
+	      54s |  16 | lnL=     -1264.2 | depth=    6/   10 | improvements=  26 | delta_lnL=    8.8/   24.7  
+	      54s |  17 | lnL=     -1266.0 | depth=    5/   10 | improvements=  20 | delta_lnL=    6.6/   24.7  
+	      54s |  18 | lnL=     -1263.8 | depth=    3/    9 | improvements=  25 | delta_lnL=    8.7/   20.0  
+
+. Third round of optimization...
+
+	      55s |  19 | lnL=     -1259.2 | depth=    5/   10 | improvements=  15 | delta_lnL=    2.5/  100.0 | triple moves=   5   +
+	      55s |  20 | lnL=     -1258.9 | depth=    1/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      55s |  21 | lnL=     -1257.5 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   6   +
+	      55s |  22 | lnL=     -1257.4 | depth=    2/    6 | improvements=   1 | delta_lnL=    0.1/  100.0 | triple moves=   5   +
+	      56s |  23 | lnL=     -1257.4 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:18  lnL: -1257.394932
+. j:18  lnL: -1582.047029
+
+. Score of initial tree: -1582.05
+
+. Starting first round of SPRs...
+
+	      56s |   1 | lnL=     -1288.0 | depth=    3/   40 | improvements=  14 | delta_lnL=   18.6/ 1000.0  
+
+. Second round of optimization...
+
+	      56s |   2 | lnL=     -1285.2 | depth=    4/   36 | improvements=  39 | delta_lnL=   20.4/ 1000.0  
+	      56s |   3 | lnL=     -1280.7 | depth=    5/   20 | improvements=  28 | delta_lnL=    8.7/ 1000.0  
+	      56s |   4 | lnL=     -1279.9 | depth=    3/   16 | improvements=  27 | delta_lnL=   15.3/ 1000.0  
+	      56s |   5 | lnL=     -1288.7 | depth=    5/   12 | improvements=  35 | delta_lnL=   15.3/ 1000.0  
+	      56s |   6 | lnL=     -1285.6 | depth=    7/    9 | improvements=  29 | delta_lnL=   10.6/   40.9  
+	      56s |   7 | lnL=     -1280.5 | depth=    5/   11 | improvements=  30 | delta_lnL=    5.4/   40.9  
+	      56s |   8 | lnL=     -1282.1 | depth=    4/    9 | improvements=  28 | delta_lnL=    5.6/   40.9  
+	      57s |   9 | lnL=     -1281.2 | depth=    4/    8 | improvements=  37 | delta_lnL=    3.4/   40.9  
+	      57s |  10 | lnL=     -1276.4 | depth=    2/    8 | improvements=  20 | delta_lnL=    0.2/   21.1  
+	      57s |  11 | lnL=     -1274.5 | depth=    4/    6 | improvements=  24 | delta_lnL=    6.0/   21.1  
+
+. Third round of optimization...
+
+	      57s |  12 | lnL=     -1271.0 | depth=    5/   10 | improvements=   9 | delta_lnL=    4.0/  100.0 | triple moves=   5  
+	      57s |  13 | lnL=     -1270.7 | depth=    1/   10 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	      58s |  14 | lnL=     -1270.6 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   6  
+
+. Final optimisation steps...
+
+. i:19  lnL: -1270.296591
+. j:19  lnL: -1581.573097
+
+. Score of initial tree: -1581.57
+
+. Starting first round of SPRs...
+
+	      58s |   1 | lnL=     -1346.9 | depth=    4/   40 | improvements=  13 | delta_lnL=   19.2/ 1000.0  
+
+. Second round of optimization...
+
+	      58s |   2 | lnL=     -1346.9 | depth=    6/   36 | improvements=  39 | delta_lnL=    7.9/ 1000.0  
+	      58s |   3 | lnL=     -1352.7 | depth=    5/   20 | improvements=  29 | delta_lnL=    7.3/ 1000.0  
+	      58s |   4 | lnL=     -1355.3 | depth=    3/   16 | improvements=  33 | delta_lnL=    1.0/ 1000.0  
+	      58s |   5 | lnL=     -1351.7 | depth=    2/   12 | improvements=  19 | delta_lnL=    1.6/ 1000.0  
+	      58s |   6 | lnL=     -1348.7 | depth=    3/    9 | improvements=  30 | delta_lnL=    3.5/   20.0  
+	      59s |   7 | lnL=     -1370.5 | depth=    5/    7 | improvements=  33 | delta_lnL=   22.5/   20.0  
+	      59s |   8 | lnL=     -1362.4 | depth=    5/    9 | improvements=  33 | delta_lnL=    2.9/   20.0  
+	      59s |   9 | lnL=     -1355.1 | depth=    5/    9 | improvements=  33 | delta_lnL=    2.1/   20.0  
+	      59s |  10 | lnL=     -1362.6 | depth=    3/    9 | improvements=  25 | delta_lnL=    6.6/   45.0  
+	      59s |  11 | lnL=     -1350.3 | depth=    6/    7 | improvements=  29 | delta_lnL=   17.5/   45.0  
+
+. Third round of optimization...
+
+	      59s |  12 | lnL=     -1343.8 | depth=    6/   10 | improvements=  15 | delta_lnL=    5.9/  100.0 | triple moves=   5   +
+	      59s |  13 | lnL=     -1340.9 | depth=    5/   12 | improvements=   2 | delta_lnL=    3.7/  100.0 | triple moves=   6   +
+	      60s |  14 | lnL=     -1340.8 | depth=    0/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      60s |  15 | lnL=     -1340.8 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      60s |  16 | lnL=     -1340.7 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:20  lnL: -1340.445652
+. j:20  lnL: -1578.459099
+
+. Score of initial tree: -1578.46
+
+. Starting first round of SPRs...
+
+	      61s |   1 | lnL=     -1251.5 | depth=    3/   40 | improvements=  17 | delta_lnL=    3.4/ 1000.0  
+	      61s |   2 | lnL=     -1246.3 | depth=    6/   24 | improvements=  16 | delta_lnL=    8.3/ 1000.0  
+	      61s |   3 | lnL=     -1250.6 | depth=    9/   14 | improvements=  16 | delta_lnL=    6.9/ 1000.0  
+	      61s |   4 | lnL=     -1248.0 | depth=    2/   15 | improvements=  13 | delta_lnL=    2.1/ 1000.0  
+
+. Second round of optimization...
+
+	      61s |   5 | lnL=     -1250.6 | depth=    5/   13 | improvements=  30 | delta_lnL=    6.4/ 1000.0  
+	      61s |   6 | lnL=     -1251.7 | depth=    3/   10 | improvements=  31 | delta_lnL=    3.3/   20.0  
+	      61s |   7 | lnL=     -1244.9 | depth=    5/    8 | improvements=  27 | delta_lnL=    3.0/   20.0  
+	      61s |   8 | lnL=     -1241.8 | depth=    4/    9 | improvements=  22 | delta_lnL=    8.5/   20.0   +
+	      61s |   9 | lnL=     -1248.1 | depth=    5/    8 | improvements=  30 | delta_lnL=   13.2/   20.0  
+	      61s |  10 | lnL=     -1246.4 | depth=    3/    9 | improvements=  23 | delta_lnL=    3.9/   20.0  
+	      61s |  11 | lnL=     -1239.8 | depth=    3/    7 | improvements=  24 | delta_lnL=    2.3/   20.0   +
+	      61s |  12 | lnL=     -1243.6 | depth=    4/    7 | improvements=  24 | delta_lnL=    2.9/   20.0  
+	      61s |  13 | lnL=     -1250.7 | depth=    4/    8 | improvements=  25 | delta_lnL=   12.6/   20.0  
+	      61s |  14 | lnL=     -1249.4 | depth=    6/    8 | improvements=  27 | delta_lnL=    6.6/   20.0  
+	      61s |  15 | lnL=     -1249.5 | depth=    3/   10 | improvements=  28 | delta_lnL=    2.8/   20.0  
+	      62s |  16 | lnL=     -1246.5 | depth=    5/    8 | improvements=  27 | delta_lnL=    4.8/   20.0  
+	      62s |  17 | lnL=     -1249.1 | depth=    8/    9 | improvements=  26 | delta_lnL=   21.6/   20.0  
+	      62s |  18 | lnL=     -1247.9 | depth=    2/   12 | improvements=  28 | delta_lnL=    2.5/   20.0  
+	      62s |  19 | lnL=     -1246.5 | depth=    6/    9 | improvements=  18 | delta_lnL=    6.2/   20.0  
+	      62s |  20 | lnL=     -1245.3 | depth=    4/   10 | improvements=  29 | delta_lnL=    7.3/   20.0  
+
+. Third round of optimization...
+
+	      62s |  21 | lnL=     -1238.9 | depth=    6/   10 | improvements=  22 | delta_lnL=    3.1/  100.0 | triple moves=   5   +
+	      62s |  22 | lnL=     -1238.7 | depth=    1/   12 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   6   +
+	      62s |  23 | lnL=     -1238.6 | depth=    0/    9 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      63s |  24 | lnL=     -1238.6 | depth=    0/    7 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      63s |  25 | lnL=     -1238.6 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:21  lnL: -1238.519716
+. j:21  lnL: -1588.860302
+
+. Score of initial tree: -1588.86
+
+. Starting first round of SPRs...
+
+	      63s |   1 | lnL=     -1298.8 | depth=    3/   40 | improvements=  13 | delta_lnL=    4.4/ 1000.0  
+
+. Second round of optimization...
+
+	      63s |   2 | lnL=     -1288.9 | depth=    2/   36 | improvements=  23 | delta_lnL=    0.6/ 1000.0   +
+	      63s |   3 | lnL=     -1297.0 | depth=    7/   20 | improvements=  28 | delta_lnL=   12.3/ 1000.0  
+	      63s |   4 | lnL=     -1295.5 | depth=    4/   16 | improvements=  27 | delta_lnL=    2.7/ 1000.0  
+	      64s |   5 | lnL=     -1291.3 | depth=    4/   12 | improvements=  25 | delta_lnL=    9.3/ 1000.0  
+	      64s |   6 | lnL=     -1295.6 | depth=    3/    9 | improvements=  20 | delta_lnL=    3.4/   24.6  
+	      64s |   7 | lnL=     -1316.8 | depth=    6/    7 | improvements=  42 | delta_lnL=   16.4/   24.6  
+	      64s |   8 | lnL=     -1308.4 | depth=    2/   10 | improvements=  26 | delta_lnL=    6.1/   24.6  
+	      64s |   9 | lnL=     -1304.7 | depth=    5/    8 | improvements=  29 | delta_lnL=    1.9/   24.6  
+	      64s |  10 | lnL=     -1316.5 | depth=    6/    9 | improvements=  31 | delta_lnL=   11.2/   32.8  
+	      64s |  11 | lnL=     -1306.2 | depth=    5/   10 | improvements=  35 | delta_lnL=   15.3/   32.8  
+
+. Third round of optimization...
+
+	      64s |  12 | lnL=     -1294.2 | depth=    4/   10 | improvements=  29 | delta_lnL=    2.7/  100.0 | triple moves=   5  
+	      65s |  13 | lnL=     -1293.0 | depth=    6/    8 | improvements=   6 | delta_lnL=    4.9/  100.0 | triple moves=   5  
+	      65s |  14 | lnL=     -1289.5 | depth=    2/   12 | improvements=   8 | delta_lnL=    0.9/  100.0 | triple moves=   5  
+	      65s |  15 | lnL=     -1289.2 | depth=    0/    9 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	      65s |  16 | lnL=     -1289.2 | depth=    0/    7 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	      65s |  17 | lnL=     -1289.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+
+. Final optimisation steps...
+
+. i:22  lnL: -1286.187718
+. j:22  lnL: -1592.575765
+
+. Score of initial tree: -1592.58
+
+. Starting first round of SPRs...
+
+	      66s |   1 | lnL=     -1256.3 | depth=    3/   40 | improvements=  28 | delta_lnL=   19.0/ 1000.0   +
+	      66s |   2 | lnL=     -1260.9 | depth=    5/   24 | improvements=  18 | delta_lnL=   24.5/ 1000.0  
+	      66s |   3 | lnL=     -1255.1 | depth=    9/   14 | improvements=  16 | delta_lnL=   12.2/ 1000.0   +
+	      66s |   4 | lnL=     -1267.2 | depth=    9/   15 | improvements=  12 | delta_lnL=   67.7/ 1000.0  
+
+. Second round of optimization...
+
+	      66s |   5 | lnL=     -1259.8 | depth=    4/   22 | improvements=  29 | delta_lnL=    5.7/ 1000.0  
+	      66s |   6 | lnL=     -1256.4 | depth=    5/   17 | improvements=  33 | delta_lnL=    4.2/   20.0  
+	      66s |   7 | lnL=     -1257.3 | depth=    4/   13 | improvements=  30 | delta_lnL=    2.8/   20.0  
+	      66s |   8 | lnL=     -1258.4 | depth=    5/   10 | improvements=  23 | delta_lnL=   15.8/   20.0  
+	      66s |   9 | lnL=     -1257.3 | depth=    3/    9 | improvements=  20 | delta_lnL=    2.6/   20.0  
+	      67s |  10 | lnL=     -1259.1 | depth=    6/    7 | improvements=  18 | delta_lnL=    8.4/   31.6  
+	      67s |  11 | lnL=     -1250.4 | depth=    3/   10 | improvements=  23 | delta_lnL=    4.5/   31.6   +
+	      67s |  12 | lnL=     -1263.8 | depth=    3/    8 | improvements=  25 | delta_lnL=   12.1/   31.6  
+	      67s |  13 | lnL=     -1262.9 | depth=    6/    7 | improvements=  35 | delta_lnL=    7.4/   31.6  
+	      67s |  14 | lnL=     -1259.5 | depth=    4/   10 | improvements=  21 | delta_lnL=    6.4/   24.2  
+	      67s |  15 | lnL=     -1262.0 | depth=    4/    8 | improvements=  22 | delta_lnL=    8.8/   24.2  
+	      67s |  16 | lnL=     -1251.3 | depth=    8/    8 | improvements=  28 | delta_lnL=    3.7/   24.2  
+	      67s |  17 | lnL=     -1248.9 | depth=    2/   12 | improvements=  23 | delta_lnL=    3.6/   24.2   +
+	      67s |  18 | lnL=     -1251.6 | depth=    6/    9 | improvements=  16 | delta_lnL=    6.0/   20.0  
+	      67s |  19 | lnL=     -1254.5 | depth=    3/   10 | improvements=  21 | delta_lnL=    2.3/   20.0  
+	      67s |  20 | lnL=     -1258.1 | depth=    4/    8 | improvements=  24 | delta_lnL=    5.8/   20.0  
+	      68s |  21 | lnL=     -1249.0 | depth=    5/    8 | improvements=  30 | delta_lnL=    8.7/   20.0  
+	      68s |  22 | lnL=     -1248.9 | depth=    4/    9 | improvements=  22 | delta_lnL=    4.8/   20.0   +
+	      68s |  23 | lnL=     -1247.7 | depth=    1/    8 | improvements=  16 | delta_lnL=    0.0/   20.0   +
+	      68s |  24 | lnL=     -1247.7 | depth=    1/    6 | improvements=  15 | delta_lnL=    0.0/   20.0   +
+	      68s |  25 | lnL=     -1250.4 | depth=    2/    5 | improvements=  25 | delta_lnL=    3.0/   20.0  
+	      68s |  26 | lnL=     -1250.2 | depth=    3/    6 | improvements=  11 | delta_lnL=    2.1/   20.0  
+	      68s |  27 | lnL=     -1249.2 | depth=    2/    7 | improvements=  15 | delta_lnL=    2.5/   20.0  
+	      68s |  28 | lnL=     -1248.3 | depth=    3/    6 | improvements=  18 | delta_lnL=    3.6/   20.0  
+	      68s |  29 | lnL=     -1251.9 | depth=    2/    7 | improvements=  25 | delta_lnL=    1.3/   20.0  
+	      68s |  30 | lnL=     -1250.7 | depth=    2/    6 | improvements=  20 | delta_lnL=    4.2/   20.0  
+	      68s |  31 | lnL=     -1247.1 | depth=    2/    6 | improvements=  22 | delta_lnL=    3.2/   20.0   +
+	      68s |  32 | lnL=     -1248.3 | depth=    3/    6 | improvements=  11 | delta_lnL=    2.8/   20.0  
+	      68s |  33 | lnL=     -1254.0 | depth=    4/    7 | improvements=  21 | delta_lnL=    9.0/   20.0  
+	      68s |  34 | lnL=     -1246.8 | depth=    4/    8 | improvements=   9 | delta_lnL=    3.4/   20.0   +
+	      69s |  35 | lnL=     -1246.8 | depth=    2/    8 | improvements=  11 | delta_lnL=    0.2/   20.0   +
+	      69s |  36 | lnL=     -1251.1 | depth=    2/    6 | improvements=  23 | delta_lnL=    2.4/   20.0  
+	      69s |  37 | lnL=     -1249.7 | depth=    3/    6 | improvements=  23 | delta_lnL=    1.3/   20.0  
+	      69s |  38 | lnL=     -1247.8 | depth=    4/    7 | improvements=   8 | delta_lnL=    3.0/   20.0  
+	      69s |  39 | lnL=     -1251.3 | depth=    3/    8 | improvements=  13 | delta_lnL=    1.9/   20.0  
+	      69s |  40 | lnL=     -1253.3 | depth=    7/    7 | improvements=  19 | delta_lnL=    3.7/   20.0  
+	      69s |  41 | lnL=     -1249.4 | depth=    3/   11 | improvements=  17 | delta_lnL=    1.5/   20.0  
+	      69s |  42 | lnL=     -1252.9 | depth=    4/    8 | improvements=  13 | delta_lnL=    5.3/   20.0  
+	      69s |  43 | lnL=     -1252.1 | depth=    7/    8 | improvements=  16 | delta_lnL=    5.6/   20.0  
+	      69s |  44 | lnL=     -1248.8 | depth=    2/   11 | improvements=  16 | delta_lnL=    0.7/   20.0  
+
+. Third round of optimization...
+
+	      70s |  45 | lnL=     -1246.5 | depth=    3/   10 | improvements=  11 | delta_lnL=    1.6/  100.0 | triple moves=   5   +
+	      70s |  46 | lnL=     -1245.3 | depth=    3/    8 | improvements=   3 | delta_lnL=    1.9/  100.0 | triple moves=   5   +
+	      70s |  47 | lnL=     -1245.2 | depth=    1/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      70s |  48 | lnL=     -1245.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:23  lnL: -1245.030128
+. j:23  lnL: -1585.672136
+
+. Score of initial tree: -1585.67
+
+. Starting first round of SPRs...
+
+	      71s |   1 | lnL=     -1099.7 | depth=   11/   40 | improvements=  27 | delta_lnL=   14.7/ 1000.0   +
+	      71s |   2 | lnL=     -1096.8 | depth=    4/   24 | improvements=  18 | delta_lnL=    7.7/ 1000.0   +
+	      71s |   3 | lnL=     -1098.9 | depth=    4/   14 | improvements=  10 | delta_lnL=    4.2/ 1000.0  
+
+. Second round of optimization...
+
+	      71s |   4 | lnL=     -1105.5 | depth=    6/   15 | improvements=  33 | delta_lnL=   13.5/ 1000.0  
+	      71s |   5 | lnL=     -1098.0 | depth=   11/   12 | improvements=  24 | delta_lnL=   11.9/ 1000.0  
+	      71s |   6 | lnL=     -1103.8 | depth=    7/   15 | improvements=  28 | delta_lnL=   13.4/   27.1  
+	      71s |   7 | lnL=     -1098.6 | depth=    9/   12 | improvements=  38 | delta_lnL=   24.7/   27.1  
+	      72s |   8 | lnL=     -1099.1 | depth=    5/   13 | improvements=  34 | delta_lnL=    5.8/   27.1  
+	      72s |   9 | lnL=     -1099.0 | depth=    9/   10 | improvements=  29 | delta_lnL=   23.8/   27.1  
+	      72s |  10 | lnL=     -1099.5 | depth=    7/   13 | improvements=  23 | delta_lnL=    9.4/   49.3  
+	      72s |  11 | lnL=     -1087.1 | depth=    8/   11 | improvements=  18 | delta_lnL=    7.0/   49.3   +
+	      72s |  12 | lnL=     -1090.7 | depth=    6/   12 | improvements=  29 | delta_lnL=   23.5/   49.3  
+	      72s |  13 | lnL=     -1095.9 | depth=    8/   10 | improvements=  23 | delta_lnL=    5.4/   49.3  
+	      72s |  14 | lnL=     -1095.6 | depth=    5/   12 | improvements=  24 | delta_lnL=    3.6/   47.0  
+	      72s |  15 | lnL=     -1095.6 | depth=    5/    9 | improvements=  24 | delta_lnL=    2.1/   47.0  
+	      72s |  16 | lnL=     -1090.7 | depth=    6/    9 | improvements=  22 | delta_lnL=    2.0/   47.0  
+	      72s |  17 | lnL=     -1092.2 | depth=   10/   10 | improvements=  17 | delta_lnL=    6.1/   47.0  
+	      73s |  18 | lnL=     -1096.6 | depth=   10/   14 | improvements=  31 | delta_lnL=   15.6/   20.0  
+	      73s |  19 | lnL=     -1100.8 | depth=    7/   14 | improvements=  36 | delta_lnL=   14.4/   20.0  
+	      73s |  20 | lnL=     -1094.3 | depth=    5/   11 | improvements=  18 | delta_lnL=    3.7/   20.0  
+
+. Third round of optimization...
+
+	      73s |  21 | lnL=     -1085.3 | depth=    8/   10 | improvements=  15 | delta_lnL=    5.0/  100.0 | triple moves=   5   +
+	      73s |  22 | lnL=     -1085.3 | depth=    0/   16 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:24  lnL: -1085.263114
+. j:24  lnL: -1640.566149
+
+. Score of initial tree: -1640.57
+
+. Starting first round of SPRs...
+
+	      74s |   1 | lnL=     -1343.5 | depth=    4/   40 | improvements=  31 | delta_lnL=   16.7/ 1000.0   +
+	      74s |   2 | lnL=     -1335.7 | depth=    4/   24 | improvements=  25 | delta_lnL=   13.2/ 1000.0   +
+	      74s |   3 | lnL=     -1338.3 | depth=   11/   14 | improvements=  14 | delta_lnL=   11.1/ 1000.0  
+
+. Second round of optimization...
+
+	      74s |   4 | lnL=     -1343.0 | depth=    9/   25 | improvements=  34 | delta_lnL=    6.4/ 1000.0  
+	      74s |   5 | lnL=     -1356.5 | depth=    9/   20 | improvements=  29 | delta_lnL=   12.3/ 1000.0  
+	      74s |   6 | lnL=     -1340.2 | depth=    5/   16 | improvements=  31 | delta_lnL=    4.3/   20.0  
+	      74s |   7 | lnL=     -1334.5 | depth=   11/   12 | improvements=  26 | delta_lnL=    8.6/   20.0   +
+	      74s |   8 | lnL=     -1342.7 | depth=    5/   15 | improvements=  34 | delta_lnL=    9.0/   20.0  
+	      74s |   9 | lnL=     -1335.1 | depth=    8/   12 | improvements=  34 | delta_lnL=    6.3/   20.0  
+	      74s |  10 | lnL=     -1336.8 | depth=    6/   12 | improvements=  33 | delta_lnL=    3.7/   20.0  
+	      74s |  11 | lnL=     -1326.1 | depth=    3/   10 | improvements=  35 | delta_lnL=    6.6/   20.0   +
+	      74s |  12 | lnL=     -1330.3 | depth=    5/    8 | improvements=  22 | delta_lnL=    2.3/   20.0  
+	      74s |  13 | lnL=     -1331.2 | depth=    5/    9 | improvements=  27 | delta_lnL=    7.1/   20.0  
+	      75s |  14 | lnL=     -1339.6 | depth=    4/    9 | improvements=  36 | delta_lnL=    3.0/   20.0  
+	      75s |  15 | lnL=     -1336.3 | depth=    8/    8 | improvements=  40 | delta_lnL=    4.7/   20.0  
+	      75s |  16 | lnL=     -1330.9 | depth=    4/   12 | improvements=  34 | delta_lnL=    6.7/   20.0  
+	      75s |  17 | lnL=     -1328.3 | depth=    6/    9 | improvements=  33 | delta_lnL=    4.2/   20.0  
+	      75s |  18 | lnL=     -1329.6 | depth=    5/   10 | improvements=  32 | delta_lnL=    4.3/   20.0  
+	      75s |  19 | lnL=     -1324.6 | depth=    6/    9 | improvements=  24 | delta_lnL=    5.2/   20.0   +
+	      75s |  20 | lnL=     -1329.0 | depth=    9/   10 | improvements=  19 | delta_lnL=   19.9/   20.0  
+	      75s |  21 | lnL=     -1324.3 | depth=    9/   13 | improvements=  37 | delta_lnL=    3.4/   20.0   +
+	      75s |  22 | lnL=     -1320.2 | depth=    4/   13 | improvements=  20 | delta_lnL=    2.6/   39.9   +
+	      75s |  23 | lnL=     -1317.5 | depth=    2/   10 | improvements=  24 | delta_lnL=    1.7/   39.9   +
+	      75s |  24 | lnL=     -1322.0 | depth=    2/    8 | improvements=  23 | delta_lnL=    0.9/   39.9  
+	      75s |  25 | lnL=     -1321.2 | depth=    2/    6 | improvements=  27 | delta_lnL=    4.9/   39.9  
+	      75s |  26 | lnL=     -1323.5 | depth=    3/    6 | improvements=  19 | delta_lnL=    2.1/   20.0  
+	      75s |  27 | lnL=     -1320.4 | depth=    5/    7 | improvements=  19 | delta_lnL=    9.8/   20.0  
+	      75s |  28 | lnL=     -1319.3 | depth=    5/    9 | improvements=  15 | delta_lnL=    4.6/   20.0  
+	      76s |  29 | lnL=     -1330.7 | depth=    6/    9 | improvements=  27 | delta_lnL=   19.3/   20.0  
+	      76s |  30 | lnL=     -1326.7 | depth=    4/   10 | improvements=  25 | delta_lnL=    9.4/   20.0  
+	      76s |  31 | lnL=     -1316.8 | depth=    3/    8 | improvements=  16 | delta_lnL=    5.7/   20.0   +
+	      76s |  32 | lnL=     -1317.7 | depth=    3/    7 | improvements=  17 | delta_lnL=   11.6/   20.0  
+	      76s |  33 | lnL=     -1318.5 | depth=    3/    7 | improvements=  12 | delta_lnL=    3.3/   20.0  
+	      76s |  34 | lnL=     -1318.3 | depth=    1/    7 | improvements=   7 | delta_lnL=    0.0/   23.2  
+	      76s |  35 | lnL=     -1320.4 | depth=    2/    5 | improvements=  13 | delta_lnL=    1.4/   23.2  
+	      76s |  36 | lnL=     -1318.3 | depth=    2/    6 | improvements=  13 | delta_lnL=    1.0/   23.2  
+	      76s |  37 | lnL=     -1322.9 | depth=    2/    6 | improvements=  14 | delta_lnL=    3.4/   23.2  
+	      76s |  38 | lnL=     -1321.5 | depth=    3/    6 | improvements=  22 | delta_lnL=    4.9/   20.0  
+	      76s |  39 | lnL=     -1322.2 | depth=    5/    7 | improvements=  21 | delta_lnL=    6.8/   20.0  
+	      76s |  40 | lnL=     -1321.1 | depth=    7/    9 | improvements=  19 | delta_lnL=    1.6/   20.0  
+
+. Third round of optimization...
+
+	      76s |  41 | lnL=     -1315.9 | depth=    4/   11 | improvements=  18 | delta_lnL=    3.4/  100.0 | triple moves=   5   +
+	      77s |  42 | lnL=     -1315.9 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:25  lnL: -1315.904009
+. j:25  lnL: -1617.381167
+
+. Score of initial tree: -1617.38
+
+. Starting first round of SPRs...
+
+	      77s |   1 | lnL=     -1071.9 | depth=   10/   40 | improvements=  21 | delta_lnL=   11.6/ 1000.0   +
+	      77s |   2 | lnL=     -1071.9 | depth=   10/   24 | improvements=  24 | delta_lnL=    9.8/ 1000.0   +
+	      77s |   3 | lnL=     -1070.8 | depth=    5/   16 | improvements=   8 | delta_lnL=    8.2/ 1000.0   +
+
+. Second round of optimization...
+
+	      77s |   4 | lnL=     -1066.7 | depth=    5/   16 | improvements=  35 | delta_lnL=   14.1/ 1000.0   +
+	      77s |   5 | lnL=     -1072.2 | depth=    3/   12 | improvements=  34 | delta_lnL=    4.4/ 1000.0  
+	      77s |   6 | lnL=     -1066.0 | depth=    4/    9 | improvements=  33 | delta_lnL=    9.2/   28.2   +
+	      77s |   7 | lnL=     -1071.4 | depth=    6/    8 | improvements=  25 | delta_lnL=    8.7/   28.2  
+	      77s |   8 | lnL=     -1069.0 | depth=    5/   10 | improvements=  32 | delta_lnL=    8.3/   28.2  
+	      78s |   9 | lnL=     -1069.8 | depth=    8/    9 | improvements=  26 | delta_lnL=    8.0/   28.2  
+	      78s |  10 | lnL=     -1069.0 | depth=    4/   12 | improvements=  35 | delta_lnL=    6.7/   20.0  
+	      78s |  11 | lnL=     -1063.1 | depth=    3/    9 | improvements=  16 | delta_lnL=    3.5/   20.0   +
+	      78s |  12 | lnL=     -1063.0 | depth=    2/    7 | improvements=  22 | delta_lnL=    1.4/   20.0   +
+	      78s |  13 | lnL=     -1064.8 | depth=    2/    6 | improvements=  19 | delta_lnL=    1.8/   20.0  
+	      78s |  14 | lnL=     -1065.1 | depth=    3/    6 | improvements=  32 | delta_lnL=    2.9/   20.0  
+	      78s |  15 | lnL=     -1067.4 | depth=    2/    7 | improvements=  32 | delta_lnL=    3.3/   20.0  
+	      78s |  16 | lnL=     -1064.4 | depth=    3/    6 | improvements=  18 | delta_lnL=    2.5/   20.0  
+	      78s |  17 | lnL=     -1064.8 | depth=    3/    7 | improvements=  22 | delta_lnL=    0.1/   20.0  
+	      78s |  18 | lnL=     -1067.2 | depth=    4/    7 | improvements=  33 | delta_lnL=    3.1/   20.0  
+	      78s |  19 | lnL=     -1064.8 | depth=    4/    8 | improvements=  16 | delta_lnL=    3.7/   20.0  
+	      78s |  20 | lnL=     -1064.9 | depth=    6/    8 | improvements=  31 | delta_lnL=    2.1/   20.0  
+	      78s |  21 | lnL=     -1062.2 | depth=    3/   10 | improvements=  20 | delta_lnL=    2.1/   20.0   +
+	      78s |  22 | lnL=     -1066.0 | depth=    2/    8 | improvements=  32 | delta_lnL=    6.9/   20.0  
+	      78s |  23 | lnL=     -1068.1 | depth=    3/    6 | improvements=  18 | delta_lnL=    0.6/   20.0  
+	      78s |  24 | lnL=     -1064.1 | depth=    4/    7 | improvements=  22 | delta_lnL=   10.1/   20.0  
+	      78s |  25 | lnL=     -1064.6 | depth=    5/    8 | improvements=  31 | delta_lnL=    2.3/   20.0  
+	      79s |  26 | lnL=     -1064.8 | depth=    3/    9 | improvements=  18 | delta_lnL=    2.0/   20.1  
+	      79s |  27 | lnL=     -1068.4 | depth=    3/    7 | improvements=  29 | delta_lnL=    1.7/   20.1  
+	      79s |  28 | lnL=     -1063.6 | depth=    3/    7 | improvements=  28 | delta_lnL=    2.8/   20.1  
+	      79s |  29 | lnL=     -1067.6 | depth=    4/    7 | improvements=  28 | delta_lnL=    3.6/   20.1  
+	      79s |  30 | lnL=     -1063.6 | depth=    5/    8 | improvements=  16 | delta_lnL=    3.6/   20.0  
+
+. Third round of optimization...
+
+	      79s |  31 | lnL=     -1059.6 | depth=    3/   10 | improvements=  11 | delta_lnL=    2.9/  100.0 | triple moves=   5   +
+	      79s |  32 | lnL=     -1059.3 | depth=    1/    8 | improvements=   3 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      79s |  33 | lnL=     -1059.2 | depth=    1/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      79s |  34 | lnL=     -1059.2 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      80s |  35 | lnL=     -1059.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:26  lnL: -1059.173746
+. j:26  lnL: -1609.939152
+
+. Score of initial tree: -1609.94
+
+. Starting first round of SPRs...
+
+	      80s |   1 | lnL=     -1088.1 | depth=    3/   40 | improvements=  22 | delta_lnL=   17.8/ 1000.0   +
+	      80s |   2 | lnL=     -1086.1 | depth=    7/   24 | improvements=  16 | delta_lnL=   14.0/ 1000.0   +
+	      80s |   3 | lnL=     -1087.5 | depth=    5/   14 | improvements=  17 | delta_lnL=   13.2/ 1000.0  
+	      80s |   4 | lnL=     -1087.9 | depth=    3/   11 | improvements=  13 | delta_lnL=    2.3/ 1000.0  
+
+. Second round of optimization...
+
+	      80s |   5 | lnL=     -1087.2 | depth=    2/   13 | improvements=  21 | delta_lnL=   12.2/ 1000.0  
+	      81s |   6 | lnL=     -1090.6 | depth=    5/   10 | improvements=  33 | delta_lnL=   15.6/   20.0  
+	      81s |   7 | lnL=     -1090.9 | depth=    7/    9 | improvements=  21 | delta_lnL=   15.1/   20.0  
+	      81s |   8 | lnL=     -1090.6 | depth=    7/   11 | improvements=  23 | delta_lnL=   12.1/   20.0  
+	      81s |   9 | lnL=     -1095.0 | depth=    5/   11 | improvements=  21 | delta_lnL=    4.5/   20.0  
+	      81s |  10 | lnL=     -1089.9 | depth=    3/    9 | improvements=  20 | delta_lnL=    5.9/   31.3  
+	      81s |  11 | lnL=     -1081.5 | depth=    2/    7 | improvements=  20 | delta_lnL=    1.8/   31.3   +
+	      81s |  12 | lnL=     -1088.7 | depth=    3/    6 | improvements=  16 | delta_lnL=    2.5/   31.3  
+	      81s |  13 | lnL=     -1087.0 | depth=    2/    7 | improvements=  24 | delta_lnL=    4.0/   31.3  
+	      81s |  14 | lnL=     -1083.0 | depth=    5/    6 | improvements=  19 | delta_lnL=    2.4/   20.0  
+	      81s |  15 | lnL=     -1087.3 | depth=    3/    9 | improvements=  15 | delta_lnL=    3.8/   20.0  
+	      81s |  16 | lnL=     -1083.8 | depth=    3/    7 | improvements=  12 | delta_lnL=    2.5/   20.0  
+	      81s |  17 | lnL=     -1082.8 | depth=    2/    7 | improvements=  15 | delta_lnL=    5.4/   20.0  
+	      81s |  18 | lnL=     -1082.9 | depth=    2/    6 | improvements=  25 | delta_lnL=    0.5/   20.0  
+	      81s |  19 | lnL=     -1087.0 | depth=    3/    6 | improvements=  23 | delta_lnL=    5.3/   20.0  
+	      81s |  20 | lnL=     -1081.2 | depth=    3/    7 | improvements=  15 | delta_lnL=    4.5/   20.0   +
+	      82s |  21 | lnL=     -1081.7 | depth=    6/    7 | improvements=  17 | delta_lnL=    2.7/   20.0  
+	      82s |  22 | lnL=     -1082.0 | depth=    1/   10 | improvements=  11 | delta_lnL=    0.0/   20.0  
+	      82s |  23 | lnL=     -1081.9 | depth=    1/    8 | improvements=   9 | delta_lnL=    0.0/   20.0  
+	      82s |  24 | lnL=     -1086.6 | depth=    3/    6 | improvements=  20 | delta_lnL=    4.4/   20.0  
+	      82s |  25 | lnL=     -1084.4 | depth=    1/    7 | improvements=  18 | delta_lnL=    0.0/   20.0  
+	      82s |  26 | lnL=     -1083.3 | depth=    3/    5 | improvements=  22 | delta_lnL=    3.8/   20.0  
+	      82s |  27 | lnL=     -1085.6 | depth=    5/    7 | improvements=  15 | delta_lnL=   12.9/   20.0  
+	      82s |  28 | lnL=     -1085.3 | depth=    4/    9 | improvements=  17 | delta_lnL=    4.7/   20.0  
+	      82s |  29 | lnL=     -1083.1 | depth=    3/    8 | improvements=  17 | delta_lnL=    2.5/   20.0  
+
+. Third round of optimization...
+
+	      82s |  30 | lnL=     -1081.1 | depth=    6/   10 | improvements=   9 | delta_lnL=    3.1/  100.0 | triple moves=   5   +
+	      82s |  31 | lnL=     -1079.6 | depth=    1/   12 | improvements=   3 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      83s |  32 | lnL=     -1079.6 | depth=    0/    9 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:27  lnL: -1079.557681
+. j:27  lnL: -1594.332749
+
+. Score of initial tree: -1594.33
+
+. Starting first round of SPRs...
+
+	      83s |   1 | lnL=     -1257.1 | depth=    9/   40 | improvements=  15 | delta_lnL=   34.0/ 1000.0  
+
+. Second round of optimization...
+
+	      83s |   2 | lnL=     -1260.7 | depth=    5/   36 | improvements=  36 | delta_lnL=   20.1/ 1000.0  
+	      83s |   3 | lnL=     -1254.0 | depth=    4/   20 | improvements=  33 | delta_lnL=    3.3/ 1000.0  
+	      83s |   4 | lnL=     -1253.5 | depth=    3/   16 | improvements=  25 | delta_lnL=    1.8/ 1000.0  
+	      83s |   5 | lnL=     -1251.9 | depth=    2/   12 | improvements=  24 | delta_lnL=    6.6/ 1000.0   +
+	      83s |   6 | lnL=     -1254.4 | depth=    4/    9 | improvements=  19 | delta_lnL=    4.6/   40.2  
+	      84s |   7 | lnL=     -1260.3 | depth=    3/    8 | improvements=  30 | delta_lnL=    5.3/   40.2  
+	      84s |   8 | lnL=     -1265.2 | depth=    7/    7 | improvements=  34 | delta_lnL=   14.4/   40.2  
+	      84s |   9 | lnL=     -1258.7 | depth=   11/   11 | improvements=  26 | delta_lnL=    8.7/   40.2  
+	      84s |  10 | lnL=     -1252.9 | depth=   14/   15 | improvements=  29 | delta_lnL=   12.8/   28.8  
+	      84s |  11 | lnL=     -1245.4 | depth=    4/   18 | improvements=  32 | delta_lnL=    5.0/   28.8   +
+	      84s |  12 | lnL=     -1250.6 | depth=    5/   14 | improvements=  22 | delta_lnL=    2.4/   28.8  
+	      84s |  13 | lnL=     -1245.1 | depth=    3/   11 | improvements=  34 | delta_lnL=    4.1/   28.8   +
+	      84s |  14 | lnL=     -1246.8 | depth=    2/    8 | improvements=  23 | delta_lnL=    3.6/   25.6  
+	      84s |  15 | lnL=     -1247.0 | depth=    2/    6 | improvements=  25 | delta_lnL=    1.7/   25.6  
+	      84s |  16 | lnL=     -1247.2 | depth=    4/    6 | improvements=  21 | delta_lnL=    3.0/   25.6  
+	      84s |  17 | lnL=     -1248.4 | depth=    3/    8 | improvements=  22 | delta_lnL=    1.0/   25.6  
+	      84s |  18 | lnL=     -1251.8 | depth=    4/    7 | improvements=  29 | delta_lnL=    6.1/   20.0  
+	      84s |  19 | lnL=     -1246.2 | depth=    4/    8 | improvements=  24 | delta_lnL=    5.3/   20.0  
+	      85s |  20 | lnL=     -1245.6 | depth=    3/    8 | improvements=  30 | delta_lnL=    5.7/   20.0  
+	      85s |  21 | lnL=     -1247.5 | depth=    3/    7 | improvements=  20 | delta_lnL=   10.4/   20.0  
+	      85s |  22 | lnL=     -1249.4 | depth=    5/    7 | improvements=  26 | delta_lnL=   10.3/   20.0  
+
+. Third round of optimization...
+
+	      85s |  23 | lnL=     -1244.4 | depth=    2/   10 | improvements=  17 | delta_lnL=    1.0/  100.0 | triple moves=   5   +
+	      85s |  24 | lnL=     -1243.4 | depth=    3/    8 | improvements=   7 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      85s |  25 | lnL=     -1243.3 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      85s |  26 | lnL=     -1243.3 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      86s |  27 | lnL=     -1243.2 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      86s |  28 | lnL=     -1243.2 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:28  lnL: -1242.777216
+. j:28  lnL: -1600.841403
+
+. Score of initial tree: -1600.84
+
+. Starting first round of SPRs...
+
+	      86s |   1 | lnL=     -1156.3 | depth=    6/   40 | improvements=  31 | delta_lnL=    9.2/ 1000.0   +
+	      86s |   2 | lnL=     -1146.3 | depth=    1/   24 | improvements=  20 | delta_lnL=    0.0/ 1000.0   +
+	      86s |   3 | lnL=     -1147.8 | depth=    7/   14 | improvements=  12 | delta_lnL=    6.5/ 1000.0  
+
+. Second round of optimization...
+
+	      87s |   4 | lnL=     -1149.7 | depth=    7/   19 | improvements=  33 | delta_lnL=    5.7/ 1000.0  
+	      87s |   5 | lnL=     -1145.4 | depth=    9/   15 | improvements=  31 | delta_lnL=   30.6/ 1000.0   +
+	      87s |   6 | lnL=     -1142.1 | depth=    6/   13 | improvements=  25 | delta_lnL=    5.9/   20.0   +
+	      87s |   7 | lnL=     -1145.1 | depth=    9/   10 | improvements=  21 | delta_lnL=   13.0/   20.0  
+	      87s |   8 | lnL=     -1142.9 | depth=    7/   13 | improvements=  19 | delta_lnL=    9.4/   20.0  
+	      87s |   9 | lnL=     -1148.5 | depth=    4/   11 | improvements=  32 | delta_lnL=    4.2/   20.0  
+	      87s |  10 | lnL=     -1142.7 | depth=    6/    8 | improvements=  19 | delta_lnL=   19.4/   26.1  
+	      87s |  11 | lnL=     -1136.6 | depth=    5/   10 | improvements=  23 | delta_lnL=    9.5/   26.1   +
+	      87s |  12 | lnL=     -1143.4 | depth=    2/    9 | improvements=  20 | delta_lnL=   11.0/   26.1  
+	      87s |  13 | lnL=     -1143.6 | depth=    4/    7 | improvements=  29 | delta_lnL=    8.4/   26.1  
+	      87s |  14 | lnL=     -1139.0 | depth=    5/    8 | improvements=  30 | delta_lnL=    7.8/   38.9  
+	      87s |  15 | lnL=     -1141.8 | depth=    8/    9 | improvements=  19 | delta_lnL=    3.4/   38.9  
+	      87s |  16 | lnL=     -1145.4 | depth=    7/   12 | improvements=  21 | delta_lnL=   24.2/   38.9  
+	      87s |  17 | lnL=     -1139.5 | depth=   10/   11 | improvements=  23 | delta_lnL=   18.3/   38.9  
+	      88s |  18 | lnL=     -1138.1 | depth=    2/   14 | improvements=  27 | delta_lnL=    3.2/   48.5  
+	      88s |  19 | lnL=     -1135.8 | depth=    2/   11 | improvements=  18 | delta_lnL=    1.8/   48.5   +
+	      88s |  20 | lnL=     -1136.3 | depth=    3/    8 | improvements=  18 | delta_lnL=    1.3/   48.5  
+	      88s |  21 | lnL=     -1134.5 | depth=    5/    7 | improvements=  25 | delta_lnL=    2.8/   48.5   +
+	      88s |  22 | lnL=     -1134.5 | depth=    2/    9 | improvements=  19 | delta_lnL=    6.6/   20.0  
+	      88s |  23 | lnL=     -1135.6 | depth=    2/    7 | improvements=  17 | delta_lnL=    0.6/   20.0  
+	      88s |  24 | lnL=     -1140.4 | depth=    4/    6 | improvements=  20 | delta_lnL=    8.4/   20.0  
+	      88s |  25 | lnL=     -1139.7 | depth=    4/    8 | improvements=  22 | delta_lnL=    2.4/   20.0  
+	      88s |  26 | lnL=     -1138.9 | depth=    4/    8 | improvements=  12 | delta_lnL=    4.9/   20.0  
+	      88s |  27 | lnL=     -1137.3 | depth=    5/    8 | improvements=  18 | delta_lnL=    6.0/   20.0  
+	      88s |  28 | lnL=     -1139.8 | depth=    2/    9 | improvements=  12 | delta_lnL=    1.4/   20.0  
+	      88s |  29 | lnL=     -1140.2 | depth=    5/    7 | improvements=  16 | delta_lnL=   14.5/   20.0  
+	      88s |  30 | lnL=     -1143.1 | depth=    4/    9 | improvements=  21 | delta_lnL=    3.7/   20.0  
+
+. Third round of optimization...
+
+	      89s |  31 | lnL=     -1133.1 | depth=    3/   10 | improvements=  20 | delta_lnL=    0.5/  100.0 | triple moves=   5   +
+	      89s |  32 | lnL=     -1133.1 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      89s |  33 | lnL=     -1133.1 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      89s |  34 | lnL=     -1133.0 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:29  lnL: -1133.010052
+. j:29  lnL: -1608.472072
+
+. Score of initial tree: -1608.47
+
+. Starting first round of SPRs...
+
+	      90s |   1 | lnL=     -1233.7 | depth=    7/   40 | improvements=  25 | delta_lnL=   14.1/ 1000.0  
+	      90s |   2 | lnL=     -1224.1 | depth=    5/   24 | improvements=  22 | delta_lnL=    3.4/ 1000.0   +
+	      90s |   3 | lnL=     -1226.1 | depth=    6/   14 | improvements=  19 | delta_lnL=   11.1/ 1000.0  
+	      90s |   4 | lnL=     -1223.8 | depth=    6/   12 | improvements=  14 | delta_lnL=    6.1/ 1000.0   +
+
+. Second round of optimization...
+
+	      90s |   5 | lnL=     -1227.4 | depth=    7/   18 | improvements=  27 | delta_lnL=   18.4/ 1000.0  
+	      90s |   6 | lnL=     -1234.3 | depth=   10/   14 | improvements=  43 | delta_lnL=   14.9/   20.0  
+	      90s |   7 | lnL=     -1227.0 | depth=   12/   14 | improvements=  55 | delta_lnL=    6.5/   20.0  
+	      90s |   8 | lnL=     -1228.0 | depth=   10/   16 | improvements=  23 | delta_lnL=   12.6/   20.0  
+	      90s |   9 | lnL=     -1234.8 | depth=    4/   14 | improvements=  28 | delta_lnL=    3.7/   20.0  
+	      90s |  10 | lnL=     -1226.5 | depth=    6/   11 | improvements=  41 | delta_lnL=    5.9/   29.8  
+	      90s |  11 | lnL=     -1212.7 | depth=    5/   10 | improvements=  34 | delta_lnL=    5.0/   29.8   +
+	      91s |  12 | lnL=     -1218.6 | depth=    4/    9 | improvements=  35 | delta_lnL=    5.4/   29.8  
+	      91s |  13 | lnL=     -1219.1 | depth=    3/    8 | improvements=  32 | delta_lnL=    8.9/   29.8  
+	      91s |  14 | lnL=     -1220.4 | depth=    6/    7 | improvements=  26 | delta_lnL=    9.3/   20.0  
+	      91s |  15 | lnL=     -1221.2 | depth=    3/   10 | improvements=  24 | delta_lnL=   17.6/   20.0  
+	      91s |  16 | lnL=     -1216.5 | depth=    3/    8 | improvements=  16 | delta_lnL=    6.7/   20.0  
+	      91s |  17 | lnL=     -1217.0 | depth=    4/    7 | improvements=  25 | delta_lnL=    4.5/   20.0  
+	      91s |  18 | lnL=     -1219.7 | depth=    7/    8 | improvements=  22 | delta_lnL=    5.0/   35.2  
+	      91s |  19 | lnL=     -1220.5 | depth=    5/   11 | improvements=  29 | delta_lnL=    3.7/   35.2  
+	      91s |  20 | lnL=     -1220.6 | depth=    3/    9 | improvements=  18 | delta_lnL=    2.8/   35.2  
+
+. Third round of optimization...
+
+	      91s |  21 | lnL=     -1210.5 | depth=    6/   10 | improvements=  20 | delta_lnL=    3.8/  100.0 | triple moves=   5   +
+	      92s |  22 | lnL=     -1210.5 | depth=    0/   12 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:30  lnL: -1210.530124
+. j:30  lnL: -1602.312793
+
+. Score of initial tree: -1602.31
+
+. Starting first round of SPRs...
+
+	      92s |   1 | lnL=     -1348.6 | depth=    3/   40 | improvements=  18 | delta_lnL=   12.2/ 1000.0  
+	      92s |   2 | lnL=     -1335.2 | depth=    7/   24 | improvements=  17 | delta_lnL=   23.1/ 1000.0  
+	      92s |   3 | lnL=     -1327.5 | depth=    4/   14 | improvements=  12 | delta_lnL=    7.4/ 1000.0   +
+
+. Second round of optimization...
+
+	      92s |   4 | lnL=     -1333.3 | depth=    3/   15 | improvements=  28 | delta_lnL=    5.8/ 1000.0  
+	      92s |   5 | lnL=     -1326.2 | depth=    4/   12 | improvements=  27 | delta_lnL=    8.5/ 1000.0   +
+	      92s |   6 | lnL=     -1329.6 | depth=    4/    9 | improvements=  26 | delta_lnL=    2.1/   20.0  
+	      92s |   7 | lnL=     -1328.8 | depth=    3/    8 | improvements=  25 | delta_lnL=    6.8/   20.0  
+	      92s |   8 | lnL=     -1329.6 | depth=    6/    7 | improvements=  28 | delta_lnL=   14.1/   20.0  
+	      93s |   9 | lnL=     -1340.7 | depth=    4/   10 | improvements=  29 | delta_lnL=   17.9/   20.0  
+	      93s |  10 | lnL=     -1327.1 | depth=    7/    8 | improvements=  30 | delta_lnL=    5.0/   28.1  
+	      93s |  11 | lnL=     -1330.7 | depth=    4/   11 | improvements=  38 | delta_lnL=    3.9/   28.1  
+	      93s |  12 | lnL=     -1326.1 | depth=    4/    8 | improvements=  27 | delta_lnL=    3.9/   28.1   +
+	      93s |  13 | lnL=     -1333.3 | depth=    6/    8 | improvements=  23 | delta_lnL=    8.3/   28.1  
+	      93s |  14 | lnL=     -1329.3 | depth=    6/   10 | improvements=  32 | delta_lnL=   14.6/   20.0  
+	      93s |  15 | lnL=     -1327.2 | depth=    6/   10 | improvements=  23 | delta_lnL=    4.2/   20.0  
+	      93s |  16 | lnL=     -1324.6 | depth=    5/   10 | improvements=  18 | delta_lnL=   10.3/   20.0   +
+	      93s |  17 | lnL=     -1326.7 | depth=    3/    9 | improvements=  18 | delta_lnL=    1.7/   20.0  
+	      93s |  18 | lnL=     -1330.7 | depth=    2/    7 | improvements=  24 | delta_lnL=    3.3/   29.1  
+	      93s |  19 | lnL=     -1335.3 | depth=    5/    6 | improvements=  24 | delta_lnL=    1.5/   29.1  
+	      93s |  20 | lnL=     -1333.3 | depth=    4/    9 | improvements=  35 | delta_lnL=    8.9/   29.1  
+	      93s |  21 | lnL=     -1328.3 | depth=    5/    8 | improvements=  31 | delta_lnL=    6.6/   29.1  
+	      94s |  22 | lnL=     -1325.2 | depth=    3/    9 | improvements=  27 | delta_lnL=   14.4/   20.0  
+	      94s |  23 | lnL=     -1328.9 | depth=    7/    7 | improvements=  16 | delta_lnL=    6.6/   20.0  
+	      94s |  24 | lnL=     -1330.3 | depth=    4/   11 | improvements=  33 | delta_lnL=    8.2/   20.0  
+	      94s |  25 | lnL=     -1325.4 | depth=    4/    8 | improvements=  28 | delta_lnL=   12.7/   20.0  
+
+. Third round of optimization...
+
+	      94s |  26 | lnL=     -1319.3 | depth=    4/   10 | improvements=  11 | delta_lnL=    1.6/  100.0 | triple moves=   5   +
+	      94s |  27 | lnL=     -1318.6 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      94s |  28 | lnL=     -1318.5 | depth=    1/    6 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	      94s |  29 | lnL=     -1318.5 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:31  lnL: -1318.105113
+. j:31  lnL: -1599.922854
+
+. Score of initial tree: -1599.92
+
+. Starting first round of SPRs...
+
+	      95s |   1 | lnL=     -1227.5 | depth=    7/   40 | improvements=  24 | delta_lnL=   14.4/ 1000.0  
+	      95s |   2 | lnL=     -1224.3 | depth=    5/   24 | improvements=  21 | delta_lnL=   11.7/ 1000.0   +
+	      95s |   3 | lnL=     -1222.2 | depth=    7/   14 | improvements=  19 | delta_lnL=    8.3/ 1000.0   +
+	      95s |   4 | lnL=     -1219.4 | depth=    7/   13 | improvements=  26 | delta_lnL=    6.7/ 1000.0   +
+	      95s |   5 | lnL=     -1218.7 | depth=    4/   13 | improvements=  12 | delta_lnL=   14.0/ 1000.0   +
+
+. Second round of optimization...
+
+	      95s |   6 | lnL=     -1217.6 | depth=    6/   15 | improvements=  18 | delta_lnL=    1.6/   50.0   +
+	      96s |   7 | lnL=     -1222.9 | depth=    8/   12 | improvements=  27 | delta_lnL=    5.1/   50.0  
+	      96s |   8 | lnL=     -1221.7 | depth=    5/   12 | improvements=  34 | delta_lnL=    9.9/   50.0  
+	      96s |   9 | lnL=     -1216.0 | depth=    5/    9 | improvements=  27 | delta_lnL=    6.3/   50.0   +
+	      96s |  10 | lnL=     -1218.1 | depth=    7/    9 | improvements=  26 | delta_lnL=   10.3/   20.0  
+	      96s |  11 | lnL=     -1218.2 | depth=    4/   11 | improvements=  10 | delta_lnL=    5.5/   20.0  
+	      96s |  12 | lnL=     -1218.2 | depth=    4/    8 | improvements=  21 | delta_lnL=    8.1/   20.0  
+	      96s |  13 | lnL=     -1221.7 | depth=    6/    8 | improvements=  26 | delta_lnL=    3.5/   20.0  
+	      96s |  14 | lnL=     -1216.3 | depth=    6/   10 | improvements=  34 | delta_lnL=    2.9/   20.5  
+	      96s |  15 | lnL=     -1212.4 | depth=    7/   10 | improvements=  23 | delta_lnL=    7.0/   20.5   +
+	      96s |  16 | lnL=     -1220.2 | depth=    4/   11 | improvements=  22 | delta_lnL=   17.7/   20.5  
+	      96s |  17 | lnL=     -1218.3 | depth=    5/    8 | improvements=  26 | delta_lnL=   20.8/   20.5  
+	      96s |  18 | lnL=     -1221.1 | depth=    3/    9 | improvements=  27 | delta_lnL=    1.4/   35.3  
+	      96s |  19 | lnL=     -1214.4 | depth=    3/    7 | improvements=  28 | delta_lnL=    6.1/   35.3  
+	      96s |  20 | lnL=     -1215.9 | depth=    4/    7 | improvements=  12 | delta_lnL=    2.2/   35.3  
+	      97s |  21 | lnL=     -1212.4 | depth=    2/    8 | improvements=  26 | delta_lnL=    2.5/   35.3   +
+	      97s |  22 | lnL=     -1215.1 | depth=    3/    6 | improvements=  18 | delta_lnL=    7.6/   20.0  
+	      97s |  23 | lnL=     -1215.7 | depth=    7/    7 | improvements=  28 | delta_lnL=   15.5/   20.0  
+	      97s |  24 | lnL=     -1213.2 | depth=    3/   11 | improvements=  32 | delta_lnL=    4.1/   20.0  
+	      97s |  25 | lnL=     -1212.2 | depth=    4/    8 | improvements=  21 | delta_lnL=    3.0/   20.0   +
+	      97s |  26 | lnL=     -1214.1 | depth=    4/    8 | improvements=  19 | delta_lnL=    4.1/   31.0  
+	      97s |  27 | lnL=     -1218.8 | depth=    4/    8 | improvements=  22 | delta_lnL=    3.0/   31.0  
+	      97s |  28 | lnL=     -1219.0 | depth=    5/    8 | improvements=  29 | delta_lnL=    4.2/   31.0  
+	      97s |  29 | lnL=     -1215.8 | depth=    2/    9 | improvements=  19 | delta_lnL=    2.9/   31.0  
+	      97s |  30 | lnL=     -1210.5 | depth=    6/    7 | improvements=  23 | delta_lnL=   12.0/   20.0   +
+	      97s |  31 | lnL=     -1208.4 | depth=    2/   10 | improvements=  14 | delta_lnL=    1.0/   20.0   +
+	      97s |  32 | lnL=     -1212.3 | depth=    1/    8 | improvements=  11 | delta_lnL=    0.0/   20.0  
+	      97s |  33 | lnL=     -1211.1 | depth=    5/    6 | improvements=  19 | delta_lnL=    2.9/   20.0  
+	      97s |  34 | lnL=     -1211.9 | depth=    5/    9 | improvements=  21 | delta_lnL=    3.5/   24.0  
+	      97s |  35 | lnL=     -1211.0 | depth=    8/    9 | improvements=  21 | delta_lnL=    4.9/   24.0  
+	      97s |  36 | lnL=     -1213.9 | depth=    5/   12 | improvements=  14 | delta_lnL=    6.1/   24.0  
+	      98s |  37 | lnL=     -1213.2 | depth=    5/    9 | improvements=  25 | delta_lnL=    3.0/   24.0  
+	      98s |  38 | lnL=     -1212.1 | depth=    4/    9 | improvements=  18 | delta_lnL=    0.9/   20.0  
+	      98s |  39 | lnL=     -1213.2 | depth=    2/    8 | improvements=   7 | delta_lnL=    0.1/   20.0  
+	      98s |  40 | lnL=     -1215.4 | depth=    6/    6 | improvements=  19 | delta_lnL=   12.3/   20.0  
+
+. Third round of optimization...
+
+	      98s |  41 | lnL=     -1208.6 | depth=    5/   10 | improvements=  16 | delta_lnL=    2.1/  100.0 | triple moves=   5  
+	      98s |  42 | lnL=     -1207.8 | depth=    4/   10 | improvements=   5 | delta_lnL=    0.9/  100.0 | triple moves=   8   +
+	      98s |  43 | lnL=     -1207.5 | depth=    3/    8 | improvements=   1 | delta_lnL=    0.3/  100.0 | triple moves=   5   +
+	      99s |  44 | lnL=     -1207.5 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:32  lnL: -1207.451967
+. j:32  lnL: -1597.989198
+
+. Score of initial tree: -1597.99
+
+. Starting first round of SPRs...
+
+	      99s |   1 | lnL=     -1275.2 | depth=    6/   40 | improvements=  18 | delta_lnL=    8.7/ 1000.0  
+	      99s |   2 | lnL=     -1278.4 | depth=    4/   24 | improvements=  24 | delta_lnL=    3.8/ 1000.0  
+	      99s |   3 | lnL=     -1276.6 | depth=   12/   14 | improvements=  13 | delta_lnL=   23.5/ 1000.0  
+
+. Second round of optimization...
+
+	      99s |   4 | lnL=     -1276.8 | depth=    4/   27 | improvements=  22 | delta_lnL=    5.3/ 1000.0  
+	      99s |   5 | lnL=     -1273.1 | depth=    4/   20 | improvements=  39 | delta_lnL=    4.4/ 1000.0   +
+	     100s |   6 | lnL=     -1278.3 | depth=    4/   16 | improvements=  26 | delta_lnL=    3.1/   20.0  
+	     100s |   7 | lnL=     -1270.1 | depth=   10/   12 | improvements=  36 | delta_lnL=    9.1/   20.0   +
+	     100s |   8 | lnL=     -1275.8 | depth=    3/   14 | improvements=  23 | delta_lnL=    2.1/   20.0  
+	     100s |   9 | lnL=     -1272.1 | depth=    4/   11 | improvements=  19 | delta_lnL=    2.0/   20.0  
+	     100s |  10 | lnL=     -1273.7 | depth=    6/    8 | improvements=  21 | delta_lnL=    7.4/   20.0  
+	     100s |  11 | lnL=     -1272.2 | depth=    5/   10 | improvements=  22 | delta_lnL=    3.9/   20.0  
+	     100s |  12 | lnL=     -1275.8 | depth=    5/    9 | improvements=  36 | delta_lnL=    7.1/   20.0  
+	     100s |  13 | lnL=     -1284.2 | depth=    9/    9 | improvements=  46 | delta_lnL=   13.7/   20.0  
+	     100s |  14 | lnL=     -1278.9 | depth=    5/   13 | improvements=  30 | delta_lnL=    8.5/   20.0  
+	     100s |  15 | lnL=     -1273.7 | depth=    4/   10 | improvements=  28 | delta_lnL=    2.1/   20.0  
+	     100s |  16 | lnL=     -1270.9 | depth=    7/    8 | improvements=  31 | delta_lnL=    5.1/   20.0  
+
+. Third round of optimization...
+
+	     100s |  17 | lnL=     -1265.2 | depth=    3/   11 | improvements=  17 | delta_lnL=    0.4/  100.0 | triple moves=   5   +
+	     101s |  18 | lnL=     -1265.1 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   6   +
+	     101s |  19 | lnL=     -1264.9 | depth=    1/    6 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     101s |  20 | lnL=     -1264.9 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     101s |  21 | lnL=     -1264.5 | depth=    0/    5 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     102s |  22 | lnL=     -1264.5 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:33  lnL: -1264.474530
+. j:33  lnL: -1588.988507
+
+. Score of initial tree: -1588.99
+
+. Starting first round of SPRs...
+
+	     102s |   1 | lnL=     -1269.0 | depth=    3/   40 | improvements=  11 | delta_lnL=    8.1/ 1000.0  
+
+. Second round of optimization...
+
+	     102s |   2 | lnL=     -1273.6 | depth=    2/   36 | improvements=  33 | delta_lnL=    0.7/ 1000.0  
+	     102s |   3 | lnL=     -1274.1 | depth=    6/   20 | improvements=  38 | delta_lnL=    3.4/ 1000.0  
+	     102s |   4 | lnL=     -1265.4 | depth=    8/   16 | improvements=  37 | delta_lnL=   13.1/ 1000.0   +
+	     102s |   5 | lnL=     -1267.2 | depth=    3/   12 | improvements=  21 | delta_lnL=    4.1/ 1000.0  
+	     102s |   6 | lnL=     -1263.6 | depth=    2/    9 | improvements=  20 | delta_lnL=    1.4/   26.1   +
+	     102s |   7 | lnL=     -1263.7 | depth=    3/    7 | improvements=  16 | delta_lnL=   14.7/   26.1  
+	     103s |   8 | lnL=     -1265.8 | depth=    4/    7 | improvements=  32 | delta_lnL=    7.2/   26.1  
+	     103s |   9 | lnL=     -1261.7 | depth=    2/    8 | improvements=  19 | delta_lnL=   15.2/   26.1   +
+	     103s |  10 | lnL=     -1267.3 | depth=    4/    6 | improvements=  24 | delta_lnL=    2.8/   29.3  
+	     103s |  11 | lnL=     -1258.2 | depth=    2/    8 | improvements=  17 | delta_lnL=    4.8/   29.3   +
+	     103s |  12 | lnL=     -1268.1 | depth=    5/    6 | improvements=  19 | delta_lnL=    8.4/   29.3  
+	     103s |  13 | lnL=     -1261.2 | depth=    6/    9 | improvements=  26 | delta_lnL=    9.8/   29.3  
+	     103s |  14 | lnL=     -1261.1 | depth=    2/   10 | improvements=  20 | delta_lnL=    1.2/   20.0  
+	     103s |  15 | lnL=     -1262.9 | depth=    3/    8 | improvements=  25 | delta_lnL=    6.4/   20.0  
+	     103s |  16 | lnL=     -1264.4 | depth=    4/    7 | improvements=  27 | delta_lnL=    7.1/   20.0  
+	     103s |  17 | lnL=     -1265.6 | depth=    5/    8 | improvements=  38 | delta_lnL=   14.5/   20.0  
+	     103s |  18 | lnL=     -1266.5 | depth=    5/    9 | improvements=  36 | delta_lnL=   14.0/   20.0  
+	     103s |  19 | lnL=     -1260.4 | depth=    5/    9 | improvements=  31 | delta_lnL=    8.6/   20.0  
+	     103s |  20 | lnL=     -1260.2 | depth=    5/    9 | improvements=  16 | delta_lnL=    2.6/   20.0  
+
+. Third round of optimization...
+
+	     103s |  21 | lnL=     -1257.0 | depth=    4/   10 | improvements=  13 | delta_lnL=    7.8/  100.0 | triple moves=   5   +
+	     104s |  22 | lnL=     -1257.0 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:34  lnL: -1256.995595
+. j:34  lnL: -1587.828350
+
+. Score of initial tree: -1587.83
+
+. Starting first round of SPRs...
+
+	     104s |   1 | lnL=     -1049.3 | depth=    7/   40 | improvements=  23 | delta_lnL=   16.6/ 1000.0   +
+	     104s |   2 | lnL=     -1044.6 | depth=    5/   24 | improvements=  23 | delta_lnL=    6.0/ 1000.0   +
+	     104s |   3 | lnL=     -1043.3 | depth=    3/   14 | improvements=  19 | delta_lnL=    3.7/ 1000.0   +
+	     104s |   4 | lnL=     -1041.5 | depth=    5/    9 | improvements=  12 | delta_lnL=    4.2/ 1000.0   +
+
+. Second round of optimization...
+
+	     104s |   5 | lnL=     -1043.2 | depth=    8/   16 | improvements=  25 | delta_lnL=    5.7/ 1000.0  
+	     104s |   6 | lnL=     -1043.1 | depth=   11/   12 | improvements=  31 | delta_lnL=    7.0/   20.0  
+	     104s |   7 | lnL=     -1037.3 | depth=   14/   15 | improvements=  38 | delta_lnL=   14.0/   20.0   +
+	     105s |   8 | lnL=     -1035.8 | depth=    7/   18 | improvements=  23 | delta_lnL=    7.3/   20.0   +
+	     105s |   9 | lnL=     -1037.4 | depth=   12/   14 | improvements=  37 | delta_lnL=    2.5/   20.0  
+	     105s |  10 | lnL=     -1039.2 | depth=   11/   16 | improvements=  27 | delta_lnL=   12.8/   28.1  
+	     105s |  11 | lnL=     -1033.5 | depth=    7/   15 | improvements=  23 | delta_lnL=    9.3/   28.1   +
+	     105s |  12 | lnL=     -1034.6 | depth=    3/   12 | improvements=  22 | delta_lnL=    1.2/   28.1  
+	     105s |  13 | lnL=     -1039.6 | depth=    4/    9 | improvements=  32 | delta_lnL=   11.0/   28.1  
+	     105s |  14 | lnL=     -1046.2 | depth=    7/    8 | improvements=  29 | delta_lnL=   11.3/   25.6  
+	     105s |  15 | lnL=     -1035.4 | depth=    4/   11 | improvements=  24 | delta_lnL=    4.0/   25.6  
+	     105s |  16 | lnL=     -1033.8 | depth=    4/    8 | improvements=  18 | delta_lnL=    1.7/   25.6  
+	     105s |  17 | lnL=     -1038.0 | depth=    4/    8 | improvements=  20 | delta_lnL=   11.9/   25.6  
+	     105s |  18 | lnL=     -1033.6 | depth=    7/    8 | improvements=  16 | delta_lnL=   10.5/   22.6  
+	     105s |  19 | lnL=     -1033.5 | depth=    9/   11 | improvements=  14 | delta_lnL=    6.2/   22.6   +
+	     105s |  20 | lnL=     -1036.8 | depth=   12/   13 | improvements=  18 | delta_lnL=    2.2/   22.6  
+	     106s |  21 | lnL=     -1030.4 | depth=    2/   16 | improvements=  16 | delta_lnL=    1.1/   22.6   +
+	     106s |  22 | lnL=     -1031.7 | depth=    2/   12 | improvements=   7 | delta_lnL=    1.2/   21.0  
+	     106s |  23 | lnL=     -1032.9 | depth=    2/    9 | improvements=  14 | delta_lnL=    1.2/   21.0  
+	     106s |  24 | lnL=     -1034.1 | depth=    2/    7 | improvements=  18 | delta_lnL=    0.3/   21.0  
+	     106s |  25 | lnL=     -1032.9 | depth=    4/    6 | improvements=  24 | delta_lnL=    5.2/   21.0  
+	     106s |  26 | lnL=     -1032.1 | depth=    2/    8 | improvements=  14 | delta_lnL=    0.3/   20.0  
+	     106s |  27 | lnL=     -1032.6 | depth=    2/    6 | improvements=  10 | delta_lnL=    6.5/   20.0  
+	     106s |  28 | lnL=     -1034.3 | depth=    4/    6 | improvements=  16 | delta_lnL=    5.8/   20.0  
+	     106s |  29 | lnL=     -1033.7 | depth=    3/    8 | improvements=  21 | delta_lnL=    2.7/   20.0  
+	     106s |  30 | lnL=     -1037.8 | depth=    4/    7 | improvements=  16 | delta_lnL=    3.2/   20.0  
+
+. Third round of optimization...
+
+	     106s |  31 | lnL=     -1031.7 | depth=    3/   10 | improvements=  18 | delta_lnL=    0.8/  100.0 | triple moves=   5  
+	     106s |  32 | lnL=     -1029.7 | depth=    2/    8 | improvements=   2 | delta_lnL=    0.1/  100.0 | triple moves=   5   +
+	     107s |  33 | lnL=     -1029.7 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:35  lnL: -1029.669932
+. j:35  lnL: -1622.209677
+
+. Score of initial tree: -1622.21
+
+. Starting first round of SPRs...
+
+	     107s |   1 | lnL=     -1217.6 | depth=   11/   40 | improvements=  22 | delta_lnL=   53.3/ 1000.0   +
+	     107s |   2 | lnL=     -1217.0 | depth=    1/   24 | improvements=  13 | delta_lnL=    0.0/ 1000.0   +
+
+. Second round of optimization...
+
+	     107s |   3 | lnL=     -1216.9 | depth=    2/   21 | improvements=  21 | delta_lnL=    2.7/ 1000.0   +
+	     107s |   4 | lnL=     -1214.1 | depth=    8/   16 | improvements=  22 | delta_lnL=    4.2/ 1000.0   +
+	     108s |   5 | lnL=     -1222.3 | depth=    2/   12 | improvements=  33 | delta_lnL=    2.1/ 1000.0  
+	     108s |   6 | lnL=     -1225.6 | depth=    8/    9 | improvements=  24 | delta_lnL=    5.9/   20.0  
+	     108s |   7 | lnL=     -1217.7 | depth=    6/   12 | improvements=  31 | delta_lnL=    4.1/   20.0  
+	     108s |   8 | lnL=     -1223.8 | depth=    2/   10 | improvements=  29 | delta_lnL=    2.2/   20.0  
+	     108s |   9 | lnL=     -1216.8 | depth=    5/    8 | improvements=  29 | delta_lnL=    7.5/   20.0  
+	     108s |  10 | lnL=     -1213.5 | depth=    4/    9 | improvements=  19 | delta_lnL=    3.1/   20.0   +
+	     108s |  11 | lnL=     -1209.8 | depth=    3/    8 | improvements=  27 | delta_lnL=    6.0/   20.0   +
+	     108s |  12 | lnL=     -1213.8 | depth=    7/    7 | improvements=  18 | delta_lnL=   14.4/   20.0  
+	     108s |  13 | lnL=     -1212.3 | depth=    8/   11 | improvements=  19 | delta_lnL=   11.2/   20.0  
+	     108s |  14 | lnL=     -1217.9 | depth=    3/   12 | improvements=  25 | delta_lnL=    4.6/   28.8  
+	     108s |  15 | lnL=     -1213.2 | depth=    5/    9 | improvements=  19 | delta_lnL=    7.0/   28.8  
+	     108s |  16 | lnL=     -1216.2 | depth=    4/    9 | improvements=  18 | delta_lnL=    5.8/   28.8  
+	     108s |  17 | lnL=     -1213.3 | depth=    6/    8 | improvements=  28 | delta_lnL=    6.1/   28.8  
+	     108s |  18 | lnL=     -1216.9 | depth=    5/   10 | improvements=  26 | delta_lnL=    9.0/   20.0  
+	     108s |  19 | lnL=     -1231.3 | depth=    7/    9 | improvements=  18 | delta_lnL=   18.5/   20.0  
+	     108s |  20 | lnL=     -1219.0 | depth=    9/   11 | improvements=  31 | delta_lnL=   18.3/   20.0  
+
+. Third round of optimization...
+
+	     109s |  21 | lnL=     -1206.5 | depth=    5/   13 | improvements=  20 | delta_lnL=    3.3/  100.0 | triple moves=   5   +
+	     109s |  22 | lnL=     -1206.1 | depth=    1/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     109s |  23 | lnL=     -1206.1 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:36  lnL: -1206.034651
+. j:36  lnL: -1586.084446
+
+. Score of initial tree: -1586.08
+
+. Starting first round of SPRs...
+
+	     110s |   1 | lnL=     -1350.6 | depth=    6/   40 | improvements=  26 | delta_lnL=   15.1/ 1000.0  
+	     110s |   2 | lnL=     -1347.1 | depth=    8/   24 | improvements=  16 | delta_lnL=   10.7/ 1000.0  
+	     110s |   3 | lnL=     -1341.2 | depth=   11/   14 | improvements=  19 | delta_lnL=    8.3/ 1000.0  
+	     110s |   4 | lnL=     -1338.0 | depth=    7/   17 | improvements=  14 | delta_lnL=   11.2/ 1000.0   +
+
+. Second round of optimization...
+
+	     110s |   5 | lnL=     -1333.8 | depth=    5/   19 | improvements=  26 | delta_lnL=   11.8/ 1000.0   +
+	     110s |   6 | lnL=     -1335.0 | depth=    2/   15 | improvements=  21 | delta_lnL=    6.4/   20.0  
+	     110s |   7 | lnL=     -1337.6 | depth=    3/   12 | improvements=  28 | delta_lnL=    5.1/   20.0  
+	     110s |   8 | lnL=     -1343.4 | depth=    2/    9 | improvements=  26 | delta_lnL=    3.4/   20.0  
+	     110s |   9 | lnL=     -1339.9 | depth=    3/    7 | improvements=  24 | delta_lnL=    4.9/   20.0  
+	     110s |  10 | lnL=     -1333.1 | depth=    4/    7 | improvements=  31 | delta_lnL=    0.3/   20.0   +
+	     110s |  11 | lnL=     -1333.1 | depth=    4/    8 | improvements=  28 | delta_lnL=    4.5/   20.0  
+	     110s |  12 | lnL=     -1342.9 | depth=    3/    8 | improvements=  26 | delta_lnL=    4.5/   20.0  
+	     110s |  13 | lnL=     -1337.7 | depth=    2/    7 | improvements=  29 | delta_lnL=    3.0/   20.0  
+	     110s |  14 | lnL=     -1342.1 | depth=    6/    6 | improvements=  31 | delta_lnL=   15.6/   20.0  
+	     111s |  15 | lnL=     -1339.0 | depth=    4/   10 | improvements=  31 | delta_lnL=    3.6/   20.0  
+	     111s |  16 | lnL=     -1339.4 | depth=    4/    8 | improvements=  30 | delta_lnL=    1.7/   20.0  
+	     111s |  17 | lnL=     -1340.5 | depth=    6/    8 | improvements=  31 | delta_lnL=    9.3/   20.0  
+	     111s |  18 | lnL=     -1334.7 | depth=    2/   10 | improvements=  35 | delta_lnL=    5.0/   31.1  
+	     111s |  19 | lnL=     -1332.8 | depth=    2/    8 | improvements=  12 | delta_lnL=    3.5/   31.1   +
+	     111s |  20 | lnL=     -1341.8 | depth=    2/    6 | improvements=  20 | delta_lnL=    8.8/   31.1  
+	     111s |  21 | lnL=     -1335.6 | depth=    2/    6 | improvements=  30 | delta_lnL=   21.5/   31.1  
+	     111s |  22 | lnL=     -1335.3 | depth=    2/    6 | improvements=  24 | delta_lnL=    1.1/   20.0  
+	     111s |  23 | lnL=     -1335.9 | depth=    4/    6 | improvements=  23 | delta_lnL=    2.2/   20.0  
+	     111s |  24 | lnL=     -1333.6 | depth=    2/    8 | improvements=  15 | delta_lnL=    1.6/   20.0  
+	     111s |  25 | lnL=     -1335.1 | depth=    2/    6 | improvements=  30 | delta_lnL=    2.0/   20.0  
+	     111s |  26 | lnL=     -1336.3 | depth=    3/    6 | improvements=  15 | delta_lnL=    3.8/   20.0  
+	     111s |  27 | lnL=     -1341.6 | depth=    4/    7 | improvements=  22 | delta_lnL=   12.4/   20.0  
+	     111s |  28 | lnL=     -1338.5 | depth=    5/    8 | improvements=  25 | delta_lnL=    3.5/   20.0  
+
+. Third round of optimization...
+
+	     111s |  29 | lnL=     -1335.2 | depth=    2/   10 | improvements=  15 | delta_lnL=    1.1/  100.0 | triple moves=   5  
+	     112s |  30 | lnL=     -1331.0 | depth=    5/    8 | improvements=   8 | delta_lnL=    3.2/  100.0 | triple moves=   5   +
+	     112s |  31 | lnL=     -1330.8 | depth=    0/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     112s |  32 | lnL=     -1330.8 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:37  lnL: -1330.756504
+. j:37  lnL: -1576.762296
+
+. Score of initial tree: -1576.76
+
+. Starting first round of SPRs...
+
+	     113s |   1 | lnL=     -1151.2 | depth=    6/   40 | improvements=  20 | delta_lnL=   11.5/ 1000.0  
+	     113s |   2 | lnL=     -1146.7 | depth=    2/   24 | improvements=  14 | delta_lnL=    2.7/ 1000.0  
+
+. Second round of optimization...
+
+	     113s |   3 | lnL=     -1144.7 | depth=    4/   21 | improvements=  28 | delta_lnL=   10.9/ 1000.0   +
+	     113s |   4 | lnL=     -1145.9 | depth=    2/   16 | improvements=  26 | delta_lnL=    0.6/ 1000.0  
+	     113s |   5 | lnL=     -1148.7 | depth=    2/   12 | improvements=  32 | delta_lnL=   25.7/ 1000.0  
+	     113s |   6 | lnL=     -1145.8 | depth=    3/    9 | improvements=  16 | delta_lnL=    2.6/   21.8  
+	     113s |   7 | lnL=     -1148.3 | depth=    5/    7 | improvements=  29 | delta_lnL=    6.8/   21.8  
+	     113s |   8 | lnL=     -1146.2 | depth=    5/    9 | improvements=  39 | delta_lnL=    5.1/   21.8  
+	     113s |   9 | lnL=     -1146.0 | depth=    6/    9 | improvements=  25 | delta_lnL=    5.8/   21.8  
+	     113s |  10 | lnL=     -1156.6 | depth=    4/   10 | improvements=  24 | delta_lnL=   11.6/   20.0  
+	     113s |  11 | lnL=     -1140.5 | depth=    5/    8 | improvements=  32 | delta_lnL=   16.2/   20.0   +
+	     113s |  12 | lnL=     -1143.1 | depth=    6/    9 | improvements=  23 | delta_lnL=    6.7/   20.0  
+	     113s |  13 | lnL=     -1147.9 | depth=    3/   10 | improvements=  16 | delta_lnL=    9.3/   20.0  
+	     114s |  14 | lnL=     -1141.8 | depth=    2/    8 | improvements=  27 | delta_lnL=    3.4/   32.3  
+	     114s |  15 | lnL=     -1142.1 | depth=    5/    6 | improvements=  22 | delta_lnL=    1.7/   32.3  
+	     114s |  16 | lnL=     -1142.3 | depth=    3/    9 | improvements=  38 | delta_lnL=    2.1/   32.3  
+	     114s |  17 | lnL=     -1142.4 | depth=    3/    7 | improvements=  25 | delta_lnL=    0.6/   32.3  
+	     114s |  18 | lnL=     -1142.8 | depth=    3/    7 | improvements=  19 | delta_lnL=    3.4/   20.0  
+	     114s |  19 | lnL=     -1146.7 | depth=    2/    7 | improvements=  28 | delta_lnL=    6.7/   20.0  
+	     114s |  20 | lnL=     -1143.9 | depth=    5/    6 | improvements=  19 | delta_lnL=    4.3/   20.0  
+
+. Third round of optimization...
+
+	     114s |  21 | lnL=     -1138.9 | depth=    3/   10 | improvements=  17 | delta_lnL=    0.7/  100.0 | triple moves=   5   +
+	     114s |  22 | lnL=     -1137.9 | depth=    1/    8 | improvements=   2 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     114s |  23 | lnL=     -1137.4 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     115s |  24 | lnL=     -1137.4 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:38  lnL: -1137.190697
+. j:38  lnL: -1606.321634
+
+. Score of initial tree: -1606.32
+
+. Starting first round of SPRs...
+
+	     115s |   1 | lnL=     -1280.0 | depth=    5/   40 | improvements=  17 | delta_lnL=    7.1/ 1000.0   +
+	     115s |   2 | lnL=     -1279.9 | depth=   12/   24 | improvements=  17 | delta_lnL=    8.7/ 1000.0   +
+	     115s |   3 | lnL=     -1290.3 | depth=   10/   18 | improvements=  24 | delta_lnL=   14.3/ 1000.0  
+	     115s |   4 | lnL=     -1280.3 | depth=    4/   16 | improvements=  23 | delta_lnL=    3.9/ 1000.0  
+	     115s |   5 | lnL=     -1280.5 | depth=    6/   10 | improvements=  15 | delta_lnL=   26.9/ 1000.0  
+
+. Second round of optimization...
+
+	     116s |   6 | lnL=     -1280.5 | depth=    6/   18 | improvements=  33 | delta_lnL=    3.9/   50.0  
+	     116s |   7 | lnL=     -1284.7 | depth=    9/   14 | improvements=  43 | delta_lnL=    6.6/   50.0  
+	     116s |   8 | lnL=     -1294.1 | depth=    5/   13 | improvements=  35 | delta_lnL=    9.2/   50.0  
+	     116s |   9 | lnL=     -1286.8 | depth=    5/   10 | improvements=  32 | delta_lnL=    4.2/   50.0  
+	     116s |  10 | lnL=     -1280.2 | depth=    8/    9 | improvements=  30 | delta_lnL=   15.9/   20.0  
+	     116s |  11 | lnL=     -1273.1 | depth=    6/   12 | improvements=  33 | delta_lnL=    5.9/   20.0   +
+	     116s |  12 | lnL=     -1273.8 | depth=    3/   10 | improvements=  25 | delta_lnL=    2.0/   20.0  
+	     116s |  13 | lnL=     -1278.5 | depth=    5/    8 | improvements=  33 | delta_lnL=    6.5/   20.0  
+	     116s |  14 | lnL=     -1280.0 | depth=    7/    9 | improvements=  32 | delta_lnL=   18.1/   31.7  
+	     116s |  15 | lnL=     -1281.9 | depth=    3/   11 | improvements=  38 | delta_lnL=    5.6/   31.7  
+	     116s |  16 | lnL=     -1277.7 | depth=    4/    8 | improvements=  31 | delta_lnL=    3.8/   31.7  
+	     116s |  17 | lnL=     -1278.4 | depth=    4/    8 | improvements=  39 | delta_lnL=    5.3/   31.7  
+	     116s |  18 | lnL=     -1280.0 | depth=    3/    8 | improvements=  33 | delta_lnL=    3.7/   36.3  
+	     116s |  19 | lnL=     -1272.9 | depth=    4/    7 | improvements=  23 | delta_lnL=    4.4/   36.3   +
+	     116s |  20 | lnL=     -1275.5 | depth=    5/    8 | improvements=  34 | delta_lnL=    1.2/   36.3  
+	     117s |  21 | lnL=     -1271.1 | depth=    4/    9 | improvements=  22 | delta_lnL=    3.1/   36.3   +
+	     117s |  22 | lnL=     -1272.7 | depth=    4/    8 | improvements=  26 | delta_lnL=    2.1/   20.0  
+	     117s |  23 | lnL=     -1275.8 | depth=    2/    8 | improvements=  19 | delta_lnL=    4.7/   20.0  
+	     117s |  24 | lnL=     -1272.4 | depth=    3/    6 | improvements=  18 | delta_lnL=    1.6/   20.0  
+	     117s |  25 | lnL=     -1274.1 | depth=    5/    7 | improvements=  16 | delta_lnL=    2.7/   20.0  
+	     117s |  26 | lnL=     -1274.1 | depth=    3/    9 | improvements=  20 | delta_lnL=    3.9/   20.0  
+	     117s |  27 | lnL=     -1278.4 | depth=    2/    7 | improvements=  29 | delta_lnL=    3.1/   20.0  
+	     117s |  28 | lnL=     -1274.5 | depth=    3/    6 | improvements=  40 | delta_lnL=    4.5/   20.0  
+	     117s |  29 | lnL=     -1272.1 | depth=    2/    7 | improvements=  16 | delta_lnL=    1.5/   20.0  
+	     117s |  30 | lnL=     -1272.0 | depth=    3/    6 | improvements=  17 | delta_lnL=   12.4/   20.0  
+
+. Third round of optimization...
+
+	     117s |  31 | lnL=     -1269.0 | depth=    2/   10 | improvements=   8 | delta_lnL=    0.8/  100.0 | triple moves=   5   +
+	     117s |  32 | lnL=     -1268.8 | depth=    1/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     118s |  33 | lnL=     -1268.8 | depth=    0/    6 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:39  lnL: -1268.808002
+. j:39  lnL: -1602.738339
+
+. Score of initial tree: -1602.74
+
+. Starting first round of SPRs...
+
+	     118s |   1 | lnL=     -1281.1 | depth=    4/   40 | improvements=  18 | delta_lnL=    8.6/ 1000.0   +
+	     118s |   2 | lnL=     -1283.2 | depth=    2/   24 | improvements=   7 | delta_lnL=    2.5/ 1000.0  
+
+. Second round of optimization...
+
+	     118s |   3 | lnL=     -1284.7 | depth=    4/   21 | improvements=  39 | delta_lnL=   17.5/ 1000.0  
+	     118s |   4 | lnL=     -1280.3 | depth=    4/   16 | improvements=  27 | delta_lnL=   13.8/ 1000.0   +
+	     118s |   5 | lnL=     -1282.9 | depth=    5/   12 | improvements=  27 | delta_lnL=    8.6/ 1000.0  
+	     118s |   6 | lnL=     -1276.8 | depth=    5/    9 | improvements=  18 | delta_lnL=    2.5/   34.9   +
+	     119s |   7 | lnL=     -1278.1 | depth=    2/    9 | improvements=  14 | delta_lnL=    2.7/   34.9  
+	     119s |   8 | lnL=     -1278.3 | depth=    3/    7 | improvements=  17 | delta_lnL=    1.4/   34.9  
+	     119s |   9 | lnL=     -1283.1 | depth=    4/    7 | improvements=  28 | delta_lnL=    5.8/   34.9  
+	     119s |  10 | lnL=     -1281.1 | depth=    6/    8 | improvements=  35 | delta_lnL=   21.3/   20.0  
+	     119s |  11 | lnL=     -1283.6 | depth=    5/   10 | improvements=  26 | delta_lnL=    5.2/   20.0  
+	     119s |  12 | lnL=     -1282.6 | depth=    4/    9 | improvements=  26 | delta_lnL=    9.7/   20.0  
+	     119s |  13 | lnL=     -1285.0 | depth=    5/    8 | improvements=  30 | delta_lnL=    2.6/   20.0  
+	     119s |  14 | lnL=     -1274.8 | depth=    5/    9 | improvements=  29 | delta_lnL=    5.4/   42.5   +
+	     119s |  15 | lnL=     -1277.6 | depth=    4/    9 | improvements=  32 | delta_lnL=    1.2/   42.5  
+	     119s |  16 | lnL=     -1278.8 | depth=    6/    8 | improvements=  28 | delta_lnL=   10.2/   42.5  
+	     119s |  17 | lnL=     -1275.4 | depth=    4/   10 | improvements=  23 | delta_lnL=    4.5/   42.5  
+	     119s |  18 | lnL=     -1278.9 | depth=    6/    8 | improvements=  29 | delta_lnL=    4.6/   20.4  
+	     119s |  19 | lnL=     -1283.1 | depth=    4/   10 | improvements=  37 | delta_lnL=    3.9/   20.4  
+	     119s |  20 | lnL=     -1290.8 | depth=    5/    8 | improvements=  41 | delta_lnL=    7.8/   20.4  
+	     120s |  21 | lnL=     -1278.8 | depth=    3/    9 | improvements=  24 | delta_lnL=    3.4/   20.4  
+	     120s |  22 | lnL=     -1275.4 | depth=    2/    7 | improvements=  30 | delta_lnL=    1.5/   20.0  
+	     120s |  23 | lnL=     -1285.2 | depth=    5/    6 | improvements=  25 | delta_lnL=    9.4/   20.0  
+
+. Third round of optimization...
+
+	     120s |  24 | lnL=     -1270.6 | depth=    5/   10 | improvements=  29 | delta_lnL=    2.7/  100.0 | triple moves=   5   +
+	     120s |  25 | lnL=     -1269.8 | depth=    0/   10 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     120s |  26 | lnL=     -1269.7 | depth=    1/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     120s |  27 | lnL=     -1269.3 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     121s |  28 | lnL=     -1269.3 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:40  lnL: -1268.112405
+. j:40  lnL: -1595.141729
+
+. Score of initial tree: -1595.14
+
+. Starting first round of SPRs...
+
+	     121s |   1 | lnL=     -1163.0 | depth=    5/   40 | improvements=  15 | delta_lnL=    6.3/ 1000.0   +
+
+. Second round of optimization...
+
+	     121s |   2 | lnL=     -1160.4 | depth=    5/   36 | improvements=  28 | delta_lnL=    5.6/ 1000.0   +
+	     121s |   3 | lnL=     -1170.6 | depth=    6/   20 | improvements=  27 | delta_lnL=   12.9/ 1000.0  
+	     121s |   4 | lnL=     -1172.6 | depth=    4/   16 | improvements=  29 | delta_lnL=    4.4/ 1000.0  
+	     121s |   5 | lnL=     -1168.4 | depth=    5/   12 | improvements=  27 | delta_lnL=    5.5/ 1000.0  
+	     121s |   6 | lnL=     -1163.3 | depth=    4/    9 | improvements=  31 | delta_lnL=    3.0/   25.9  
+	     121s |   7 | lnL=     -1168.0 | depth=    4/    8 | improvements=  25 | delta_lnL=    6.8/   25.9  
+	     121s |   8 | lnL=     -1168.6 | depth=    3/    8 | improvements=  31 | delta_lnL=    5.2/   25.9  
+	     121s |   9 | lnL=     -1176.0 | depth=    5/    7 | improvements=  34 | delta_lnL=   15.6/   25.9  
+	     121s |  10 | lnL=     -1167.7 | depth=    5/    9 | improvements=  32 | delta_lnL=    4.6/   20.0  
+	     122s |  11 | lnL=     -1165.9 | depth=    4/    9 | improvements=  49 | delta_lnL=    2.4/   20.0  
+
+. Third round of optimization...
+
+	     122s |  12 | lnL=     -1157.8 | depth=    4/   10 | improvements=  14 | delta_lnL=    1.7/  100.0 | triple moves=   5   +
+	     122s |  13 | lnL=     -1156.1 | depth=    2/    8 | improvements=   4 | delta_lnL=    0.9/  100.0 | triple moves=   6   +
+	     122s |  14 | lnL=     -1155.9 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     122s |  15 | lnL=     -1155.9 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:41  lnL: -1155.543386
+. j:41  lnL: -1596.066869
+
+. Score of initial tree: -1596.07
+
+. Starting first round of SPRs...
+
+	     123s |   1 | lnL=     -1248.5 | depth=    7/   40 | improvements=  18 | delta_lnL=   13.7/ 1000.0  
+	     123s |   2 | lnL=     -1243.6 | depth=    5/   24 | improvements=  20 | delta_lnL=    7.5/ 1000.0  
+	     123s |   3 | lnL=     -1241.7 | depth=    7/   14 | improvements=  16 | delta_lnL=    7.6/ 1000.0   +
+	     123s |   4 | lnL=     -1243.1 | depth=    5/   13 | improvements=  13 | delta_lnL=    8.6/ 1000.0  
+
+. Second round of optimization...
+
+	     123s |   5 | lnL=     -1244.9 | depth=    7/   16 | improvements=  27 | delta_lnL=    8.7/ 1000.0  
+	     123s |   6 | lnL=     -1245.5 | depth=    8/   12 | improvements=  30 | delta_lnL=    6.4/   20.0  
+	     123s |   7 | lnL=     -1244.5 | depth=    6/   12 | improvements=  23 | delta_lnL=    7.2/   20.0  
+	     123s |   8 | lnL=     -1241.3 | depth=    3/   10 | improvements=  32 | delta_lnL=    4.3/   20.0   +
+	     123s |   9 | lnL=     -1239.3 | depth=    6/    8 | improvements=  28 | delta_lnL=    5.4/   20.0   +
+	     123s |  10 | lnL=     -1241.2 | depth=    5/   10 | improvements=  28 | delta_lnL=    3.0/   20.0  
+	     124s |  11 | lnL=     -1238.0 | depth=    8/    9 | improvements=  17 | delta_lnL=    8.9/   20.0   +
+	     124s |  12 | lnL=     -1250.6 | depth=    7/   12 | improvements=  24 | delta_lnL=    7.9/   20.0  
+	     124s |  13 | lnL=     -1251.1 | depth=    8/   11 | improvements=  28 | delta_lnL=    6.8/   20.0  
+	     124s |  14 | lnL=     -1243.9 | depth=    3/   12 | improvements=  27 | delta_lnL=    3.7/   20.0  
+	     124s |  15 | lnL=     -1239.5 | depth=    9/    9 | improvements=  25 | delta_lnL=    6.7/   20.0  
+	     124s |  16 | lnL=     -1242.9 | depth=    5/   13 | improvements=  17 | delta_lnL=   10.6/   20.0  
+	     124s |  17 | lnL=     -1246.2 | depth=    7/   10 | improvements=  27 | delta_lnL=    4.9/   20.0  
+	     124s |  18 | lnL=     -1247.4 | depth=    3/   11 | improvements=  35 | delta_lnL=   12.5/   21.2  
+	     124s |  19 | lnL=     -1240.3 | depth=    6/    8 | improvements=  26 | delta_lnL=    5.0/   21.2  
+	     124s |  20 | lnL=     -1239.3 | depth=    3/   10 | improvements=  21 | delta_lnL=    1.3/   21.2  
+
+. Third round of optimization...
+
+	     124s |  21 | lnL=     -1233.3 | depth=    8/   10 | improvements=  19 | delta_lnL=    5.9/  100.0 | triple moves=   5   +
+	     125s |  22 | lnL=     -1232.2 | depth=    2/   16 | improvements=   6 | delta_lnL=    0.2/  100.0 | triple moves=   6   +
+	     125s |  23 | lnL=     -1232.1 | depth=    0/   12 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     125s |  24 | lnL=     -1232.1 | depth=    0/    9 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:42  lnL: -1232.075689
+. j:42  lnL: -1600.940917
+
+. Score of initial tree: -1600.94
+
+. Starting first round of SPRs...
+
+	     126s |   1 | lnL=     -1239.8 | depth=    5/   40 | improvements=  22 | delta_lnL=   12.6/ 1000.0   +
+	     126s |   2 | lnL=     -1241.5 | depth=    5/   24 | improvements=  12 | delta_lnL=    6.4/ 1000.0  
+
+. Second round of optimization...
+
+	     126s |   3 | lnL=     -1239.0 | depth=    5/   21 | improvements=  37 | delta_lnL=    7.0/ 1000.0   +
+	     126s |   4 | lnL=     -1245.7 | depth=    9/   16 | improvements=  37 | delta_lnL=   15.2/ 1000.0  
+	     126s |   5 | lnL=     -1235.7 | depth=    4/   13 | improvements=  40 | delta_lnL=    3.2/ 1000.0   +
+	     126s |   6 | lnL=     -1238.4 | depth=    3/   10 | improvements=  34 | delta_lnL=    4.5/   30.4  
+	     126s |   7 | lnL=     -1239.8 | depth=    4/    8 | improvements=  38 | delta_lnL=    3.4/   30.4  
+	     126s |   8 | lnL=     -1235.6 | depth=    6/    8 | improvements=  40 | delta_lnL=   14.9/   30.4   +
+	     126s |   9 | lnL=     -1229.7 | depth=    3/   10 | improvements=  13 | delta_lnL=    3.1/   30.4   +
+	     126s |  10 | lnL=     -1232.9 | depth=    7/    8 | improvements=  28 | delta_lnL=   26.9/   29.9  
+	     126s |  11 | lnL=     -1228.7 | depth=    7/   11 | improvements=  21 | delta_lnL=   20.5/   29.9   +
+	     126s |  12 | lnL=     -1231.3 | depth=   10/   11 | improvements=  25 | delta_lnL=    8.9/   29.9  
+	     127s |  13 | lnL=     -1229.3 | depth=    4/   14 | improvements=  32 | delta_lnL=    3.5/   29.9  
+	     127s |  14 | lnL=     -1226.2 | depth=    7/   11 | improvements=  28 | delta_lnL=    6.4/   53.8   +
+	     127s |  15 | lnL=     -1231.2 | depth=    5/   11 | improvements=  29 | delta_lnL=    4.7/   53.8  
+	     127s |  16 | lnL=     -1228.0 | depth=    5/    9 | improvements=  19 | delta_lnL=    5.7/   53.8  
+	     127s |  17 | lnL=     -1236.1 | depth=    2/    9 | improvements=  41 | delta_lnL=    6.8/   53.8  
+	     127s |  18 | lnL=     -1238.5 | depth=    6/    7 | improvements=  31 | delta_lnL=   18.9/   20.0  
+	     127s |  19 | lnL=     -1233.6 | depth=    4/   10 | improvements=  34 | delta_lnL=    2.2/   20.0  
+	     127s |  20 | lnL=     -1229.0 | depth=    2/    8 | improvements=  21 | delta_lnL=    4.5/   20.0  
+	     127s |  21 | lnL=     -1223.1 | depth=    2/    6 | improvements=  17 | delta_lnL=    1.4/   20.0   +
+	     127s |  22 | lnL=     -1225.1 | depth=    3/    6 | improvements=  12 | delta_lnL=    1.7/   37.8  
+	     127s |  23 | lnL=     -1226.9 | depth=    3/    7 | improvements=  29 | delta_lnL=    2.5/   37.8  
+	     127s |  24 | lnL=     -1229.2 | depth=    3/    7 | improvements=  18 | delta_lnL=    2.4/   37.8  
+	     127s |  25 | lnL=     -1225.3 | depth=    2/    7 | improvements=  16 | delta_lnL=    3.2/   37.8  
+	     127s |  26 | lnL=     -1225.6 | depth=    1/    6 | improvements=  15 | delta_lnL=    0.0/   20.0  
+	     127s |  27 | lnL=     -1226.4 | depth=    2/    5 | improvements=  22 | delta_lnL=    0.8/   20.0  
+	     127s |  28 | lnL=     -1229.3 | depth=    5/    6 | improvements=  19 | delta_lnL=    7.8/   20.0  
+	     127s |  29 | lnL=     -1228.3 | depth=    3/    9 | improvements=  23 | delta_lnL=    1.0/   20.0  
+	     127s |  30 | lnL=     -1228.2 | depth=    4/    7 | improvements=  20 | delta_lnL=    7.2/   20.0  
+
+. Third round of optimization...
+
+	     128s |  31 | lnL=     -1223.1 | depth=    7/   10 | improvements=  12 | delta_lnL=    9.3/  100.0 | triple moves=   5   +
+	     128s |  32 | lnL=     -1223.1 | depth=    0/   14 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:43  lnL: -1223.074761
+. j:43  lnL: -1609.568995
+
+. Score of initial tree: -1609.57
+
+. Starting first round of SPRs...
+
+	     128s |   1 | lnL=     -1297.4 | depth=    3/   40 | improvements=  24 | delta_lnL=   13.9/ 1000.0   +
+	     128s |   2 | lnL=     -1303.0 | depth=    9/   24 | improvements=  11 | delta_lnL=   10.0/ 1000.0  
+
+. Second round of optimization...
+
+	     128s |   3 | lnL=     -1318.7 | depth=    7/   22 | improvements=  28 | delta_lnL=   14.7/ 1000.0  
+	     129s |   4 | lnL=     -1299.6 | depth=    9/   17 | improvements=  43 | delta_lnL=    5.4/ 1000.0  
+	     129s |   5 | lnL=     -1306.4 | depth=    5/   13 | improvements=  29 | delta_lnL=    8.8/ 1000.0  
+	     129s |   6 | lnL=     -1297.1 | depth=    4/   10 | improvements=  29 | delta_lnL=   23.6/   29.4   +
+	     129s |   7 | lnL=     -1298.4 | depth=    4/    8 | improvements=  28 | delta_lnL=    7.1/   29.4  
+	     129s |   8 | lnL=     -1299.3 | depth=    3/    8 | improvements=  36 | delta_lnL=    4.2/   29.4  
+	     129s |   9 | lnL=     -1294.2 | depth=    3/    7 | improvements=  26 | delta_lnL=    2.0/   29.4   +
+	     129s |  10 | lnL=     -1293.6 | depth=    4/    7 | improvements=  23 | delta_lnL=    8.5/   47.1   +
+	     129s |  11 | lnL=     -1305.5 | depth=    5/    8 | improvements=  36 | delta_lnL=    9.8/   47.1  
+	     129s |  12 | lnL=     -1304.5 | depth=    8/    9 | improvements=  24 | delta_lnL=   28.3/   47.1  
+	     129s |  13 | lnL=     -1306.3 | depth=    5/   12 | improvements=  26 | delta_lnL=    8.7/   47.1  
+	     129s |  14 | lnL=     -1305.7 | depth=    8/    9 | improvements=  30 | delta_lnL=   30.6/   56.6  
+	     129s |  15 | lnL=     -1299.5 | depth=    5/   12 | improvements=  15 | delta_lnL=    8.3/   56.6  
+	     129s |  16 | lnL=     -1296.1 | depth=    3/    9 | improvements=  22 | delta_lnL=    9.6/   56.6  
+	     130s |  17 | lnL=     -1300.8 | depth=    6/    7 | improvements=  24 | delta_lnL=   13.5/   56.6  
+	     130s |  18 | lnL=     -1302.5 | depth=    5/   10 | improvements=  23 | delta_lnL=    7.0/   61.2  
+	     130s |  19 | lnL=     -1297.3 | depth=    9/    9 | improvements=  23 | delta_lnL=    4.8/   61.2  
+
+. Third round of optimization...
+
+	     130s |  20 | lnL=     -1290.9 | depth=    4/   13 | improvements=  25 | delta_lnL=    2.0/  100.0 | triple moves=   5   +
+	     130s |  21 | lnL=     -1286.7 | depth=    2/   10 | improvements=  10 | delta_lnL=    0.5/  100.0 | triple moves=   5   +
+	     130s |  22 | lnL=     -1286.7 | depth=    0/    8 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:44  lnL: -1286.650528
+. j:44  lnL: -1583.812771
+
+. Score of initial tree: -1583.81
+
+. Starting first round of SPRs...
+
+	     131s |   1 | lnL=     -1340.1 | depth=    4/   40 | improvements=  22 | delta_lnL=    4.4/ 1000.0  
+	     131s |   2 | lnL=     -1338.4 | depth=    5/   24 | improvements=  21 | delta_lnL=   10.5/ 1000.0  
+	     131s |   3 | lnL=     -1341.6 | depth=    4/   14 | improvements=  17 | delta_lnL=    7.5/ 1000.0  
+	     131s |   4 | lnL=     -1342.0 | depth=    5/   10 | improvements=  13 | delta_lnL=    7.9/ 1000.0  
+
+. Second round of optimization...
+
+	     131s |   5 | lnL=     -1343.5 | depth=    5/   16 | improvements=  34 | delta_lnL=   15.8/ 1000.0  
+	     131s |   6 | lnL=     -1339.6 | depth=    4/   12 | improvements=  28 | delta_lnL=    4.1/   20.0  
+	     131s |   7 | lnL=     -1341.2 | depth=    2/    9 | improvements=  30 | delta_lnL=   14.3/   20.0  
+	     131s |   8 | lnL=     -1339.1 | depth=    3/    7 | improvements=  33 | delta_lnL=    5.7/   20.0  
+	     131s |   9 | lnL=     -1339.7 | depth=    3/    7 | improvements=  36 | delta_lnL=    4.7/   20.0  
+	     132s |  10 | lnL=     -1338.6 | depth=    7/    7 | improvements=  26 | delta_lnL=   21.1/   28.6  
+	     132s |  11 | lnL=     -1331.4 | depth=    9/   11 | improvements=  29 | delta_lnL=    7.4/   28.6   +
+	     132s |  12 | lnL=     -1339.6 | depth=    6/   13 | improvements=  30 | delta_lnL=    8.8/   28.6  
+	     132s |  13 | lnL=     -1334.8 | depth=    2/   10 | improvements=  22 | delta_lnL=    0.8/   28.6  
+	     132s |  14 | lnL=     -1339.2 | depth=    5/    8 | improvements=  26 | delta_lnL=    2.6/   42.2  
+	     132s |  15 | lnL=     -1338.9 | depth=    5/    9 | improvements=  26 | delta_lnL=    3.4/   42.2  
+	     132s |  16 | lnL=     -1344.9 | depth=    3/    9 | improvements=  24 | delta_lnL=    4.6/   42.2  
+	     132s |  17 | lnL=     -1340.7 | depth=    3/    7 | improvements=  43 | delta_lnL=    2.1/   42.2  
+	     132s |  18 | lnL=     -1339.1 | depth=    5/    7 | improvements=  25 | delta_lnL=    4.9/   20.0  
+	     132s |  19 | lnL=     -1341.5 | depth=    2/    9 | improvements=  20 | delta_lnL=    5.2/   20.0  
+	     132s |  20 | lnL=     -1344.7 | depth=    3/    7 | improvements=  18 | delta_lnL=    1.7/   20.0  
+
+. Third round of optimization...
+
+	     133s |  21 | lnL=     -1332.2 | depth=    2/   10 | improvements=  27 | delta_lnL=    0.6/  100.0 | triple moves=   5  
+	     133s |  22 | lnL=     -1332.2 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   8  
+	     133s |  23 | lnL=     -1332.2 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5  
+	     133s |  24 | lnL=     -1330.0 | depth=    3/    5 | improvements=   6 | delta_lnL=    1.1/  100.0 | triple moves=   5   +
+	     133s |  25 | lnL=     -1329.6 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     133s |  26 | lnL=     -1329.6 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:45  lnL: -1329.447840
+. j:45  lnL: -1587.030026
+
+. Score of initial tree: -1587.03
+
+. Starting first round of SPRs...
+
+	     134s |   1 | lnL=     -1280.4 | depth=   11/   40 | improvements=  30 | delta_lnL=   22.7/ 1000.0  
+	     134s |   2 | lnL=     -1276.4 | depth=    6/   24 | improvements=  15 | delta_lnL=    3.4/ 1000.0  
+
+. Second round of optimization...
+
+	     134s |   3 | lnL=     -1272.9 | depth=    5/   21 | improvements=  23 | delta_lnL=    9.4/ 1000.0  
+	     134s |   4 | lnL=     -1273.3 | depth=    2/   16 | improvements=  27 | delta_lnL=    2.2/ 1000.0  
+	     134s |   5 | lnL=     -1276.9 | depth=    4/   12 | improvements=  26 | delta_lnL=    5.7/ 1000.0  
+	     134s |   6 | lnL=     -1279.3 | depth=    3/    9 | improvements=  30 | delta_lnL=    3.8/   20.0  
+	     134s |   7 | lnL=     -1280.0 | depth=    6/    7 | improvements=  38 | delta_lnL=    8.8/   20.0  
+	     134s |   8 | lnL=     -1275.1 | depth=    5/   10 | improvements=  34 | delta_lnL=    5.8/   20.0  
+	     134s |   9 | lnL=     -1273.8 | depth=    5/    9 | improvements=  31 | delta_lnL=    5.7/   20.0  
+	     134s |  10 | lnL=     -1276.9 | depth=    4/    9 | improvements=  31 | delta_lnL=    6.9/   20.0  
+	     135s |  11 | lnL=     -1272.8 | depth=    3/    8 | improvements=  26 | delta_lnL=    4.9/   20.0  
+	     135s |  12 | lnL=     -1272.3 | depth=    4/    7 | improvements=  36 | delta_lnL=    7.0/   20.0  
+
+. Third round of optimization...
+
+	     135s |  13 | lnL=     -1268.0 | depth=    5/   10 | improvements=  12 | delta_lnL=    2.8/  100.0 | triple moves=   5   +
+	     135s |  14 | lnL=     -1266.9 | depth=    2/   10 | improvements=   4 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     135s |  15 | lnL=     -1266.7 | depth=    0/    8 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     135s |  16 | lnL=     -1266.6 | depth=    0/    6 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     136s |  17 | lnL=     -1266.6 | depth=    0/    5 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:46  lnL: -1265.452056
+. j:46  lnL: -1593.976013
+
+. Score of initial tree: -1593.98
+
+. Starting first round of SPRs...
+
+	     136s |   1 | lnL=     -1090.9 | depth=    6/   40 | improvements=  13 | delta_lnL=    9.2/ 1000.0   +
+
+. Second round of optimization...
+
+	     136s |   2 | lnL=     -1091.2 | depth=    3/   36 | improvements=  30 | delta_lnL=    5.7/ 1000.0  
+	     136s |   3 | lnL=     -1105.7 | depth=    9/   20 | improvements=  39 | delta_lnL=   12.4/ 1000.0  
+	     136s |   4 | lnL=     -1101.5 | depth=    7/   16 | improvements=  38 | delta_lnL=    7.1/ 1000.0  
+	     136s |   5 | lnL=     -1100.7 | depth=    9/   12 | improvements=  34 | delta_lnL=    3.0/ 1000.0  
+	     136s |   6 | lnL=     -1096.1 | depth=    5/   13 | improvements=  35 | delta_lnL=    4.1/   24.7  
+	     136s |   7 | lnL=     -1088.3 | depth=    4/   10 | improvements=  28 | delta_lnL=    2.5/   24.7   +
+	     136s |   8 | lnL=     -1091.6 | depth=    5/    8 | improvements=  33 | delta_lnL=    9.4/   24.7  
+	     137s |   9 | lnL=     -1087.1 | depth=    3/    9 | improvements=  26 | delta_lnL=    7.0/   24.7   +
+	     137s |  10 | lnL=     -1085.0 | depth=    4/    7 | improvements=  16 | delta_lnL=    4.6/   20.0   +
+	     137s |  11 | lnL=     -1083.4 | depth=    6/    8 | improvements=  19 | delta_lnL=    3.7/   20.0   +
+	     137s |  12 | lnL=     -1084.1 | depth=    4/   10 | improvements=  17 | delta_lnL=    8.1/   20.0  
+	     137s |  13 | lnL=     -1079.4 | depth=    4/    8 | improvements=  15 | delta_lnL=    2.1/   20.0   +
+	     137s |  14 | lnL=     -1081.0 | depth=    7/    8 | improvements=  22 | delta_lnL=    4.7/   20.0  
+	     137s |  15 | lnL=     -1080.6 | depth=    6/   11 | improvements=  25 | delta_lnL=   11.0/   20.0  
+	     137s |  16 | lnL=     -1091.7 | depth=    3/   10 | improvements=  27 | delta_lnL=    7.7/   20.0  
+	     137s |  17 | lnL=     -1092.7 | depth=    7/    8 | improvements=  35 | delta_lnL=   16.3/   20.0  
+	     137s |  18 | lnL=     -1082.6 | depth=    4/   11 | improvements=  27 | delta_lnL=    4.9/   22.0  
+	     137s |  19 | lnL=     -1090.2 | depth=    4/    8 | improvements=  30 | delta_lnL=    5.7/   22.0  
+	     137s |  20 | lnL=     -1094.1 | depth=    8/    8 | improvements=  31 | delta_lnL=   21.0/   22.0  
+	     138s |  21 | lnL=     -1077.4 | depth=    5/   12 | improvements=  25 | delta_lnL=    6.4/   22.0   +
+	     138s |  22 | lnL=     -1087.8 | depth=    4/    9 | improvements=  23 | delta_lnL=   15.0/   42.0  
+	     138s |  23 | lnL=     -1082.2 | depth=    6/    8 | improvements=  41 | delta_lnL=    6.5/   42.0  
+	     138s |  24 | lnL=     -1088.6 | depth=    4/   10 | improvements=  23 | delta_lnL=    5.7/   42.0  
+	     138s |  25 | lnL=     -1080.8 | depth=    8/    8 | improvements=  31 | delta_lnL=   11.8/   42.0  
+	     138s |  26 | lnL=     -1080.7 | depth=    6/   12 | improvements=  14 | delta_lnL=    7.4/   30.0  
+	     138s |  27 | lnL=     -1082.6 | depth=    5/   10 | improvements=  29 | delta_lnL=    4.0/   30.0  
+	     138s |  28 | lnL=     -1084.4 | depth=    5/    9 | improvements=  25 | delta_lnL=    8.2/   30.0  
+	     138s |  29 | lnL=     -1084.2 | depth=    9/    9 | improvements=  30 | delta_lnL=   13.7/   30.0  
+	     138s |  30 | lnL=     -1078.4 | depth=    9/   13 | improvements=  20 | delta_lnL=    8.8/   20.0  
+
+. Third round of optimization...
+
+	     139s |  31 | lnL=     -1074.1 | depth=    1/   13 | improvements=  14 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     139s |  32 | lnL=     -1074.1 | depth=    0/   10 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:47  lnL: -1074.057489
+. j:47  lnL: -1616.938190
+
+. Score of initial tree: -1616.94
+
+. Starting first round of SPRs...
+
+	     139s |   1 | lnL=     -1336.0 | depth=    6/   40 | improvements=  19 | delta_lnL=   14.9/ 1000.0   +
+	     139s |   2 | lnL=     -1336.6 | depth=    3/   24 | improvements=  16 | delta_lnL=   18.1/ 1000.0  
+	     139s |   3 | lnL=     -1342.9 | depth=    4/   14 | improvements=  14 | delta_lnL=    5.4/ 1000.0  
+
+. Second round of optimization...
+
+	     139s |   4 | lnL=     -1337.7 | depth=   12/   15 | improvements=  22 | delta_lnL=   21.3/ 1000.0  
+	     139s |   5 | lnL=     -1335.2 | depth=    5/   16 | improvements=  38 | delta_lnL=    5.8/ 1000.0   +
+	     140s |   6 | lnL=     -1341.5 | depth=    7/   12 | improvements=  30 | delta_lnL=   39.2/   42.6  
+	     140s |   7 | lnL=     -1340.7 | depth=    6/   11 | improvements=  33 | delta_lnL=    6.4/   42.6  
+	     140s |   8 | lnL=     -1334.2 | depth=    4/   10 | improvements=  32 | delta_lnL=    5.0/   42.6   +
+	     140s |   9 | lnL=     -1334.7 | depth=    5/    8 | improvements=  30 | delta_lnL=    8.7/   42.6  
+	     140s |  10 | lnL=     -1346.1 | depth=    6/    9 | improvements=  23 | delta_lnL=   14.1/   78.4  
+	     140s |  11 | lnL=     -1333.7 | depth=   10/   10 | improvements=  35 | delta_lnL=    5.4/   78.4   +
+	     140s |  12 | lnL=     -1339.7 | depth=    7/   14 | improvements=  21 | delta_lnL=    7.1/   78.4  
+	     140s |  13 | lnL=     -1338.6 | depth=    7/   11 | improvements=  28 | delta_lnL=    4.6/   78.4  
+	     140s |  14 | lnL=     -1340.5 | depth=   10/   11 | improvements=  34 | delta_lnL=   24.5/   28.2  
+	     140s |  15 | lnL=     -1344.9 | depth=    9/   14 | improvements=  30 | delta_lnL=    9.2/   28.2  
+	     140s |  16 | lnL=     -1339.6 | depth=    5/   13 | improvements=  34 | delta_lnL=    2.2/   28.2  
+	     140s |  17 | lnL=     -1340.1 | depth=    6/   10 | improvements=  34 | delta_lnL=    4.3/   28.2  
+	     141s |  18 | lnL=     -1344.2 | depth=    9/   10 | improvements=  31 | delta_lnL=   20.3/   49.1  
+	     141s |  19 | lnL=     -1337.6 | depth=    4/   13 | improvements=  31 | delta_lnL=   10.2/   49.1  
+	     141s |  20 | lnL=     -1339.9 | depth=    5/   10 | improvements=  29 | delta_lnL=   12.1/   49.1  
+
+. Third round of optimization...
+
+	     141s |  21 | lnL=     -1325.8 | depth=    8/   10 | improvements=  35 | delta_lnL=    7.4/  100.0 | triple moves=   5   +
+	     141s |  22 | lnL=     -1325.8 | depth=    1/   16 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   8   +
+	     141s |  23 | lnL=     -1325.8 | depth=    0/   12 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:48  lnL: -1325.700239
+. j:48  lnL: -1599.538056
+
+. Score of initial tree: -1599.54
+
+. Starting first round of SPRs...
+
+	     142s |   1 | lnL=     -1243.4 | depth=   11/   40 | improvements=  15 | delta_lnL=    7.9/ 1000.0   +
+
+. Second round of optimization...
+
+	     142s |   2 | lnL=     -1243.4 | depth=    9/   36 | improvements=  35 | delta_lnL=   38.3/ 1000.0   +
+	     142s |   3 | lnL=     -1247.5 | depth=    9/   20 | improvements=  32 | delta_lnL=   28.7/ 1000.0  
+	     142s |   4 | lnL=     -1238.7 | depth=    9/   16 | improvements=  33 | delta_lnL=   22.9/ 1000.0   +
+	     142s |   5 | lnL=     -1238.2 | depth=    6/   13 | improvements=  24 | delta_lnL=    1.4/ 1000.0   +
+	     142s |   6 | lnL=     -1242.4 | depth=    8/   10 | improvements=  37 | delta_lnL=   26.6/   76.6  
+	     143s |   7 | lnL=     -1251.4 | depth=    7/   12 | improvements=  34 | delta_lnL=   17.6/   76.6  
+	     143s |   8 | lnL=     -1243.9 | depth=   11/   11 | improvements=  47 | delta_lnL=   12.3/   76.6  
+	     143s |   9 | lnL=     -1247.2 | depth=    7/   15 | improvements=  35 | delta_lnL=    5.1/   76.6  
+	     143s |  10 | lnL=     -1240.3 | depth=   12/   12 | improvements=  29 | delta_lnL=   28.2/   53.3  
+	     143s |  11 | lnL=     -1240.0 | depth=   11/   16 | improvements=  30 | delta_lnL=   18.5/   53.3  
+	     143s |  12 | lnL=     -1245.0 | depth=    6/   15 | improvements=  21 | delta_lnL=   25.4/   53.3  
+	     143s |  13 | lnL=     -1244.9 | depth=    7/   12 | improvements=  23 | delta_lnL=    7.2/   53.3  
+	     143s |  14 | lnL=     -1243.9 | depth=   10/   11 | improvements=  31 | delta_lnL=   11.1/   56.5  
+
+. Third round of optimization...
+
+	     143s |  15 | lnL=     -1234.1 | depth=    8/   14 | improvements=  24 | delta_lnL=    4.7/  100.0 | triple moves=   5   +
+	     143s |  16 | lnL=     -1233.7 | depth=    1/   16 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     144s |  17 | lnL=     -1233.4 | depth=   10/   12 | improvements=   1 | delta_lnL=    2.3/  100.0 | triple moves=   5   +
+	     144s |  18 | lnL=     -1233.3 | depth=    0/   20 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     144s |  19 | lnL=     -1233.3 | depth=    0/   16 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     144s |  20 | lnL=     -1233.2 | depth=    0/   12 | improvements=   1 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+	     145s |  21 | lnL=     -1232.4 | depth=    0/    9 | improvements=   0 | delta_lnL=    0.0/  100.0 | triple moves=   5   +
+
+. Final optimisation steps...
+
+. i:49  lnL: -1232.390106
+. j:49  lnL: -1644.484379
+. loglk:        -16.2393
+. loglk:        -48.5596
+. loglk:        -42.9162
+. loglk:        -17.6914
+. loglk:        -8.03951
+. loglk:        -7.90343
+. loglk:        -39.0337
+. loglk:        -8.16248
+. loglk:        -60.2484
+. loglk:        -57.9088
+. loglk:        -26.0479
+. loglk:        -45.8039
+. loglk:        -2.09252
+. loglk:        -15.2774
+. loglk:        -16.0895
+. loglk:        -12.5118
+. loglk:        -55.1625
+. loglk:        -39.8087
+. loglk:        -47.1957
+. loglk:        -8.17674
+. loglk:        -26.0209
+. loglk:        -2.06334
+. loglk:        -2.49282
+. loglk:        -47.4733
+. loglk:        -47.9801
+. loglk:        -7.42887
+. loglk:        -48.4143
+. loglk:          -25.43
+. loglk:        -19.6278
+. loglk:        -49.1061
+. loglk:         -30.363
+. loglk:        -27.8849
+. loglk:        -21.7097
+. loglk:        -11.6302
+. loglk:        -41.1358
+. loglk:        -9.82576
+. loglk:        -51.8221
+. loglk:        -19.7568
+. loglk:        -47.9272
+. loglk:        -24.4573
+. loglk:        -18.2782
+. loglk:        -7.18903
+. loglk:        -28.5275
+. loglk:        -41.1934
+. loglk:        -13.1929
+. loglk:        -15.8454
+. loglk:        -21.4452
+. loglk:        -54.4895
+. loglk:        -46.1178
+. loglk:        -31.0437
+. loglk:        -58.6334
+. loglk:         -58.943
+. loglk:        -14.9999
+. loglk:        -50.2903
+. loglk:        -17.2105
+. loglk:        -31.1511
+. loglk:        -8.36167
+. loglk:        -61.2478
+. loglk:        -58.1912
+. loglk:        -21.0138
+. loglk:        -30.2594
+. loglk:        -31.9313
+. loglk:        -47.1219
+. loglk:        -2.09308
+. loglk:        -55.6408
+. loglk:        -23.5418
+. loglk:        -8.11533
+. loglk:        -9.40678
+. loglk:        -56.4419
+. loglk:        -51.9534
+. loglk:         -22.131
+. loglk:        -57.5541
+. loglk:        -7.71504
+. loglk:        -33.6018
+. loglk:        -60.1051
+. loglk:        -25.6363
+. loglk:        -34.8814
+. loglk:        -57.6386
+. loglk:        -10.0061
+. loglk:        -2.11602
+. loglk:        -54.8746
+. loglk:        -48.1519
+. loglk:        -26.1035
+. loglk:        -62.3403
+. loglk:        -20.7564
+. loglk:        -46.0666
+. loglk:        -18.6676
+. loglk:        -27.1365
+. loglk:        -16.6598
+. loglk:        -46.4503
+. loglk:        -33.7845
+. loglk:        -26.1201
+. loglk:        -11.8031
+. loglk:        -62.7106
+. loglk:        -54.6638
+. loglk:        -20.5529
+. loglk:        -7.78415
+. loglk:        -50.9777
+. loglk:        -33.5561
+. loglk:        -2.12542
+. loglk:        -2.68837
+. loglk:        -51.9015
+. loglk:        -8.39486
+. loglk:        -9.08059
+. loglk:        -48.3325
+. loglk:          -39.64
+. loglk:        -58.5004
+. loglk:        -17.5169
+. loglk:        -9.35967
+. loglk:         -45.292
+. loglk:        -61.1929
+. loglk:        -59.3068
+. loglk:        -22.9418
+. loglk:        -2.54842
+. loglk:        -17.1857
+. loglk:        -60.5181
+. loglk:          -62.92
+. loglk:        -14.2192
+. loglk:        -52.0212
+. loglk:        -28.8653
+. loglk:        -20.5355
+. loglk:        -51.5668
+. loglk:        -22.7844
+. loglk:        -50.4757
+. loglk:        -9.18208
+. loglk:        -43.4269
+. loglk:        -59.8717
+. loglk:        -23.8525
+. loglk:        -42.1741
+. loglk:         -41.274
+. loglk:        -48.4463
+. loglk:        -59.2144
+. loglk:        -51.4585
+. loglk:        -57.8357
+. loglk:        -39.4312
+. loglk:        -16.7601
+. loglk:        -43.2679
+. loglk:        -55.0369
+. loglk:        -57.6881
+. loglk:        -35.8819
+. loglk:         -44.551
+. loglk:        -11.6964
+. loglk:        -56.7659
+. loglk:        -60.6432
+. loglk:        -15.6266
+. loglk:        -8.94053
+. loglk:        -9.07829
+. loglk:        -25.4308
+. loglk:        -15.6029
+. loglk:        -50.9289
+. loglk:        -34.7012
+. loglk:        -1.90936
+. loglk:        -27.4686
+. loglk:        -2.96828
+. loglk:        -48.9058
+. loglk:        -46.2743
+. loglk:        -13.2566
+. loglk:        -51.3753
+. loglk:        -7.86917
+. loglk:        -22.3987
+. loglk:        -29.5592
+. loglk:        -50.4911
+. loglk:        -26.7174
+. loglk:        -2.88902
+. loglk:        -50.0298
+. loglk:        -56.6962
+. loglk:         -2.1865
+. loglk:        -54.5182
+. loglk:        -9.59017
+. loglk:        -53.8528
+. loglk:        -23.8734
+. loglk:        -28.8845
+. loglk:         -7.6821
+. loglk:        -50.2518
+. loglk:        -31.8216
+. loglk:        -26.6967
+. loglk:        -44.0706
+. loglk:        -8.79628
+. loglk:        -9.77709
+. loglk:        -54.3815
+. loglk:          -34.17
+. loglk:        -49.1991
+. loglk:        -30.4541
+. loglk:        -2.66112
+. loglk:        -39.2749
+. loglk:        -9.52955
+. loglk:        -53.2048
+. loglk:        -21.5245
+. loglk:        -50.6968
+. loglk:        -19.2105
+. loglk:        -52.6857
+. loglk:        -45.9229
+. loglk:        -31.2007
+. loglk:        -2.66956
+. loglk:         -49.044
+. loglk:        -9.96168
+. loglk:        -52.9378
+. loglk:        -48.7629
+. loglk:        -15.3203
+. loglk:        -25.2211
+. loglk:        -60.9281
+. loglk:        -49.1284
+. loglk:        -2.10347
+. loglk:         -2.5287
+. loglk:        -52.1604
+. loglk:        -47.7285
+. loglk:        -7.77423
+. loglk:         -14.566
+. loglk:        -18.8666
+. loglk:        -7.61563
+. loglk:        -29.3175
+. loglk:        -56.2018
+. loglk:        -50.2863
+. loglk:        -12.9843
+. loglk:        -8.04982
+. loglk:        -56.8787
+. loglk:        -10.6549
+. loglk:        -16.0862
+. loglk:        -8.49144
+. loglk:        -8.20108
+. loglk:        -57.8712
+. loglk:         -8.5095
+. loglk:        -51.8264
+. loglk:        -7.32444
+. loglk:         -9.9752
+. loglk:        -9.07568
+. loglk:         -42.306
+. loglk:        -54.2395
+. loglk:        -18.3764
+. loglk:          -50.85
+. loglk:        -59.7982
+. loglk:        -46.5688
+. loglk:        -26.7414
+. loglk:        -60.7715
+. loglk:         -16.938
+. loglk:        -48.9273
+. loglk:        -49.8836
+. loglk:        -33.7907
+. loglk:        -57.5333
+. loglk:        -11.8023
+. loglk:        -2.16968
+. loglk:         -12.788
+. loglk:        -58.5502
+. loglk:        -51.3572
+. loglk:        -21.9012
+. loglk:         -50.126
+. loglk:        -7.28458
+. loglk:        -20.2994
+. loglk:        -61.3823
+. loglk:        -19.2776
+. loglk:        -11.6394
+. loglk:        -48.8578
+. loglk:         -11.469
+. loglk:        -15.3704
+. loglk:        -49.5761
+. loglk:        -8.38676
+. loglk:        -52.4875
+. loglk:        -43.9472
+. loglk:        -18.1144
+. loglk:        -20.6142
+. loglk:        -41.0824
+. loglk:        -51.3661
+. loglk:        -52.6755
+. loglk:        -61.7841
+. loglk:        -36.7144
+. loglk:        -42.8572
+. loglk:        -58.6174
+. loglk:        -49.9988
+. loglk:        -66.7221
+. loglk:        -51.2335
+. loglk:        -45.1214
+. loglk:        -8.10669
+. loglk:        -21.6774
+. loglk:        -1.89715
+. loglk:        -35.7265
+. loglk:        -2.93663
+. loglk:        -49.0861
+. loglk:        -52.3853
+. loglk:        -6.45363
+. loglk:        -12.3721
+. loglk:        -22.7973
+. loglk:        -49.2696
+. loglk:        -61.2949
+. loglk:        -44.0759
+. loglk:        -18.6318
+. loglk:        -53.3968
+. loglk:        -33.3272
+. loglk:        -57.4249
+. loglk:        -2.02875
+. loglk:         -2.4539
+. loglk:        -57.5342
+. loglk:        -52.3413
+. loglk:        -27.8288
+. loglk:        -55.0197
+. loglk:        -23.1641
+. loglk:        -19.5087
+. loglk:        -48.6727
+. loglk:        -50.2747
+. loglk:         -27.494
+. loglk:        -58.4162
+. loglk:        -20.0163
+. loglk:        -39.2337
+. loglk:        -15.5589
+. loglk:        -47.6728
+. loglk:        -9.56112
+. loglk:         -51.744
+. loglk:        -19.3396
+. loglk:        -47.0869
+. loglk:        -39.9194
+. loglk:        -30.7208
+. loglk:        -25.7962
+. loglk:        -31.4309
+. loglk:        -25.0265
+. loglk:        -40.0645
+. loglk:        -52.1636
+. loglk:        -2.13027
+. loglk:        -51.0485
+. loglk:         -60.776
+. loglk:        -53.6688
+. loglk:        -15.9866
+. loglk:        -30.3803
+. loglk:        -17.4744
+. loglk:        -19.5691
+. loglk:        -48.8674
+. loglk:        -7.42712
+. loglk:        -27.4461
+. loglk:        -34.8203
+. loglk:        -2.42696
+. loglk:        -2.27383
+. loglk:        -53.6451
+. loglk:        -15.8255
+. loglk:        -9.36836
+. loglk:         -28.112
+. loglk:        -6.80012
+. loglk:        -26.3845
+. loglk:        -7.34263
+. loglk:        -30.9944
+. loglk:        -31.4128
+. loglk:        -56.8069
+. loglk:        -20.0165
+. loglk:        -11.5701
+. loglk:        -53.1185
+. loglk:        -30.9925
+. loglk:        -51.5003
+. loglk:          -17.69
+. loglk:        -28.6295
+. loglk:        -27.3968
+. loglk:        -21.5913
+. loglk:        -50.8989
+. loglk:         -2.7653
+. loglk:        -42.6019
+. loglk:         -12.977
+. loglk:        -2.10418
+. loglk:        -8.81206
+. loglk:         -45.837
+. loglk:        -15.9657
+. loglk:        -8.08673
+. loglk:        -21.1415
+. loglk:        -58.3148
+. loglk:        -18.3469
+. loglk:        -53.2361
+. loglk:        -9.12944
+. loglk:        -20.7819
+. loglk:        -34.1252
+. loglk:        -51.5528
+. loglk:        -61.2397
+. loglk:        -7.70647
+. loglk:        -9.17215
+. loglk:        -21.8188
+. loglk:        -16.2772
+. loglk:        -8.06643
+. loglk:        -8.45496
+. loglk:        -51.3606
+. loglk:        -32.4601
+. loglk:        -56.4048
+. loglk:        -28.6728
+. loglk:        -2.64487
+. loglk:        -59.0248
+. loglk:        -61.4604
+. loglk:        -48.3967
+. loglk:        -10.3481
+. loglk:        -13.6797
+. loglk:        -8.44323
+. loglk:        -58.6438
+. loglk:        -20.5766
+. loglk:        -8.36212
+. loglk:        -37.6498
+. loglk:        -56.2869
+. loglk:        -12.6371
+. loglk:        -51.4294
+. loglk:         -19.059
+. loglk:        -8.20863
+. loglk:        -58.7661
+. loglk:        -23.3913
+. loglk:        -27.1913
+. loglk:        -54.7572
+. loglk:        -21.3104
+. loglk:        -50.2806
+. loglk:        -51.8912
+. loglk:        -48.1565
+. loglk:        -48.6098
+. loglk:        -22.9145
+. loglk:        -2.96924
+. loglk:        -2.31214
+. loglk:        -57.7668
+. loglk:        -15.8704
+. loglk:        -7.17252
+. loglk:        -49.7103
+. loglk:        -52.1068
+. loglk:        -22.1002
+. loglk:        -58.7724
+. loglk:        -7.44215
+. loglk:        -7.72364
+. loglk:        -58.7928
+. loglk:        -2.23466
+. loglk:        -52.0863
+. loglk:        -7.13529
+. loglk:        -8.02902
+. loglk:        -19.9991
+. loglk:        -15.4358
+. loglk:        -22.2912
+. loglk:        -20.2149
+. loglk:        -17.5007
+. loglk:        -56.4976
+. loglk:        -34.6011
+. loglk:        -37.3557
+. loglk:        -44.4542
+. loglk:        -50.1291
+. loglk:        -50.8549
+. loglk:        -8.92824
+. loglk:        -7.69084
+. loglk:        -26.8745
+. loglk:        -8.41409
+. loglk:        -59.2807
+. loglk:        -20.6865
+. loglk:        -20.4772
+. loglk:        -63.8911
+. loglk:        -35.4927
+. loglk:        -41.8742
+. loglk:        -42.8165
+. loglk:        -2.12435
+. loglk:        -8.32789
+. loglk:        -31.4043
+. loglk:        -7.81405
+. loglk:         -8.1935
+. loglk:        -51.5609
+. loglk:        -30.9196
+. loglk:        -8.82308
+. loglk:        -27.1479
+. loglk:        -47.4319
+. loglk:        -24.5782
+. loglk:        -55.5922
+. loglk:        -13.1819
+. loglk:        -58.4639
+. loglk:         -9.6045
+. loglk:        -41.7661
+. loglk:        -16.9042
+. loglk:        -22.2882
+. loglk:        -29.9363
+. loglk:        -8.30796
+. loglk:        -25.4001
+. loglk:        -21.0056
+. loglk:        -39.9632
+. loglk:        -49.5779
+. loglk:        -2.18803
+. loglk:        -51.3371
+. loglk:        -15.8003
+. loglk:        -58.2974
+. loglk:         -8.0009
+. loglk:        -53.1932
+. loglk:        -19.6957
+. loglk:        -48.3556
+. loglk:        -49.2513
+. loglk:        -20.7946
+. loglk:        -1.79685
+. loglk:        -38.1478
+. loglk:        -39.8434
+. loglk:        -44.2991
+. loglk:        -50.2219
+. loglk:        -15.2303
+. loglk:        -56.8919
+. loglk:         -44.732
+. loglk:        -29.8585
+. loglk:        -11.9067
+. loglk:        -2.44738
+. loglk:        -3.67037
+. loglk:        -39.3031
+. loglk:        -3.29215
+. loglk:        -7.55239
+. loglk:        -56.6937
+. loglk:        -8.49109
+. loglk:        -29.0507
+. loglk:         -42.358
+. loglk:         -56.726
+. loglk:        -19.6256
+. loglk:        -17.4409
+. loglk:        -2.24389
+. loglk:        -13.7267
+. loglk:        -48.9454
+. loglk:         -7.4093
+. loglk:        -22.9458
+. loglk:        -18.4281
+. loglk:        -17.9851
+. loglk:        -17.9838
+. loglk:        -53.6224
+. loglk:        -57.4897
+. loglk:        -11.6992
+. loglk:        -58.6609
+. loglk:         -2.0852
+. loglk:        -7.36848
+. loglk:        -20.6589
+. loglk:        -41.6857
+. loglk:        -7.73609
+. loglk:        -15.3033
+. loglk:        -40.4236
+. loglk:        -17.5095
+. loglk:         -21.128
+. loglk:        -43.1572
+. loglk:        -47.7097
+. loglk:        -8.79537
+. loglk:         -52.737
+. loglk:        -43.4008
+. loglk:        -54.0488
+. loglk:        -8.34832
+. loglk:        -47.0929
+. loglk:        -23.2339
+. loglk:         -37.868
+. loglk:        -55.7659
+. loglk:        -61.7544
+. loglk:        -18.4911
+. loglk:        -27.0974
+. loglk:        -56.4603
+. loglk:        -7.79074
+. loglk:        -56.0629
+. loglk:        -25.9773
+. loglk:        -21.4888
+. loglk:        -47.7518
+. loglk:        -60.4678
+. loglk:        -51.0248
+. loglk:        -14.8795
+. loglk:        -40.7693
+. loglk:        -59.4922
+. loglk:        -49.4316
+. loglk:        -13.5763
+. loglk:        -21.7091
+. loglk:        -18.0287
+. loglk:        -47.9023
+. loglk:        -22.9284
+. loglk:        -2.58465
+. loglk:        -15.6925
+. loglk:        -61.6561
+. loglk:        -67.6439
+. loglk:        -23.5177
+. loglk:         -7.8974
+. loglk:        -7.87289
+. loglk:        -51.7871
+. loglk:        -22.1614
+. loglk:        -49.8798
+. loglk:        -45.1838
+. loglk:        -32.3256
+. loglk:        -13.5529
+. CV score: -18.637407
+
+. Printing the most likely tree in file 'xxx_phyml_tree_mixt.txt'...

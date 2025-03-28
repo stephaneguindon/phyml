@@ -614,7 +614,7 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
       return tree->c_lnL;
     }
 
-  if(b->l->onoff == OFF) return tree->c_lnL;
+  if(b->l->onoff == OFF || b->l->optimize == NO) return tree->c_lnL;
 
   lk_begin = UNLIKELY;
   lk_end   = UNLIKELY;
@@ -623,7 +623,6 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
   Set_Use_Eigen_Lr(NO,tree);
 
   lk_begin = Lk(b,tree); /* We can't assume that the log-lk value is up-to-date */
-
 
   Set_Update_Eigen_Lr(NO,tree);
   Set_Use_Eigen_Lr(YES,tree);
@@ -680,9 +679,9 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   
   while(n_round < n_round_max)
     {
-      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
+      if(tree->mod->s_opt->opt_bl_one_by_one || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
       
-      if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
+      if((tree->mod->s_opt->opt_bl_one_by_one || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
          (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");     
 
@@ -843,7 +842,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
+  if(tree->io->mod->s_opt->opt_bl_one_by_one == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -870,7 +869,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           {
             Update_Partial_Lk(tree,d->b[i],d);
-            if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(d->b[i]->l->v),d->b[i],tree);
+            if(tree->io->mod->s_opt->opt_bl_one_by_one == YES) Br_Len_Opt(&(d->b[i]->l->v),d->b[i],tree);
           }
     }
   else
@@ -885,7 +884,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       Update_Partial_Lk(tree,b_fcus,d);
-      if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
+      if(tree->io->mod->s_opt->opt_bl_one_by_one == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
     }
 }
 
@@ -985,152 +984,9 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Efrq_Weights(tree,verbose);
   Optimize_Free_Rate(tree,verbose);
   Optimize_Br_Len_Multiplier(tree,verbose);
+  Optimize_M4mod(tree, verbose);
 
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
-
-  if(tree->mod->use_m4mod)
-    {
-      int i;
-
-      if(tree->mod->s_opt->opt_cov_delta)
-        {
-          Set_Update_Eigen(YES,tree->mod);
-
-          Generic_Brent_Lk(&(tree->mod->m4mod->delta),
-                           0.01,10.,
-                           tree->mod->s_opt->min_diff_lk_local,
-                           tree->mod->s_opt->brent_it_max,
-                           tree->mod->s_opt->quickdirty,
-                           Wrap_Lk,NULL,tree,NULL,NO,NO);
-
-          if(verbose)
-            {
-              Print_Lk(tree,"[Switching param.   ]");
-              PhyML_Printf("[%10f]",tree->mod->m4mod->delta);
-            }
-
-          Set_Update_Eigen(NO,tree->mod);
-
-        }
-
-      
-      if(tree->mod->s_opt->opt_cov_free_rates)
-        {
-          int rcat;
-          
-          Set_Update_Eigen(YES,tree->mod);
-          
-          for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
-            {
-              /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->multipl_unscaled[rcat]), */
-              /* 					    .01,10., */
-              /* 					    tree->mod->s_opt->min_diff_lk_local, */
-              /* 					    tree->mod->s_opt->brent_it_max, */
-              /* 					    tree->mod->s_opt->quickdirty); */
-              
-              Generic_Brent_Lk(&(tree->mod->m4mod->multipl_unscaled[rcat]),
-                               0.1,100.,
-                               tree->mod->s_opt->min_diff_lk_local,
-                               tree->mod->s_opt->brent_it_max,
-                               tree->mod->s_opt->quickdirty,
-                               Wrap_Lk,NULL,tree,NULL,NO,NO);
-              
-              if(verbose)
-                {
-                  Print_Lk(tree,"[Rel. subst. rate   ]");
-                  PhyML_Printf("[%10f]",tree->mod->m4mod->multipl[rcat]);
-                }
-            }
-          
-          for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
-            {
-              
-              /*  	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->h_fq_unscaled[rcat]), */
-              /* 					    .01,100., */
-              /* 					    tree->mod->s_opt->min_diff_lk_local, */
-              /* 					    tree->mod->s_opt->brent_it_max, */
-              /* 					    tree->mod->s_opt->quickdirty); */
-              
-              Generic_Brent_Lk(&(tree->mod->m4mod->h_fq_unscaled[rcat]),
-                               0.1,100.,
-                               tree->mod->s_opt->min_diff_lk_local,
-                               tree->mod->s_opt->brent_it_max,
-                               tree->mod->s_opt->quickdirty,
-                               Wrap_Lk,NULL,tree,NULL,NO,NO);
-              
-              
-              if(verbose)
-                {
-                  Print_Lk(tree,"[Subst. class freq  ]");
-                  PhyML_Printf("[%10f]",tree->mod->m4mod->h_fq[rcat]);
-                }
-            }
-          
-          Set_Update_Eigen(NO,tree->mod);
-          
-        }
-      
-      if(tree->mod->s_opt->opt_cov_alpha)
-        {
-          
-          Set_Update_Eigen(YES,tree->mod);
-          
-          /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->ras->alpha), */
-          /* 					.01,10., */
-          /* 					tree->mod->s_opt->min_diff_lk_local, */
-          /* 					tree->mod->s_opt->brent_it_max, */
-          /* 					tree->mod->s_opt->quickdirty); */
-          
-          Generic_Brent_Lk(&(tree->mod->m4mod->alpha),
-                           0.01,10.,
-                           tree->mod->s_opt->min_diff_lk_local,
-                           tree->mod->s_opt->brent_it_max,
-                           tree->mod->s_opt->quickdirty,
-                           Wrap_Lk,NULL,tree,NULL,NO,NO);
-          
-          
-          if(verbose)
-            {
-              Print_Lk(tree,"[Alpha (covarion)   ]");
-              PhyML_Printf("[%10f]",tree->mod->m4mod->alpha);
-            }
-          
-          Set_Update_Eigen(NO,tree->mod);
-          
-        }
-      
-      
-      /* Substitutions between nucleotides are considered to follow a
-         GTR model */
-      
-      if(tree->mod->io->datatype == NT)
-        {
-          if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-            {              
-              Set_Update_Eigen(YES,tree->mod);
-              
-              int *permut = Permutate(tree->mod->r_mat->n_diff_rr);
-              
-              for(i=0;i<5;i++)
-                if(permut[i] != 5)
-                  {
-                    Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[permut[i]]),
-                                     1.E-4,1.E+4,
-                                     tree->mod->s_opt->min_diff_lk_local,
-                                     tree->mod->s_opt->brent_it_max,
-                                     tree->mod->s_opt->quickdirty,
-                                     Wrap_Lk,NULL,tree,NULL,NO,NO);
-                    
-                  }
-
-              Free(permut);
-              
-              if(verbose) Print_Lk(tree,"[GTR parameters     ]");
-              
-              Set_Update_Eigen(NO,tree->mod);
-            }
-        }
-    }
   
   Set_Both_Sides(init_both_sides,tree);
 
@@ -1143,6 +999,130 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   /* if(tree->nextree) Optimiz_All_Free_Param(tree->nextree,verbose); */
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Optimize_M4mod(t_tree *tree, int verbose)
+{
+  if (tree->mod->use_m4mod == YES)
+  {
+    int i;
+
+    if (tree->mod->m4mod->delta->optimize == YES)
+    {
+      Set_Update_Eigen(YES,tree->mod);
+
+      Generic_Brent_Lk(
+          &(tree->mod->m4mod->delta->v), 0.01, 10.,
+          tree->mod->s_opt->min_diff_lk_local, tree->mod->s_opt->brent_it_max,
+          tree->mod->s_opt->quickdirty, Wrap_Lk, NULL, tree, NULL, NO, NO);
+
+      if (verbose)
+      {
+        Print_Lk(tree, "[Switching param.   ]");
+        PhyML_Printf("[%10f]", tree->mod->m4mod->delta->v);
+      }
+
+      Set_Update_Eigen(NO, tree->mod);
+    }
+
+    if (tree->mod->m4mod->multipl_unscaled->optimize == YES)
+    {
+    
+      Set_Update_Eigen(YES,tree->mod);
+
+      for (int rcat = 0; rcat < tree->mod->m4mod->n_h; rcat++)
+      {
+        /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->multipl_unscaled[rcat]),
+         */
+        /* 					    .01,10., */
+        /* 					    tree->mod->s_opt->min_diff_lk_local,
+         */
+        /* 					    tree->mod->s_opt->brent_it_max,
+         */
+        /* 					    tree->mod->s_opt->quickdirty);
+         */
+
+        Generic_Brent_Lk(
+            &(tree->mod->m4mod->multipl_unscaled->v[rcat]), 0.1, 100.,
+            tree->mod->s_opt->min_diff_lk_local, tree->mod->s_opt->brent_it_max,
+            tree->mod->s_opt->quickdirty, Wrap_Lk, NULL, tree, NULL, NO, NO);
+
+        if (verbose)
+        {
+          Print_Lk(tree, "[Rel. subst. rate   ]");
+          PhyML_Printf("[%10f]", tree->mod->m4mod->multipl[rcat]);
+        }
+      }
+
+      Set_Update_Eigen(NO, tree->mod);
+    }
+
+    if (tree->mod->m4mod->multipl_unscaled->optimize == YES)
+    {
+      Set_Update_Eigen(YES, tree->mod);
+
+      for (int rcat = 0; rcat < tree->mod->m4mod->n_h; rcat++)
+      {
+        Generic_Brent_Lk(
+            &(tree->mod->m4mod->h_fq_unscaled->v[rcat]), 0.1, 100.,
+            tree->mod->s_opt->min_diff_lk_local, tree->mod->s_opt->brent_it_max,
+            tree->mod->s_opt->quickdirty, Wrap_Lk, NULL, tree, NULL, NO, NO);
+
+        if (verbose)
+        {
+          Print_Lk(tree, "[Subst. class freq  ]");
+          PhyML_Printf("[%10f]", tree->mod->m4mod->h_fq[rcat]);
+        }
+      }
+
+      Set_Update_Eigen(NO, tree->mod);
+    }
+
+    if (tree->mod->m4mod->alpha->optimize == YES)
+    {
+      Set_Update_Eigen(YES, tree->mod);
+
+      Generic_Brent_Lk(
+          &(tree->mod->m4mod->alpha->v), 0.01, 10.,
+          tree->mod->s_opt->min_diff_lk_local, tree->mod->s_opt->brent_it_max,
+          tree->mod->s_opt->quickdirty, Wrap_Lk, NULL, tree, NULL, NO, NO);
+
+      if (verbose)
+      {
+        Print_Lk(tree, "[Alpha (covarion)   ]");
+        PhyML_Printf("[%10f]", tree->mod->m4mod->alpha->v);
+      }
+
+      Set_Update_Eigen(NO, tree->mod);
+    }
+
+    /* Substitutions between nucleotides are considered to follow a
+       GTR model */
+    if (tree->mod->io->datatype == NT && (tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM) && tree->mod->m4mod->o_rr->optimize == YES)
+      {
+        Set_Update_Eigen(YES, tree->mod);
+
+        int *permut = Permutate(tree->mod->r_mat->n_diff_rr);
+
+        for (i = 0; i < 5; i++)
+          if (permut[i] != 5)
+          {
+            Generic_Brent_Lk(&(tree->mod->m4mod->o_rr->v[permut[i]]), 1.E-4, 1.E+4,
+                             tree->mod->s_opt->min_diff_lk_local,
+                             tree->mod->s_opt->brent_it_max,
+                             tree->mod->s_opt->quickdirty, Wrap_Lk, NULL, tree,
+                             NULL, NO, NO);
+          }
+
+        Free(permut);
+
+        if (verbose) Print_Lk(tree, "[GTR parameters     ]");
+
+        Set_Update_Eigen(NO, tree->mod);
+      }    
+  }
+}
 
 #define ITMAX 200
 #define EPS   3.0e-8
@@ -2199,7 +2179,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1 && tree->mod->s_opt->opt_pinvar == YES)
+      if(tree->mod->ras->alpha->optimize == YES && tree->mod->ras->n_catg > 1 && tree->mod->ras->pinvar->optimize == YES)
         {
           for(i=0;i<n_alpha;i++) if(tree->mod->ras->alpha == alpha[i]) break;
 
@@ -2210,7 +2190,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               alpha[n_alpha] = tree->mod->ras->alpha;
               n_alpha++;
 
-              if(tree->mod->s_opt->opt_alpha == YES &&
+              if(tree->mod->ras->alpha->optimize == YES &&
                  tree->mod->ras->free_mixt_rates == NO)
                 {
                   if(tree->mod->ras->n_catg > 1)
@@ -2229,7 +2209,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
                     }
                 }
 
-              if(tree->mod->s_opt->opt_pinvar == YES &&
+              if(tree->mod->ras->pinvar->optimize == YES &&
                  tree->mod->ras->free_mixt_rates == NO)
                 {
                   tree->mod->s_opt->skip_tree_traversal = YES;
@@ -2775,7 +2755,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
           r_mat[n_r_mat] = tree->mod->r_mat;
           n_r_mat++;
           
-          if((tree->mod->s_opt->opt_rr) &&
+          if((tree->mod->r_mat->optimize == YES) &&
              ((tree->mod->whichmodel == GTR) ||
              ((tree->mod->whichmodel == CUSTOM) &&
               (tree->mod->r_mat->n_diff_rr > 1))))
@@ -2883,6 +2863,8 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
+  if (mixt_tree->mod->io->datatype != NT) return;
+
   /* PhyML_Printf("\n. Optimizing Tstv"); */
 
   Set_Update_Eigen(YES,mixt_tree->mod);
@@ -2904,7 +2886,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
           tstv[n_tstv] = tree->mod->kappa;
           n_tstv++;
           
-          if(tree->mod->s_opt->opt_kappa == YES)
+          if(tree->mod->kappa->optimize == YES)
             {
               phydbl a,c;
               
@@ -2936,7 +2918,6 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   if(tstv) Free(tstv);
   
   Set_Update_Eigen(NO,mixt_tree->mod);
-  
 }
 
 
@@ -3021,7 +3002,7 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
           pinv[n_pinv] = tree->mod->ras->pinvar;
           n_pinv++;
            
-          if(tree->mod->s_opt->opt_pinvar == YES && (tree->mod->s_opt->opt_alpha == NO || tree->mod->ras->n_catg == 1))
+          if(tree->mod->ras->pinvar->optimize == YES && (tree->mod->ras->alpha->optimize == NO || tree->mod->ras->n_catg == 1))
             {
               Generic_Brent_Lk(&(tree->mod->ras->pinvar->v),
                                PINV_MIN,PINV_MAX,
@@ -3068,7 +3049,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
   do
     {
 
-      if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1)
+      if(tree->mod->ras->alpha->optimize == YES && tree->mod->ras->n_catg > 1)
         {
           for(i=0;i<n_alpha;i++) if(tree->mod->ras->alpha == alpha[i]) break;
 
@@ -3079,9 +3060,9 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
               alpha[n_alpha] = tree->mod->ras->alpha;
               n_alpha++;
 
-              if(tree->mod->s_opt->opt_alpha == YES &&
+              if(tree->mod->ras->alpha->optimize == YES &&
                  tree->mod->ras->free_mixt_rates == NO &&
-                 tree->mod->s_opt->opt_pinvar == NO)
+                 tree->mod->ras->pinvar->optimize == NO)
                 {
                   
                   if(tree->mod->ras->n_catg > 1)
@@ -3388,7 +3369,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
     {
       if(tree == mixt_tree && tree->next != NULL) tree = tree->next;
 
-      if(tree->mod->s_opt->state_freq == ML)
+      if(tree->mod->e_frq->type == ML)
         {
           int iter;
           
@@ -3567,6 +3548,8 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
+  if (mixt_tree->mod->io->datatype != NT) return;
+
   /* PhyML_Printf("\n. Optimizing Lambda"); */
 
   Set_Update_Eigen(YES,mixt_tree->mod);
@@ -3588,7 +3571,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
           lambda[n_lambda] = tree->mod->lambda;
           n_lambda++;
           
-          if(tree->mod->s_opt->opt_lambda)
+          if(tree->mod->lambda->optimize == YES)
             {
               /* PhyML_Printf("\n-- Lambda: %f",tree->c_lnL); */
               Generic_Brent_Lk(&(tree->mod->lambda->v),

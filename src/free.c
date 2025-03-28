@@ -115,6 +115,34 @@ void Free_Node(t_node *n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_M4_Mod(m4 *mod) 
+{
+  for (int i = 0; i < mod->n_h; i++) Free(mod->o_mats[i]);
+  Free(mod->o_mats);
+  Free(mod->o_rr->v);
+  Free(mod->o_rr);
+  Free(mod->h_rr);
+  Free(mod->h_mat);
+  Free(mod->o_fq);
+
+  Free(mod->h_fq->v);
+  Free(mod->h_fq);
+
+  Free(mod->h_fq_unscaled->v);
+  Free(mod->h_fq_unscaled);
+  
+  Free(mod->multipl_unscaled->v);
+  Free(mod->multipl_unscaled);
+  
+  Free(mod->multipl->v);
+  Free(mod->multipl);
+  
+  Free_Scalar_Dbl(mod->delta);
+  Free_Scalar_Dbl(mod->alpha);
+}
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_Mat(matrix *mat)
 {
   int i;
@@ -203,7 +231,7 @@ void Free_Calign(calign *data)
   Free(data->obs_state_frq);
   Free(data->sitepatt);
 
-  if (data->masked_post) Free(data->masked_pos);
+  if (data->masked_pos) Free(data->masked_pos);
   
 
   for (i = 0; i < data->n_otu; i++)

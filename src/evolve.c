@@ -259,9 +259,10 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
   for (site = 0; site < data->init_len; ++site)
   {
     /* Pick the rate class */
-    root_state = root_rate_class = -1;
-    root_rate_class =
-        EVOLVE_Pick_State(mod->ras->n_catg, mod->ras->gamma_r_proba->v);
+    root_state = root_rate_class = 0;
+
+    // root_rate_class =
+    //     EVOLVE_Pick_State(mod->ras->n_catg, mod->ras->gamma_r_proba->v);
 
     var  = 5.0;
     mean = 1.0;
@@ -276,7 +277,7 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
 
-    if (site < (int)(0.4 * data->init_len))
+    // if (site < (int)(0.4 * data->init_len))
     {
       // GTR model 
       
@@ -305,26 +306,54 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
       Update_Eigen(tree->mod);
       tree->mod->whichmodel = OTHER;
     }
-    else
-    {
-      // Set stationary frequencies
-      for (int i = 0; i < mod->ns; ++i)
-        tree->mod->e_frq->pi->v[i] = 1. / mod->ns;
+    // {
+    //   // HKY85 model
 
-      tree->mod->r_mat->n_diff_rr = 6;
+    //   // Set stationary frequencies
+    //   for (int i = 0; i < mod->ns; ++i)
+    //     tree->mod->e_frq->pi_unscaled->v[i] = i + 3.0;
 
-      tree->mod->r_mat->rr_val->v[AC] = log(1.0);
-      tree->mod->r_mat->rr_val->v[AG] = log(1.0);
-      tree->mod->r_mat->rr_val->v[AT] = log(1.0);
-      tree->mod->r_mat->rr_val->v[CG] = log(1.0);
-      tree->mod->r_mat->rr_val->v[CT] = log(1.0);
-      tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+    //   sum = 0.0;
+    //   for (int i = 0; i < mod->ns; ++i)
+    //     sum += tree->mod->e_frq->pi_unscaled->v[i];
 
-      tree->mod->whichmodel   = GTR;
-      tree->mod->update_eigen = YES;
-      Update_Eigen(tree->mod);
-      tree->mod->whichmodel = OTHER;
-    }
+    //   for (int i = 0; i < mod->ns; ++i)
+    //     tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
+
+    //   tree->mod->r_mat->n_diff_rr = 6;
+
+    //   tree->mod->r_mat->rr_val->v[AC] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[AG] = log(4.0);
+    //   tree->mod->r_mat->rr_val->v[AT] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[CG] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[CT] = log(4.0);
+    //   tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+
+    //   tree->mod->whichmodel   = GTR;
+    //   tree->mod->update_eigen = YES;
+    //   Update_Eigen(tree->mod);
+    //   tree->mod->whichmodel = OTHER;
+    // }
+    // else // JC69
+    // {
+    //   // Set stationary frequencies
+    //   for (int i = 0; i < mod->ns; ++i)
+    //     tree->mod->e_frq->pi->v[i] = 1. / mod->ns;
+
+    //   tree->mod->r_mat->n_diff_rr = 6;
+
+    //   tree->mod->r_mat->rr_val->v[AC] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[AG] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[AT] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[CG] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[CT] = log(1.0);
+    //   tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+
+    //   tree->mod->whichmodel   = GTR;
+    //   tree->mod->update_eigen = YES;
+    //   Update_Eigen(tree->mod);
+    //   tree->mod->whichmodel = OTHER;
+    // }
 
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       Update_PMat_At_Given_Edge(tree->a_edges[i], tree);

@@ -371,8 +371,9 @@ static inline int isinf_ld(long double x) { return isnan(x - x); }
 #define KFOLD_COL 1
 #define MAXFOLD 2
 
-#define MASK_TYPE_POSITION // Individual positions (i.e., site x taxon) are masked
-#define MASK_TYPE_COLUMN   // Columns (i.e., site x .) are masked
+#define MASK_TYPE_POSITION                                                     \
+  0 // Individual positions (i.e., site x taxon) are masked
+#define MASK_TYPE_COLUMN 1 // Columns (i.e., site x .) are masked
 
 #define JC69 1
 #define K80 2
@@ -573,6 +574,7 @@ typedef struct __Generic_LL
 typedef struct __Scalar_Int
 {
   int                  v;
+  bool                 optimize;
   struct __Scalar_Int *next;
   struct __Scalar_Int *prev;
 } scalar_int;
@@ -583,6 +585,7 @@ typedef struct __Scalar_Dbl
 {
   phydbl               v;
   bool                 onoff;
+  bool                 optimize;
   struct __Scalar_Dbl *next;
   struct __Scalar_Dbl *prev;
 } scalar_dbl;
@@ -593,6 +596,7 @@ typedef struct __Vect_Int
 {
   int               *v;
   int                len;
+  bool               optimize;
   struct __Vect_Int *next;
   struct __Vect_Int *prev;
 } vect_int;
@@ -603,6 +607,7 @@ typedef struct __Vect_Dbl
 {
   phydbl            *v;
   int                len;
+  bool               optimize;
   struct __Vect_Dbl *next;
   struct __Vect_Dbl *prev;
 } vect_dbl;
@@ -1005,6 +1010,8 @@ typedef struct __Tree
   int n_edges_traversed;
   int n_tot_bl_opt;
 
+  bool opt_topo;
+
 } t_tree;
 
 /*!********************************************************/
@@ -1192,6 +1199,8 @@ typedef struct __RateMatrix
   vect_dbl *qmat;
   vect_dbl *qmat_buff;
 
+  bool optimize;
+
   struct __RateMatrix *next;
   struct __RateMatrix *prev;
 } t_rmat;
@@ -1238,6 +1247,8 @@ typedef struct __RAS
   short int sort_rate_classes; /*! When doing MCMC moves on rate classes, one
                                   needs to have the rate classes sorted */
 
+  bool optimize;
+
   struct __RAS *next;
   struct __RAS *prev;
 
@@ -1254,6 +1265,8 @@ typedef struct __EquFreq
   phydbl *b_frq; /*! vector of empirical state frequencies */
 
   vect_dbl *user_b_freq; /*! user-defined nucleotide frequencies */
+
+  short int type;
 
   struct __EquFreq *next;
   struct __EquFreq *prev;
@@ -1287,8 +1300,8 @@ typedef struct __Model
 
   int update_eigen; /*! update_eigen=1-> eigen values/vectors need to be updated
                      */
-  int cv_type; /* Type of cross-validation method */
-  
+  int cv_type;      /* Type of cross-validation method */
+
   int whichmodel;
   int is_mixt_mod;
   int augmented;
@@ -1314,7 +1327,7 @@ typedef struct __Model
   phydbl l_max; /*! Maximum branch length !*/
 
   scalar_dbl *l_var_sigma; /*! For any edge b we have b->l_var->v = l_var_sigma
-                              * (b->l->v)^2 */
+                            * (b->l->v)^2 */
   phydbl l_var_min; /*! Min of variance of branch lengths (used in conjunction
                        with gamma_mgf_bl == YES) */
   phydbl l_var_max; /*! Max of variance of branch lengths (used in conjunction
@@ -1331,7 +1344,7 @@ typedef struct __Model
   int  b_inst;
   bool optimizing_topology; /*! This is a flag that prevents the resetting of
                                category weights. Why? Read */
-  /*  Recall that while optimizing the toplogy, PhyML temporarily only uses 2
+  /*  Recall that while optimizing the topology, PhyML temporarily only uses 2
    *  rate categories. Recall also that a BEAGLE instance is created with all
    * the required categories, but we temporarily assign 0 weight to the other
    * categories thus effectively using only 2 categories. However, subsequent
@@ -1537,24 +1550,13 @@ typedef struct __Option
 /*!********************************************************/
 
 typedef struct __Optimiz
-{ /*! parameters to be optimised (mostly used in 'optimiz.c') */
-  short int opt_alpha;  /*! =1 -> the gamma shape parameter is optimised */
-  short int opt_kappa;  /*! =1 -> the ts/tv ratio parameter is optimised */
-  short int opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is
-                           optimised */
-  short int opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
-  short int state_freq;
-  short int opt_rr; /*! =1 -> the relative rate parameters of the GTR or the
-                       customn model are optimised */
+{
   short int opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the
           numerical parameters of the model are optimised. if opt_topo=0 and
           opt_free_param=0 -> no parameter is optimised */
-  short int opt_cov_delta;
-  short int opt_cov_alpha;
-  short int opt_cov_free_rates;
   short int opt_clock_r;
-  short int opt_bl;   /*! =1 -> the branch lengths are optimised */
-  short int opt_topo; /*! =1 -> the tree topology is optimised */
+  short int opt_bl_one_by_one; /*! =1 -> the branch lengths are optimised */
+  short int opt_topo;          /*! =1 -> the tree topology is optimised */
   short int topo_search;
   short int opt_node_ages;
   short int opt_neff;
@@ -1704,22 +1706,24 @@ typedef struct __M4
 
   phydbl **o_mats; /*! set of matrices of substitution rates across observable
                       states */
-  phydbl *multipl; /*! vector of values that multiply each o_mats matrix */
-  phydbl *o_rr;    /*! relative rates (symmetric) of substitution between
-                      observable states */
+  vect_dbl *o_rr;  /*! relative rates (symmetric) of substitution between
+                    observable states */
   phydbl *h_rr;    /*! relative rates (symmetric) of substitution between hidden
                       states */
   phydbl *h_mat;   /*! matrix that describes the substitutions between hidden
                       states (aka switches) */
   phydbl *o_fq;    /*! equilibrium frequencies for the observable states */
-  phydbl *h_fq;    /*! equilibrium frequencies for the hidden states */
-  phydbl *h_fq_unscaled;    /*! unscaled equilibrium frequencies for the hidden
-                               states */
-  phydbl *multipl_unscaled; /*! unscaled  vector of values that multiply each
-                               o_mats matrix */
 
-  phydbl delta; /*! switching rate */
-  phydbl alpha; /*! gamma shape parameter */
+  vect_dbl *h_fq;          /*! equilibrium frequencies for the hidden states */
+  vect_dbl *h_fq_unscaled; /*! unscaled equilibrium frequencies for the hidden
+                            states */
+
+  vect_dbl *multipl_unscaled; /*! unscaled  vector of values that multiply each
+                                o_mats matrix */
+  vect_dbl *multipl; /*! vector of values that multiply each o_mats matrix */
+
+  scalar_dbl *delta; /*! switching rate */
+  scalar_dbl *alpha; /*! gamma shape parameter */
 } m4;
 
 /*!********************************************************/
@@ -1832,7 +1836,6 @@ typedef struct __T_Rate
   int   is_allocated;
   int   met_within_gibbs;
 
-  
   int update_mean_l;
   int update_cov_l;
 
@@ -2800,6 +2803,7 @@ scalar_dbl  *Duplicate_Scalar_Dbl(scalar_dbl *from);
 scalar_dbl  *Read_Weights(option *io);
 phydbl       Scalar_Elem(int pos, scalar_dbl *scl);
 int          Scalar_Len(scalar_dbl *scl);
+int          Vect_Len(vect_dbl *scl);
 void         Set_Scalar_Dbl(phydbl val, scalar_dbl *from);
 void         Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from);
 void         Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
@@ -2900,6 +2904,10 @@ void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 char D_State_To_Character(int d_state, t_tree *tree);
 void ROC(phydbl *probs, short int *truth, int nclasses, int n_obs,
          phydbl *weights, char *tag);
+phydbl AIC(t_tree *tree);
+phydbl BIC(t_tree *tree);
+void   Set_Edge_Length_Optimizer(t_tree *tree);
+int    Number_Of_Free_Params(t_tree *mixt_tree);
 
 #include "alrt.h"
 #include "ancestral.h"
@@ -2922,6 +2930,7 @@ void ROC(phydbl *probs, short int *truth, int nclasses, int n_obs,
 #include "spr.h"
 #include "stats.h"
 #include "xml.h"
+#include "m4.h"
 
 #ifdef GEO
 #include "geo.h"

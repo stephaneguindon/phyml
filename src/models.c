@@ -485,7 +485,7 @@ phydbl Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 //////////////////////////////////////////////////////////////
 
 void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi,
-                     phydbl *qmat, int opt_rr)
+                     phydbl *qmat)
 {
   int    i;
   phydbl mr;
@@ -767,7 +767,7 @@ int Update_Efrq(t_mod *mod)
   unsigned int i;
   phydbl       sum;
 
-  if (mod->s_opt->state_freq == ML)
+  if (mod->e_frq->type == ML)
   {
     for (i = 0; i < mod->ns; ++i)
       mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
@@ -892,11 +892,11 @@ int Update_Eigen(t_mod *mod)
       if (mod->whichmodel == GTR)
         Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v,
                         mod->r_mat->rr_num->v, mod->e_frq->pi->v,
-                        mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+                        mod->r_mat->qmat->v);
       else if (mod->whichmodel == CUSTOM)
         Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v,
                         mod->r_mat->rr_num->v, mod->e_frq->pi->v,
-                        mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+                        mod->r_mat->qmat->v);
       else if (mod->whichmodel == HKY85)
         Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
       else if (mod->whichmodel == TN93)
@@ -1110,7 +1110,7 @@ void Switch_From_Mod_To_M4mod(t_mod *mod)
   mod->ns        = mod->m4mod->n_o * mod->m4mod->n_h;
   for (i = 0; i < mod->ns; i++)
     mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i % mod->m4mod->n_o] *
-                           mod->m4mod->h_fq[i / mod->m4mod->n_o];
+                           mod->m4mod->h_fq->v[i / mod->m4mod->n_o];
   mod->eigen->size = mod->ns;
   Set_Update_Eigen(YES, mod);
 }
@@ -1158,7 +1158,7 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
     for (i = 0; i < mod->ns; i++) mod->e_frq->pi->v[i] = mod_pi[i];
     Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v,
                     mod->r_mat->rr_num->v, mod->e_frq->pi->v,
-                    mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+                    mod->r_mat->qmat->v);
     Free(pi);
     Free(mod_pi);
     return -1.;
@@ -1173,7 +1173,7 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
     for (i = 0; i < mod->ns; i++) mod->e_frq->pi->v[i] = mod_pi[i];
     Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v,
                     mod->r_mat->rr_num->v, mod->e_frq->pi->v,
-                    mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+                    mod->r_mat->qmat->v);
     Free(pi);
     Free(mod_pi);
     return -1.;

@@ -457,6 +457,7 @@ evolve.c evolve.h\
 rates.c rates.h\
 date.c date.h\
 times.c times.h\
+m4.c m4.h\
 cv.c cv.h
 # phyml_LDADD = -lm
 endif

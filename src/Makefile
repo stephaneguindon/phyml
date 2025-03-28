@@ -88,8 +88,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = aarch64-apple-darwin23.6.0
-host_triplet = aarch64-apple-darwin23.6.0
+build_triplet = aarch64-apple-darwin24.3.0
+host_triplet = aarch64-apple-darwin24.3.0
 bin_PROGRAMS = phyml$(EXEEXT)
 #bin_PROGRAMS = date$(EXEEXT)
 #bin_PROGRAMS = phyrexsim$(EXEEXT)
@@ -203,7 +203,7 @@ am__phyml_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	nexus.c nexus.h init.c init.h xml.c xml.h sse.c sse.h avx.c \
 	avx.h tbe.c tbe.h ancestral.c ancestral.h mixt.c mixt.h \
 	evolve.c evolve.h rates.c rates.h date.c date.h times.c \
-	times.h cv.c cv.h
+	times.h m4.c m4.h cv.c cv.h
 am_phyml_OBJECTS = main.$(OBJEXT) \
 	utilities.$(OBJEXT) \
 	optimiz.$(OBJEXT) \
@@ -235,6 +235,7 @@ am_phyml_OBJECTS = main.$(OBJEXT) \
 	rates.$(OBJEXT) \
 	date.$(OBJEXT) \
 	times.$(OBJEXT) \
+	m4.$(OBJEXT) \
 	cv.$(OBJEXT)
 phyml_OBJECTS = $(am_phyml_OBJECTS)
 phyml_LDADD = $(LDADD)
@@ -563,14 +564,14 @@ am__depfiles_remade = ./$(DEPDIR)/alrt.Po ./$(DEPDIR)/ancestral.Po \
 	./$(DEPDIR)/help.Po ./$(DEPDIR)/ibm.Po ./$(DEPDIR)/init.Po \
 	./$(DEPDIR)/interface.Po ./$(DEPDIR)/io.Po ./$(DEPDIR)/iou.Po \
 	./$(DEPDIR)/iwn.Po ./$(DEPDIR)/lk.Po ./$(DEPDIR)/location.Po \
-	./$(DEPDIR)/main.Po ./$(DEPDIR)/make.Po ./$(DEPDIR)/mcmc.Po \
-	./$(DEPDIR)/mg.Po ./$(DEPDIR)/mixt.Po ./$(DEPDIR)/models.Po \
-	./$(DEPDIR)/mpi_boot.Po ./$(DEPDIR)/nexus.Po \
-	./$(DEPDIR)/optimiz.Po ./$(DEPDIR)/pars.Po \
-	./$(DEPDIR)/phyrex.Po ./$(DEPDIR)/rates.Po ./$(DEPDIR)/rrw.Po \
-	./$(DEPDIR)/rw.Po ./$(DEPDIR)/simu.Po ./$(DEPDIR)/slfv.Po \
-	./$(DEPDIR)/spr.Po ./$(DEPDIR)/sse.Po ./$(DEPDIR)/stats.Po \
-	./$(DEPDIR)/tbe.Po ./$(DEPDIR)/times.Po \
+	./$(DEPDIR)/m4.Po ./$(DEPDIR)/main.Po ./$(DEPDIR)/make.Po \
+	./$(DEPDIR)/mcmc.Po ./$(DEPDIR)/mg.Po ./$(DEPDIR)/mixt.Po \
+	./$(DEPDIR)/models.Po ./$(DEPDIR)/mpi_boot.Po \
+	./$(DEPDIR)/nexus.Po ./$(DEPDIR)/optimiz.Po \
+	./$(DEPDIR)/pars.Po ./$(DEPDIR)/phyrex.Po ./$(DEPDIR)/rates.Po \
+	./$(DEPDIR)/rrw.Po ./$(DEPDIR)/rw.Po ./$(DEPDIR)/simu.Po \
+	./$(DEPDIR)/slfv.Po ./$(DEPDIR)/spr.Po ./$(DEPDIR)/sse.Po \
+	./$(DEPDIR)/stats.Po ./$(DEPDIR)/tbe.Po ./$(DEPDIR)/times.Po \
 	./$(DEPDIR)/utilities.Po ./$(DEPDIR)/velocity.Po \
 	./$(DEPDIR)/xml.Po
 am__mv = mv -f
@@ -679,10 +680,10 @@ am__quote =
 am__tar = $${TAR-tar} chof - "$$tardir"
 am__untar = $${TAR-tar} xf -
 bindir = ${exec_prefix}/bin
-build = aarch64-apple-darwin23.6.0
+build = aarch64-apple-darwin24.3.0
 build_alias = 
 build_cpu = aarch64
-build_os = darwin23.6.0
+build_os = darwin24.3.0
 build_vendor = apple
 builddir = .
 datadir = ${datarootdir}
@@ -690,10 +691,10 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = aarch64-apple-darwin23.6.0
+host = aarch64-apple-darwin24.3.0
 host_alias = 
 host_cpu = aarch64
-host_os = darwin23.6.0
+host_os = darwin24.3.0
 host_vendor = apple
 htmldir = ${docdir}
 includedir = ${prefix}/include
@@ -1121,6 +1122,7 @@ evolve.c evolve.h\
 rates.c rates.h\
 date.c date.h\
 times.c times.h\
+m4.c m4.h\
 cv.c cv.h
 
 all: all-am
@@ -1265,6 +1267,7 @@ include ./$(DEPDIR)/iou.Po # am--include-marker
 include ./$(DEPDIR)/iwn.Po # am--include-marker
 include ./$(DEPDIR)/lk.Po # am--include-marker
 include ./$(DEPDIR)/location.Po # am--include-marker
+include ./$(DEPDIR)/m4.Po # am--include-marker
 include ./$(DEPDIR)/main.Po # am--include-marker
 include ./$(DEPDIR)/make.Po # am--include-marker
 include ./$(DEPDIR)/mcmc.Po # am--include-marker
@@ -1456,6 +1459,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/iwn.Po
 	-rm -f ./$(DEPDIR)/lk.Po
 	-rm -f ./$(DEPDIR)/location.Po
+	-rm -f ./$(DEPDIR)/m4.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f ./$(DEPDIR)/make.Po
 	-rm -f ./$(DEPDIR)/mcmc.Po
@@ -1545,6 +1549,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/iwn.Po
 	-rm -f ./$(DEPDIR)/lk.Po
 	-rm -f ./$(DEPDIR)/location.Po
+	-rm -f ./$(DEPDIR)/m4.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f ./$(DEPDIR)/make.Po
 	-rm -f ./$(DEPDIR)/mcmc.Po

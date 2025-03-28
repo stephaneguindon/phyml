@@ -152,6 +152,8 @@ void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
 {
   phydbl u;
 
+  data->n_masked = 0;
+
   for (int site = 0; site < data->n_pattern; ++site)
   {
     for (int tax_id = 0; tax_id < data->n_otu; ++tax_id)
@@ -173,7 +175,7 @@ void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
         data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
         data->n_masked++;
 
-        PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
+        // PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
       }
     }
   }
@@ -184,7 +186,9 @@ void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
 // Mask exactly one position per site 
 void CV_Hide_Align_At_Random_One_Per_Site(calign *data)
 {
-  phydbl tax_id;
+  int tax_id;
+
+  data->n_masked = 0;
 
   for (int site = 0; site < data->n_pattern; ++site)
   {
@@ -203,7 +207,7 @@ void CV_Hide_Align_At_Random_One_Per_Site(calign *data)
     data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
     data->n_masked++;
 
-    PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
+    // PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
   }
 }
 
@@ -214,6 +218,8 @@ void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
 {
   phydbl u;
 
+  data->n_masked = 0;
+  
   for (int site = 0; site < data->n_pattern; ++site)
   {
     u = Uni();
@@ -228,13 +234,20 @@ void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
       }
 
       if (data->n_masked == 0)
+      {
+        // PhyML_Printf("\n. First alloc @ %p", data);
         data->masked_pos = (int *)mCalloc(1, sizeof(int));
+      }
       else
+      {
+        // PhyML_Printf("\n. Realloc @ %p", data);
         data->masked_pos =
             (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
-
+      }
+      
       data->masked_pos[data->n_masked] = site;
-      data->n_masked++
+      data->n_masked++;
+      // PhyML_Printf("\n. Hiding colmun at position %4d", site);
     }
   }
 }
@@ -255,7 +268,7 @@ void CV_Hide_Align_At_Given_Pos(calign *data, int tax_id, int site)
         (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
   data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
-  data->n_masked++
+  data->n_masked++;
 }
 
 //////////////////////////////////////////////////////////////
@@ -273,7 +286,7 @@ void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth,
     tax_id = floor((phydbl)tree->data->masked_pos[m] / tree->data->n_pattern);
     site   = tree->data->masked_pos[m] - tax_id * tree->data->n_pattern;
 
-    PhyML_Printf("\n. CV prob @ %d %d", tax_id, site);
+    // PhyML_Printf("\n. CV prob @ %d %d", tax_id, site);
 
     CV_State_Probs_Core(state_probs, truth, site_loglk, weights, n_prob_vectors,
                         tax_id, site, tree->data->c_seq[tax_id]->d_state[site],
@@ -430,15 +443,26 @@ void CV_Score_At_Hidden_Cols(phydbl **site_loglk, phydbl **weights,
   {
     site = tree->data->masked_pos[m];
 
-    PhyML_Printf("\n. CV prob @ site %d", site);
+    // PhyML_Printf("\n. CV prob @ site %d", site);
 
     if (*n_prob_vectors == 0)
+    {
       (*site_loglk) = (phydbl *)mCalloc(1, sizeof(phydbl));
+      (*weights)    = (phydbl *)mCalloc(1, sizeof(phydbl));
+    }
     else
+    {
       (*site_loglk) =
           (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
+      (*weights) =
+          (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
+    }
 
     (*site_loglk)[*n_prob_vectors] = tree->c_lnL_sorted[site];
+    (*weights)[*n_prob_vectors]    = tree->data->wght[site];
+
+    // PhyML_Printf(" lnL: %15g w: %12f #: %d site: %d", (*site_loglk)[*n_prob_vectors],
+    //              (*weights)[*n_prob_vectors],*n_prob_vectors,site);
 
     (*n_prob_vectors)++;
   }

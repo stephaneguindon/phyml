@@ -16,6 +16,19 @@
             // "preLaunchTask": "C/C++: gcc build active file"
         },
         {
+            "name": "TMP Version",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/tmp/phyml/src//phyml",
+            "args": ["--xml=/tmp/phyml/src/phyml_mixture.xml"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            // "preLaunchTask": "C/C++: gcc build active file"
+        },
+        {
             "name": "C/C++: clang build and debug active file",
             "type": "cppdbg",
             "request": "launch",

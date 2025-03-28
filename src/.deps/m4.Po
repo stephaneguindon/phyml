@@ -1,4 +1,4 @@
-free.o: free.c free.h ../config.h utilities.h \
+m4.o: m4.c m4.h ../config.h alrt.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/assert.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_symbol_aliasing.h \
@@ -118,8 +118,8 @@ free.o: free.c free.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_neon.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_bf16.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libkern/OSCacheControl.h \
-  alrt.h lk.h optimiz.h mg.h models.h eigen.h stats.h mixt.h tiporder.h \
-  times.h spr.h bionj.h help.h cl.h \
+  ancestral.h bionj.h optimiz.h free.h lk.h models.h eigen.h stats.h \
+  mixt.h times.h avx.h sse.h mg.h tiporder.h spr.h help.h cl.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_posix_vdisable.h \
@@ -127,10 +127,11 @@ free.o: free.c free.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_ssize_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/getopt.h \
-  interface.h invitee.h date.h simu.h pars.h m4.h draw.h rates.h mcmc.h \
-  io.h avx.h sse.h ancestral.h cv.h evolve.h init.h make.h nexus.h xml.h
-free.h:
+  interface.h invitee.h date.h simu.h pars.h draw.h rates.h mcmc.h io.h \
+  cv.h evolve.h init.h make.h nexus.h xml.h
+m4.h:
 ../config.h:
+alrt.h:
 utilities.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/assert.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:
@@ -251,18 +252,21 @@ sse2neon.h:
 /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_neon.h:
 /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_bf16.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libkern/OSCacheControl.h:
-alrt.h:
-lk.h:
+ancestral.h:
+bionj.h:
 optimiz.h:
-mg.h:
+free.h:
+lk.h:
 models.h:
 eigen.h:
 stats.h:
 mixt.h:
-tiporder.h:
 times.h:
+avx.h:
+sse.h:
+mg.h:
+tiporder.h:
 spr.h:
-bionj.h:
 help.h:
 cl.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h:
@@ -277,14 +281,10 @@ invitee.h:
 date.h:
 simu.h:
 pars.h:
-m4.h:
 draw.h:
 rates.h:
 mcmc.h:
 io.h:
-avx.h:
-sse.h:
-ancestral.h:
 cv.h:
 evolve.h:
 init.h:

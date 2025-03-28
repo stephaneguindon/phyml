@@ -1244,7 +1244,7 @@ t_mod *Make_Model_Basic(void)
 
   mod->l_var_sigma = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->l_var_sigma);
-
+  
   return mod;
 }
 
@@ -1301,17 +1301,7 @@ void Make_Model_Complete(t_mod *mod)
     Exit("\n");
   }
 
-  if (mod->whichmodel == CUSTOM)
-  {
-    Make_Custom_Model(mod);
-    Translate_Custom_Mod_String(mod);
-  }
-
-  if ((mod->io->datatype == NT && mod->whichmodel == GTR) ||
-      mod->io->datatype == AA || mod->io->datatype == GENERIC)
-  {
-    Make_Custom_Model(mod);
-  }
+  if (mod->whichmodel == CUSTOM) Translate_Custom_Mod_String(mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1769,6 +1759,61 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
   }
 
   return rates;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+/* Allocate memory min amount of memory for covarion model*/
+m4 *M4_Make_Light(void)
+{
+  m4 *m4mod;
+
+  m4mod = (m4 *)mCalloc(1, sizeof(m4));
+  M4_Set_M4mod_Default(m4mod);
+  return m4mod;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+/* Allocate memory for covarion model */
+void M4_Make_Complete(int n_h, int n_o, m4 *m4mod)
+{
+  int i;
+
+  m4mod->n_h    = n_h;
+  m4mod->n_o    = n_o;
+  m4mod->n_o    = n_o;
+
+  m4mod->o_rr      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
+  m4mod->o_rr->v   = (phydbl *)mCalloc(n_o * n_o, sizeof(phydbl));
+  m4mod->o_rr->len = n_o * n_o;
+
+  m4mod->o_fq   = (phydbl *)mCalloc(n_o, sizeof(phydbl));
+  m4mod->o_mats = (phydbl **)mCalloc(n_h, sizeof(phydbl *));
+
+  for (i = 0; i < n_h; i++)
+    m4mod->o_mats[i] = (phydbl *)mCalloc(n_o * n_o, sizeof(phydbl));
+
+  m4mod->h_mat            = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
+  m4mod->h_rr             = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
+  m4mod->h_fq             = (phydbl *)mCalloc(n_h, sizeof(phydbl));
+
+  m4mod->multipl      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
+  m4mod->multipl->v   = (phydbl *)mCalloc(n_h, sizeof(phydbl));
+  m4mod->multipl->len = n_h;
+
+  m4mod->multipl_unscaled      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
+  m4mod->multipl_unscaled->v   = (phydbl *)mCalloc(n_h, sizeof(phydbl));
+  m4mod->multipl_unscaled->len = n_h;
+
+  m4mod->h_fq_unscaled      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
+  m4mod->h_fq_unscaled->v   = (phydbl *)mCalloc(n_h, sizeof(phydbl));
+  m4mod->h_fq_unscaled->len = n_h;
+
+  m4mod->alpha = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
+  m4mod->delta = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
 }
 
 //////////////////////////////////////////////////////////////

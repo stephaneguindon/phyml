@@ -1,0 +1,86 @@
+
+. 484 patterns found (out of a total of 1000 sites). 
+
+. 509 sites without polymorphism (50.90%).
+
+. CALL TO MAKE-TREE
+. tree: 0x14262d6b0 node: 0x14262dce0 edge: 0x0
+. CALL TO MAKE-TREE
+. tree: 0x14264ef30 node: 0x14264f560 edge: 0x0
+. CALL TO MAKE-TREE
+. tree: 0x142672f20 node: 0x142673550 edge: 0x0
+. Starting tree: BioNJ
+
+. Processing 1 data set ( /Users/guindon/phyml/src/1000_evolve_data.txt )
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+| /Users/guindon/phyml/src/1000_evolve_data.txt      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		                   3
+. Model of rate variation:		           FreeRates
+. Relative average rate:		            1.000000
+
+. Mixture class 1
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.666667
+   Rate class number:		                   0
+   Substitution model:		                JC69
+   Rate matrix weight:		            1.000000
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 2
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.166667
+   Rate class number:		                   1
+   Substitution model:		                JC69
+   Rate matrix weight:		            1.000000
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 3
+   Relative substitution rate:	            1.000000
+   Rel. rate freq. (> 0 rates):	            0.166667
+   Rate class number:		                   2
+   Substitution model:		                JC69
+   Rate matrix weight:		            1.000000
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ---------------------------
+  Partition element  0  0  0 
+  ---------------------------
+  State frequencies  a  a  a 
+     Branch lengths  a  a  a 
+        Rate matrix  a  a  a 
+  ---------------------------
+
+
+. Computing pairwise distances...
+
+. Building BioNJ tree...
+>> ORI: 0x142607790(0,1) COPY: 0x14260a600(1,0) 
+>> ORI: 0x142607790(0,1) COPY: 0x14260a600(1,1) 
+<< ORI: 0x142607790(0) COPY: 0x14260a600(1) 
+>> ORI: 0x142607790(0,1) COPY: 0x14262d6b0(0,1) 
+<< ORI: 0x142607790(0) COPY: 0x14262d6b0(0) 
+>> ORI: 0x142607790(0,1) COPY: 0x14264ef30(0,1) 
+<< ORI: 0x142607790(0) COPY: 0x14264ef30(0) 
+>> ORI: 0x142607790(0,1) COPY: 0x142672f20(0,1) 
+<< ORI: 0x142607790(0) COPY: 0x142672f20(0) 
+>> ORI: 0x14260a600(1,0) COPY: 0x14262d6b0(0,1) 
+. HERE
+>> ORI: 0x14260a600(1,1) COPY: 0x14262d6b0(0,1) 
+<< ORI: 0x14260a600(1) COPY: 0x14262d6b0(0) 
+. PhyML_XML tree:0x14260a600 node:0x14260ac30 branch:0x142622620
+. PhyML_XML NEXT tree:0x14262d6b0 node:0x14262dce0 branch:0x142642f20
+. PhyML_XML NEXTNEXT tree:0x14264ef30 node:0x14264f560 branch:0x142666ee0

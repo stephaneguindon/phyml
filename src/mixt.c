@@ -40,6 +40,9 @@ void MIXT_Chain_All(t_tree *mixt_tree)
     MIXT_Chain_Vector_Dbl(curr->mod->Pij_rr, next->mod->Pij_rr);
     MIXT_Chain_Vector_Dbl(curr->mod->e_frq->user_b_freq,
                           next->mod->e_frq->user_b_freq);
+    MIXT_Chain_Vector_Dbl(curr->mod->e_frq->pi, next->mod->e_frq->pi);
+    MIXT_Chain_Vector_Dbl(curr->mod->e_frq->pi_unscaled,
+                          next->mod->e_frq->pi_unscaled);
     for (i = 0; i < 2 * mixt_tree->n_otu - 1; ++i)
       MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l, next->a_edges[i]->l);
     for (i = 0; i < 2 * mixt_tree->n_otu - 1; ++i)
@@ -2425,7 +2428,7 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
       {
         if (mod_in->e_frq == mod_out->e_frq)
         {
-          if (mod_in->io->datatype == NT && mod_in->s_opt->state_freq != USER &&
+          if (mod_in->io->datatype == NT && mod_in->e_frq->type != USER &&
               mod_in->whichmodel != JC69 && mod_in->whichmodel != K80)
           {
             PhyML_Fprintf(stderr, "\n. A vector of observed nucleotide "
@@ -2436,7 +2439,7 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
             Exit("\n");
           }
           else if (mod_in->io->datatype == AA &&
-                   mod_in->s_opt->state_freq == EMPIRICAL)
+                   mod_in->e_frq->type == EMPIRICAL)
           {
             PhyML_Fprintf(stderr, "\n. A vector of observed amino-acid "
                                   "frequencies should correspond ");
@@ -3726,8 +3729,6 @@ void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree)
 
 void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
 {
-  int ori_is_mixt_tree, cpy_is_mixt_tree;
-
   assert(!((cpy && !ori) || (!cpy && ori)));
 
   if (cpy == NULL || ori == NULL) return;
@@ -3736,15 +3737,11 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
   {
     do
     {
-      ori_is_mixt_tree  = ori->is_mixt_tree;
-      ori->is_mixt_tree = NO;
-      cpy_is_mixt_tree  = cpy->is_mixt_tree;
-      cpy->is_mixt_tree = NO;
-
+      ori->ignore_mixt_info = YES;
+      cpy->ignore_mixt_info = YES;
       Copy_Tree(ori, cpy);
-
-      cpy->is_mixt_tree = cpy_is_mixt_tree;
-      ori->is_mixt_tree = ori_is_mixt_tree;
+      if (ori->is_mixt_tree == YES) ori->ignore_mixt_info = NO;
+      if (cpy->is_mixt_tree == YES) cpy->ignore_mixt_info = NO;
 
       ori = ori->next;
       cpy = cpy->next;
@@ -3752,24 +3749,23 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
   }
   else if (ori->is_mixt_tree == NO && cpy->is_mixt_tree == YES)
   {
+
     do
     {
-      cpy_is_mixt_tree  = cpy->is_mixt_tree;
-      cpy->is_mixt_tree = NO;
-
+      cpy->ignore_mixt_info = YES;
       Copy_Tree(ori, cpy);
-
-      cpy->is_mixt_tree = cpy_is_mixt_tree;
+      if(cpy->is_mixt_tree == YES) cpy->ignore_mixt_info = NO;
 
       cpy = cpy->next;
     } while (cpy);
+
   }
   else if (ori->is_mixt_tree == YES && cpy->is_mixt_tree == NO)
   {
-    ori_is_mixt_tree  = ori->is_mixt_tree;
-    ori->is_mixt_tree = NO;
+    PhyML_Printf("\n. HERE");
+    ori->ignore_mixt_info = YES;
     Copy_Tree(ori, cpy);
-    ori->is_mixt_tree = ori_is_mixt_tree;
+    ori->ignore_mixt_info = NO;
   }
 }
 
@@ -4130,21 +4126,24 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 
 void MIXT_Cv(t_tree *mixt_tree)
-{
+{  
   switch(mixt_tree->mod->cv_type)
   {
   case KFOLD_POS : 
   {
+    PhyML_Printf("\n. Performing K-fold cross-validation\n");
     MIXT_Kfold_Pos_Cv(mixt_tree);
     break;
   }
   case KFOLD_COL:
   {
+    PhyML_Printf("\n. Performing leave-one-column-out cross-validation\n");
     MIXT_Kfold_Col_Cv(mixt_tree);
     break;
   }
   case MAXFOLD:
   {
+    PhyML_Printf("\n. Performing leave-one-column x one-sequence-out cross-validation\n");
     MIXT_Maxfold_Cv(mixt_tree);
     break;    
   }
@@ -4155,15 +4154,20 @@ void MIXT_Cv(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+// Cross-validation routine whereby each position (i.e., site x taxon) is
+// hidden, the corresponding external branch is optimized and the log-likelihood
+// of the tree is computed for that particular position, for the actual character
+// observed at that position. We also calculate here the probabity of each character
+// and provide the area under the ROC curve.
 void MIXT_Maxfold_Cv(t_tree *mixt_tree) 
 {
-  phydbl    *state_probs, *weights;
+  phydbl    *state_probs, *site_loglk, *weights;
   short int *truth;
   int        n_prob_vectors;
   char       init_char;
   
   state_probs = NULL;
+  site_loglk  = NULL;
   truth       = NULL;
   weights     = NULL;
 
@@ -4190,13 +4194,13 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
           Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, mixt_tree);
 
           MIXT_Br_Len_Opt(mixt_tree->a_nodes[tax_id]->b[0], mixt_tree);
-          PhyML_Printf("\n. site:%d tax_id: %d  lnL: %f", site, tax_id, mixt_tree->c_lnL);
+          // PhyML_Printf("\n. site:%12d tax_id: %12d  lnL: %15f", site, tax_id, mixt_tree->c_lnL);
 
           // Compute likelihoods on test set (i.e., probability of each possible
           // state at masked positions)
-          // CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &weights,
-          //                                    &n_prob_vectors, mixt_tree->data,
-          //                                    c_seq_cpy, mixt_tree);
+          CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk,
+                                             &weights, &n_prob_vectors,
+                                             mixt_tree);
 
           // Go back to the original alignment
           mixt_tree->data->c_seq[tax_id]->state[site] = init_char;
@@ -4204,6 +4208,10 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
           mixt_tree->data->c_seq[tax_id]->d_state[site] = Assign_State(
               mixt_tree->data->c_seq[tax_id]->state + site,
               mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
+
+          mixt_tree->data->n_masked = 0;
+          Free(mixt_tree->data->masked_pos);
+          mixt_tree->data->masked_pos = NULL;
 
           Check_Ambiguities(mixt_tree->data, mixt_tree->mod->io->datatype,
                             mixt_tree->mod->io->state_len);
@@ -4217,21 +4225,29 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
         "MAXFOLD");
 
     Free(state_probs);
+    Free(site_loglk);
     Free(truth);
     Free(weights);
 
     state_probs = NULL;
+    site_loglk  = NULL;
     truth       = NULL;
     weights     = NULL;
 
     mixt_tree = mixt_tree->next_mixt;
+    
   } while (mixt_tree != NULL);
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+// Cross-validation routine whereby positions (i.e., one position = site x
+// taxon) are hidden uniformly at random. For each site, one taxon is chosen
+// uniformy at random and the corresponding position is masked. Do that for all
+// sites in the alignment and then optimize the phylogenetic model (tree
+// topology + edge length + etc.). The log-likelihood of the tree is computed 
+// at each masked position, for the actual character observed at each of these positions. 
+// We also calculate here the probabity of each character and provide the area under the ROC curve.
 void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
 {
   phydbl    *state_probs, *site_loglk, *weights;
@@ -4252,7 +4268,7 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
   
   do
   {
-    for (int i = 0; i < kfold; ++i)
+    for (int i = 0; i < kfold*5; ++i)
     {
       // Create a copy of the original alignment
       c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
@@ -4268,7 +4284,7 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
       Set_Update_Eigen(YES, mixt_tree->mod);
       Lk(NULL, mixt_tree);
       Set_Update_Eigen(NO, mixt_tree->mod);
-      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
 
       // Compute likelihoods on test set (i.e., probability of each possible
       // state at masked positions)
@@ -4313,7 +4329,7 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+// Plain cross-validation routine whereby columns are hidden uniformly at random.
 void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
 {
   phydbl    *state_probs, *site_loglk, *weights;
@@ -4334,7 +4350,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
 
   do
   {
-    for (int i = 0; i < kfold; ++i)
+    for (int i = 0; i < kfold*5; ++i)
     {
       // Create a copy of the original alignment
       c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
@@ -4350,7 +4366,26 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       Set_Update_Eigen(YES, mixt_tree->mod);
       Lk(NULL, mixt_tree);
       Set_Update_Eigen(NO, mixt_tree->mod);
-      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+      // Fill in hidden sites with original data
+      for (int site = 0; site < mixt_tree->data->n_masked; site++)
+        for (int tax_id = 0; tax_id < mixt_tree->n_otu; ++tax_id)
+          mixt_tree->data->c_seq[tax_id]
+              ->state[mixt_tree->data->masked_pos[site]] =
+              c_seq_cpy->c_seq[tax_id]
+                  ->state[mixt_tree->data->masked_pos[site]];
+
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      Set_Both_Sides(NO, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+      // Compute likelihoods on test set (i.e., probability of each possible
+      // state at masked positions)
+      CV_Score_At_Hidden_Cols(&site_loglk, &weights, &n_prob_vectors,
+                              mixt_tree);
 
       // Go back to the original alignment
       Free_Calign(mixt_tree->data);
@@ -4365,25 +4400,20 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       } while (tree && tree->is_mixt_tree == NO);
 
       MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
-
-      Init_Partial_Lk_Tips_Double(mixt_tree);
-      Set_Both_Sides(NO, mixt_tree);
-      Set_Update_Eigen(NO, mixt_tree->mod);
-      Lk(NULL, mixt_tree);
-      PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
-
-      // Compute likelihoods on test set (i.e., probability of each possible
-      // state at masked positions)
-      CV_State_Probs_At_Hidden_Cols(&state_probs, &truth, &site_loglk, &weights,
-                                    &n_prob_vectors, mixt_tree->data, c_seq_cpy,
-                                    mixt_tree);
-
     }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);
 
-    ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-        "KFOLDCOL");
+    phydbl sum   = 0.0;
+    phydbl sum_w = 0.0;
+    for (int i = 0; i < n_prob_vectors; ++i)
+    {
+      // PhyML_Printf("\n. loglk: %15g", site_loglk[i]);
+      sum += site_loglk[i] * weights[i];
+      sum_w += weights[i];
+    }
+
+    PhyML_Printf("\n. CV score: %f", sum / sum_w);
 
     Free(state_probs);
     Free(site_loglk);
@@ -4395,13 +4425,11 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
     truth       = NULL;
     weights     = NULL;
 
+
     mixt_tree = mixt_tree->next_mixt;
 
   } while (mixt_tree != NULL);
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -61,8 +61,8 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk)
       p_lk[pos+0]=p_lk[pos+1]=p_lk[pos+2]=p_lk[pos+3]=1.;break;
     default :
       {
-        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
-        Exit("\n. Init failed (data type supposed to be DNA)\n");
+        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c' at position %d.\n",state,pos);
+        assert(false);
         break;
       }
     }
@@ -110,7 +110,7 @@ void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_par
     default :
       {
         PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
-        Exit("\n. Init failed (data type supposed to be DNA)\n");
+        assert(false);
         break;
       }
     }

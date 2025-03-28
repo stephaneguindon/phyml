@@ -2297,9 +2297,12 @@ calign *Copy_Cseq(calign *ori, option *io)
   new = Make_Calign(n_otu + n_rm, c_len, io->state_len, ori->init_len,
                     sp_names_in, ori->n_rm, sp_names_out);
 
-  new->masked_pos = (int *)mCalloc(ori->n_masked, sizeof(int));
-  new->n_masked   = ori->n_masked;
-  for (i = 0; i < ori->n_masked; ++i) new->masked_pos[i] = ori->masked_pos[i];
+  if (ori->n_masked > 0)
+  {
+    new->masked_pos = (int *)mCalloc(ori->n_masked, sizeof(int));
+    new->n_masked   = ori->n_masked;
+    for (i = 0; i < ori->n_masked; ++i) new->masked_pos[i] = ori->masked_pos[i];
+  }
 
   new->n_rm = ori->n_rm;
 
@@ -4041,7 +4044,7 @@ void Bootstrap(t_tree *tree)
     else
     {
       if (boot_tree->mod->s_opt->opt_subst_param ||
-          boot_tree->mod->s_opt->opt_bl)
+          boot_tree->mod->s_opt->opt_bl_one_by_one)
         Round_Optimize(boot_tree, ROUND_MAX);
       else
         Lk(NULL, boot_tree);
@@ -5965,13 +5968,21 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i, j;
 
-  if (ori->is_mixt_tree == YES || cpy->is_mixt_tree == YES)
+  PhyML_Printf("\n>> ORI: %p(%d,%d) COPY: %p(%d,%d) ", ori, ori->is_mixt_tree,
+               ori->ignore_mixt_info, cpy, cpy->is_mixt_tree,
+               cpy->ignore_mixt_info);
+
+  if ((ori->is_mixt_tree == YES || cpy->is_mixt_tree == YES) &&
+      (ori->ignore_mixt_info == NO || cpy->ignore_mixt_info == NO))
   {
     MIXT_Copy_Tree(ori, cpy);
     return;
   }
   else
   {
+    PhyML_Printf("\n<< ORI: %p(%d) COPY: %p(%d) ", ori, ori->is_mixt_tree, cpy,
+                 cpy->is_mixt_tree);
+
     for (i = 0; i < 2 * ori->n_otu - 1; ++i)
     {
       if (ori->a_nodes[i] != NULL)
@@ -6002,6 +6013,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       if (ori->a_edges[i] != NULL)
       {
         cpy->a_edges[i]->l->v         = ori->a_edges[i]->l->v;
+        cpy->a_edges[i]->l->optimize  = ori->a_edges[i]->l->optimize;
         cpy->a_edges[i]->l_old->v     = ori->a_edges[i]->l_old->v;
         cpy->a_edges[i]->l_var->v     = ori->a_edges[i]->l_var->v;
         cpy->a_edges[i]->l_var_old->v = ori->a_edges[i]->l_var_old->v;
@@ -10819,6 +10831,7 @@ phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
 
   for (i = 0; i < 2 * tree->n_otu - 1; ++i)
     tree->a_edges[i]->l->v *= tree->mod->br_len_mult->v;
+    
   return (-1.);
 }
 
@@ -10835,9 +10848,22 @@ phydbl Unscale_Br_Len_Multiplier_Tree(t_tree *tree)
     return (-1.);
   }
 
-  For(i, 2 * tree->n_otu - 1) tree->a_edges[i]->l->v /=
-      tree->mod->br_len_mult->v;
+  for (i = 0; i < 2 * tree->n_otu - 1; ++i)
+    tree->a_edges[i]->l->v /= tree->mod->br_len_mult->v;
+
   return (-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Edge_Length_Optimizer(t_tree *tree)
+{
+ if (tree->mod->s_opt->opt_bl_one_by_one == YES)
+  {
+    for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
+      tree->a_edges[i]->l->optimize = YES;
+  }
 }
 
 //////////////////////////////////////////////////////////////
@@ -12190,9 +12216,9 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
             fp[i] += weights[j];
             // fp[i] += 1.;
           }
-          if(i == 0) PhyML_Printf("\n. i: %d j: %d k: %d tp: %f fp: %f prob: %f truth: %d",
-                       i, j, k, tp[i], fp[i], probs[j * n_classes + k],
-                       truth[j * n_classes + k]);
+          // if(i == 0) PhyML_Printf("\n. i: %d j: %d k: %d tp: %f fp: %f prob: %f truth: %d",
+          //              i, j, k, tp[i], fp[i], probs[j * n_classes + k],
+          //              truth[j * n_classes + k]);
         }
       }
     }
@@ -12530,6 +12556,27 @@ int Scalar_Len(scalar_dbl *scl)
 {
   int         len;
   scalar_dbl *loc;
+
+  if (!scl) return 0;
+
+  loc = scl;
+  len = 0;
+  do
+  {
+    len++;
+    loc = loc->next;
+  } while (loc != NULL);
+
+  return (len);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int Vect_Len(vect_dbl *scl)
+{
+  int       len;
+  vect_dbl *loc;
 
   if (!scl) return 0;
 
@@ -14654,4 +14701,119 @@ int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree)
   }
   }
   return (-1);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int Number_Of_Free_Params(t_tree *mixt_tree)
+{
+  t_tree *tree;
+  scalar_dbl *scal_dum;
+  vect_dbl *vect_dum;
+
+  int n_params;
+
+  n_params = 0;
+
+  tree = mixt_tree;
+  do // Below should be correct as long as each partition element has a single vector of edge lengths
+  {
+    if (tree->mod->s_opt->opt_bl_one_by_one == YES)
+    {
+      if (tree->n_root != NULL)
+      {
+        if (tree->ignore_root == NO)
+          for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
+            if (tree->a_edges[i] != tree->e_root && tree->a_edges[i]->l->optimize == YES)
+              n_params += 1;
+
+        if (tree->ignore_root == YES)
+          for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
+            if (tree->n_root->b[1] != tree->a_edges[i] &&
+                tree->n_root->b[2] != tree->a_edges[i] &&
+                tree->a_edges[i]->l->optimize == YES)
+              n_params += 1;
+      }
+      else
+        for (int i = 0; i < 2 * tree->n_otu - 3; ++i)
+          if (tree->a_edges[i]->l->optimize == YES) 
+            n_params += 1;
+    }
+
+    tree = tree->next_mixt;
+    
+  } while (tree);
+
+
+scal_dum = tree->mod->kappa;
+do
+{
+    if (scal_dum->optimize == YES) n_params += 1;
+    scal_dum = scal_dum->next;
+} while (scal_dum);
+
+scal_dum = tree->mod->lambda;
+do
+{
+  if (scal_dum->optimize == YES) n_params += 1;
+  scal_dum = scal_dum->next;
+} while (scal_dum);
+
+scal_dum = tree->mod->ras->alpha;
+do
+{
+  if (scal_dum->optimize == YES) n_params += 1;
+  scal_dum = scal_dum->next;
+} while (scal_dum);
+
+vect_dum = tree->mod->e_frq->pi;
+do
+{
+  if (vect_dum->optimize == YES) n_params += vect_dum->len - 1;
+  vect_dum = vect_dum->next;
+} while (vect_dum);
+
+t_rmat *r_mat = tree->mod->r_mat;
+do
+{
+  if (r_mat->optimize == YES) n_params += r_mat->n_diff_rr;
+  r_mat = r_mat->next;
+} while (r_mat);
+
+t_mod *mod = tree->mod;
+do
+{
+  if (mod->s_opt->opt_br_len_mult == YES) n_params += 1;
+  mod = mod->next;
+} while (mod);
+
+mod = tree->mod;
+do
+{
+  if ((tree->mod->s_opt->opt_free_mixt_rates) &&
+      (tree->mod->ras->free_mixt_rates == YES) && (tree->mod->ras->n_catg > 1))
+    n_params += 2 * tree->mod->ras->n_catg - 2;
+
+  mod = mod->next;
+} while (mod);
+
+
+
+return (n_params);
+}
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl AIC(t_tree * tree) 
+{
+  return (2. *(Number_Of_Free_Params(tree) - Get_Lk(tree)));
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl BIC(t_tree * tree)
+{
+  return (Number_Of_Free_Params(tree) * tree->data->init_len  - 2. * Get_Lk(tree));
 }
