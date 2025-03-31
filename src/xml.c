@@ -588,10 +588,6 @@ t_tree *XML_Process_Base(char *xml_filename)
               this_tree =
                   (t_tree *)Make_Tree_From_Scratch(io->cdata->n_otu, io->cdata);
               
-              PhyML_Printf("\n. CALL TO MAKE-TREE");
-              PhyML_Printf("\n. tree: %p node: %p edge: %p", this_tree,
-                           this_tree->a_nodes[0], this_tree->a_nodes[0]->b[0]);
-
               /*! Update the number of mixtures */
               iomod->n_mixt_classes++;
 

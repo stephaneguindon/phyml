@@ -2039,6 +2039,8 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
       sprintf(boot_out_attr->value + strlen(boot_out_attr->value), "_boot.%d",
               pid);
 
+      XML_Add_Attribute(boot_root, "add", "true"); // Add all trees in bootstrap outut tree file 
+
       p_elem = boot_root;
       elem   = 0;
       do
@@ -3762,7 +3764,6 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
   }
   else if (ori->is_mixt_tree == YES && cpy->is_mixt_tree == NO)
   {
-    PhyML_Printf("\n. HERE");
     ori->ignore_mixt_info = YES;
     Copy_Tree(ori, cpy);
     ori->ignore_mixt_info = NO;
@@ -4126,8 +4127,10 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 
 void MIXT_Cv(t_tree *mixt_tree)
-{  
-  switch(mixt_tree->mod->cv_type)
+{
+  PhyML_Printf("\n");
+  
+  switch (mixt_tree->mod->cv_type)
   {
   case KFOLD_POS : 
   {

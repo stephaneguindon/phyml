@@ -3893,7 +3893,7 @@ void Bootstrap(t_tree *tree)
   if (tree->is_mixt_tree == YES)
   {
     PhyML_Printf("\n. Bootstrap option not yet available for partition/mixture "
-                 "analysis.");
+                 "analysis...");
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
   }
 
@@ -5968,10 +5968,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i, j;
 
-  PhyML_Printf("\n>> ORI: %p(%d,%d) COPY: %p(%d,%d) ", ori, ori->is_mixt_tree,
-               ori->ignore_mixt_info, cpy, cpy->is_mixt_tree,
-               cpy->ignore_mixt_info);
-
   if ((ori->is_mixt_tree == YES || cpy->is_mixt_tree == YES) &&
       (ori->ignore_mixt_info == NO || cpy->ignore_mixt_info == NO))
   {
@@ -5980,10 +5976,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   }
   else
   {
-    PhyML_Printf("\n<< ORI: %p(%d) COPY: %p(%d) ", ori, ori->is_mixt_tree, cpy,
-                 cpy->is_mixt_tree);
-
-    for (i = 0; i < 2 * ori->n_otu - 1; ++i)
+        for (i = 0; i < 2 * ori->n_otu - 1; ++i)
     {
       if (ori->a_nodes[i] != NULL)
       {
@@ -12229,8 +12222,8 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
     tp[i] = tp[i] / (sum_weights);
     fp[i] = fp[i] / ((n_classes - 1) * sum_weights);
 
-    PhyML_Printf("\n@@@%s,%f,%f,%f", tag ? tag : "", threshold[i], tp[i],
-                 fp[i]);
+    // PhyML_Printf("\n@@@%s,%f,%f,%f", tag ? tag : "", threshold[i], tp[i],
+    //              fp[i]);
   }
 
   // Sort tp and fp in increasing order of values of fp

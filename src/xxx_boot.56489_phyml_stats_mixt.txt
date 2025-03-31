@@ -1,0 +1,82 @@
+
+. Starting tree: BioNJ
+
+. Processed 1 data set ( /Users/guindon/phyml/src/1000_evolve_data.txt_0_2 )
+
+. Final log-likelihood: -13991.346863
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+| /Users/guindon/phyml/src/1000_evolve_data.txt_0_2      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		                   3
+. Model of rate variation:		           FreeRates
+. Relative average rate:		            1.000000
+
+. Mixture class 1
+   Relative substitution rate:	            0.043152
+   Rel. rate freq. (> 0 rates):	            0.627393
+   Rate class number:		                   0
+   Substitution model:		               HKY85
+   Value of the ts/tv ratio:	            6.562689
+   Optimise ts/tv ratio:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Freq(A):			                0.18
+   Freq(C):			                0.23
+   Freq(G):			                0.23
+   Freq(T):			                0.36
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 2
+   Relative substitution rate:	            1.036023
+   Rel. rate freq. (> 0 rates):	            0.234748
+   Rate class number:		                   1
+   Substitution model:		               HKY85
+   Value of the ts/tv ratio:	            6.562689
+   Optimise ts/tv ratio:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Freq(A):			                0.18
+   Freq(C):			                0.23
+   Freq(G):			                0.23
+   Freq(T):			                0.36
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+. Mixture class 3
+   Relative substitution rate:	            5.293254
+   Rel. rate freq. (> 0 rates):	            0.137859
+   Rate class number:		                   2
+   Substitution model:		               HKY85
+   Value of the ts/tv ratio:	            6.562689
+   Optimise ts/tv ratio:	                 yes
+   Rate matrix weight:		            1.000000
+   Optimise nucleotide freq.:	                  no
+   Freq(A):			                0.18
+   Freq(C):			                0.23
+   Freq(G):			                0.23
+   Freq(T):			                0.36
+   Equ. freq. weight:		            1.000000
+   Integrated length (IL) model:                  no
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ---------------------------
+  Partition element  0  0  0 
+  ---------------------------
+  State frequencies  a  a  a 
+     Branch lengths  a  a  a 
+        Rate matrix  a  a  a 
+  ---------------------------
+
+
+. Tree estimated from data partition 0
+ (bclrp:0.01563800,ngyct:0.00841661,(upsty:0.17476848,((((yxrgo:0.18297302,miawo:0.18631254)0.000000:0.03742912,(((dxjud:0.12273974,(sfbln:0.03595690,npabp:0.06641665)0.000000:0.07959051)0.000000:0.02258223,(igasf:0.09696625,gauoe:0.11761823)0.000000:0.08609970)0.000000:0.01919023,((exuqt:0.07554876,(qvqjd:0.12887381,(mddnj:0.03017002,mmxhi:0.03133045)0.000000:0.06722240)0.000000:0.00000001)0.000000:0.13574443,(acgom:0.09579382,lbljj:0.15206721)0.000000:0.08937432)0.000000:0.03122160)0.000000:0.00632595)0.000000:0.05551815,((biopn:0.18621307,(xglwc:0.12331359,(xiqcf:0.09911221,wgysd:0.07885758)0.000000:0.01309847)0.000000:0.05413160)0.000000:0.03734678,((ruaik:0.10619964,(yhpcj:0.06529923,qscqi:0.06862422)0.000000:0.08327412)0.000000:0.10309853,((uwgrd:0.12038003,ysdox:0.14540593)0.000000:0.00533943,(ridwh:0.16773007,aspyv:0.09862701)0.000000:0.04292357)0.000000:0.03749829)0.000000:0.02778274)0.000000:0.02719963)0.000000:0.05780849,((eqjmc:0.05310906,(ptmuw:0.04301694,(klxhu:0.08420329,ldvrw:0.05619496)0.000000:0.00000001)0.000000:0.01063806)0.000000:0.10697005,((ddbqf:0.11647483,(fllqi:0.13309705,(qdrjj:0.12784457,(lwqlk:0.11057212,(clrpb:0.07737485,ujfyp:0.11480310)0.000000:0.00909061)0.000000:0.01751643)0.000000:0.00000001)0.000000:0.01390704)0.000000:0.01539811,(mnvyx:0.14557495,(umyaf:0.13024715,jvsxu:0.18746872)0.000000:0.02550463)0.000000:0.01181312)0.000000:0.03854701)0.000000:0.02297073)0.000000:0.03587524)0.000000:0.16016409);

@@ -235,7 +235,7 @@ void aLRT(t_tree *tree)
 * param tree : the tree to check
 * param tested_t_edge : the tested t_edge of the tree
 * param old_loglk : the initial likelihood, before any aLRT analysis
-* param isBoot : 1 if used from the Bootstrap procedure, 0 if not
+* param isBoot : 1 if used from the procedure, 0 if not
 * return an integer, informative to analyse the results and potential NNIs to do
 */
 int Compute_Likelihood_Ratio_Test(t_edge *tested_edge, t_tree *tree)
@@ -321,7 +321,8 @@ int Compute_Likelihood_Ratio_Test(t_edge *tested_edge, t_tree *tree)
       tested_edge->ratio_test = 0.0;
       if(tree->io->ratio_test > 1) tested_edge->ratio_test = 0.0;
     }
-  return result;
+    
+    return result;
 }
 
 //////////////////////////////////////////////////////////////

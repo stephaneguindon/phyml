@@ -174,10 +174,6 @@ void Init_Ui_Tips(t_tree *tree)
         {
           if(tree->io->datatype == NT)
             {
-
-              PhyML_Printf("\n. Init_Ui: site: %d node: %d -- tree: %p node: %p branch:%p", curr_site, i, tree, tree->a_nodes[i],
-                           tree->a_nodes[i]->b[0]);
-
               if (tree->a_nodes[i]->b[0]->rght->tax == NO)
               {
                 PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d\n",

@@ -5058,15 +5058,6 @@ option *PhyML_XML(char *xml_filename)
                            mixt_tree);
     Init_T_Beg(mixt_tree);
 
-    PhyML_Printf("\n. PhyML_XML tree:%p node:%p branch:%p", mixt_tree,
-                 mixt_tree->a_nodes[0], mixt_tree->a_nodes[0]->b[0]);
-    PhyML_Printf("\n. PhyML_XML NEXT tree:%p node:%p branch:%p", mixt_tree->next,
-                 mixt_tree->next->a_nodes[0], mixt_tree->next->a_nodes[0]->b[0]);
-    PhyML_Printf("\n. PhyML_XML NEXTNEXT tree:%p node:%p branch:%p",
-                 mixt_tree->next->next, mixt_tree->next->next->a_nodes[0],
-                 mixt_tree->next->next->a_nodes[0]->b[0]);
-                 Exit("\n");
-
     Make_Tree_For_Pars(mixt_tree);
     Make_Tree_For_Lk(mixt_tree);
     Make_Spr(mixt_tree);
@@ -5117,7 +5108,12 @@ option *PhyML_XML(char *xml_filename)
     {
       best_lnL = mixt_tree->c_lnL;
       if (most_likely_tree) Free(most_likely_tree);
-      if (io->ratio_test) aLRT(mixt_tree);
+      if (io->ratio_test) 
+      {
+        aLRT(mixt_tree);
+        Collect_Edge_Support_Values(mixt_tree);
+      }
+      
       most_likely_tree     = Write_Tree(mixt_tree);
       mixt_tree->lock_topo = NO;
     }
@@ -5291,6 +5287,7 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
   mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
   Init_Rmat(mod->r_mat);
+  Make_Custom_Model(mod);
 
   /*! Set model number & name */
   mod->whichmodel = Set_Whichmodel(select);
@@ -5344,8 +5341,6 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
     if (rr != NULL)
     {
-      Make_Custom_Model(mod);
-
       // A<->C
       val = XML_Get_Attribute_Value(rr, "AC");
       if (val == NULL)
