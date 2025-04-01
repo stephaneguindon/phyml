@@ -118,7 +118,7 @@ mcmc.o: mcmc.c mcmc.h ../config.h utilities.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_neon.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/arm_bf16.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libkern/OSCacheControl.h \
-  alrt.h lk.h optimiz.h free.h models.h eigen.h stats.h mixt.h mg.h \
+  alrt.h lk.h optimiz.h free.h mg.h models.h eigen.h stats.h mixt.h \
   tiporder.h times.h spr.h bionj.h help.h cl.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/unistd.h \
@@ -255,11 +255,11 @@ alrt.h:
 lk.h:
 optimiz.h:
 free.h:
+mg.h:
 models.h:
 eigen.h:
 stats.h:
 mixt.h:
-mg.h:
 tiporder.h:
 times.h:
 spr.h:

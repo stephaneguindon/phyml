@@ -1197,7 +1197,7 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
   /* Generate a simulated data set under H0, with the right sequence length. */
   PhyML_Printf("\n. Evolving sequences (delta=%f, alpha=%f) ...\n",
                tree->mod->m4mod->delta->v, tree->mod->m4mod->alpha->v);
-  EVOLVE_Seq(cpy_data, tree->mod, tree);
+  EVOLVE_Seq(cpy_data, tree->mod, NULL, tree);
 
   for (j = 0; j < 2 * tree->n_otu - 3; ++j)
   {
@@ -1442,7 +1442,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   tree->mod = nocov_mod;
-  EVOLVE_Seq(cpy_data, nocov_mod, tree);
+  EVOLVE_Seq(cpy_data, nocov_mod, NULL, tree);
 
   /* Generate the memory needed for likelihood calculation because
      we will need bigger arrays
@@ -1470,7 +1470,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
         Update_PMat_At_Given_Edge(tree->a_edges[i], tree);
 
     /* Generate sequences */
-    EVOLVE_Seq(cpy_data, nocov_mod, tree);
+    EVOLVE_Seq(cpy_data, nocov_mod, NULL, tree);
     tree->data = cpy_data;
 
     if (tree->mod->s_opt->greedy)
@@ -1570,7 +1570,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   /* Generate a simulated data set under H0, with the right sequence length. */
   Set_Model_Parameters(tree->mod);
   For(i, 2 * tree->n_otu - 3) Update_PMat_At_Given_Edge(tree->a_edges[i], tree);
-  EVOLVE_Seq(cpy_data, tree->mod, tree);
+  EVOLVE_Seq(cpy_data, tree->mod, NULL, tree);
 
   /* Generate the memory needed for likelihood calculation because
      we will need bigger arrays
@@ -1619,7 +1619,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   n_iter  = 0;
   do
   {
-    EVOLVE_Seq(cpy_data, tree->mod, tree);
+    EVOLVE_Seq(cpy_data, tree->mod, NULL, tree);
 
     tree->data            = cpy_data;
     tree->data->n_pattern = cpy_data->init_len;
@@ -1658,7 +1658,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   n_iter = 0;
   do
   {
-    EVOLVE_Seq(cpy_data, tree->mod, tree);
+    EVOLVE_Seq(cpy_data, tree->mod, NULL, tree);
 
     tree->data            = cpy_data;
     tree->data->n_pattern = cpy_data->init_len;

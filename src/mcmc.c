@@ -3310,8 +3310,8 @@ void MCMC_Randomize_Covarion_Rates(t_tree *tree)
 
   for(i=0;i<tree->mod->m4mod->n_h;i++)
     {
-      tree->mod->m4mod->multipl_unscaled[i] = (phydbl)i+1.;
-      tree->mod->m4mod->h_fq_unscaled[i] = Uni()*(100.-0.01) + 0.01;
+      tree->mod->m4mod->multipl_unscaled->v[i] = (phydbl)i+1.;
+      tree->mod->m4mod->h_fq_unscaled->v[i] = Uni()*(100.-0.01) + 0.01;
     }
 }
 
@@ -3323,7 +3323,7 @@ void MCMC_Randomize_Covarion_Switch(t_tree *tree)
 {
   if(tree->mod->use_m4mod == NO) return;
 
-  tree->mod->m4mod->delta = Uni()*(10.-0.01)+0.01;
+  tree->mod->m4mod->delta->v = Uni()*(10.-0.01)+0.01;
 }
 
 //////////////////////////////////////////////////////////////
@@ -4613,26 +4613,26 @@ void MCMC_Covarion_Rates(t_tree *tree)
       if(!class)
 	{
 	  min = 0.01;
-	  max = tree->mod->m4mod->multipl_unscaled[1];
+	  max = tree->mod->m4mod->multipl_unscaled->v[1];
 	}
       else if(class == tree->mod->m4mod->n_h-1)
 	{
-	  min = tree->mod->m4mod->multipl_unscaled[tree->mod->m4mod->n_h-2];
+	  min = tree->mod->m4mod->multipl_unscaled->v[tree->mod->m4mod->n_h-2];
 	  max = +100.;
 	}
       else
 	{
-	  min = MIN(tree->mod->m4mod->multipl_unscaled[class-1],tree->mod->m4mod->multipl_unscaled[class+1]);
-	  max = MAX(tree->mod->m4mod->multipl_unscaled[class-1],tree->mod->m4mod->multipl_unscaled[class+1]);
+	  min = MIN(tree->mod->m4mod->multipl_unscaled->v[class-1],tree->mod->m4mod->multipl_unscaled->v[class+1]);
+	  max = MAX(tree->mod->m4mod->multipl_unscaled->v[class-1],tree->mod->m4mod->multipl_unscaled->v[class+1]);
 	}
 
-      MCMC_Single_Param_Generic(&(tree->mod->m4mod->multipl_unscaled[class]),min,max,tree->mcmc->num_move_cov_rates+class+tree->mod->m4mod->n_h,
+      MCMC_Single_Param_Generic(&(tree->mod->m4mod->multipl_unscaled->v[class]),min,max,tree->mcmc->num_move_cov_rates+class+tree->mod->m4mod->n_h,
 				NULL,&(tree->c_lnL),
 				NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_rates+class+tree->mod->m4mod->n_h],NO,NO,NULL,tree,NULL);
     }
   else
     {
-      MCMC_Single_Param_Generic(&(tree->mod->m4mod->h_fq_unscaled[class]),0.01,+100.,tree->mcmc->num_move_cov_rates+class,
+      MCMC_Single_Param_Generic(&(tree->mod->m4mod->h_fq_unscaled->v[class]),0.01,+100.,tree->mcmc->num_move_cov_rates+class,
 				NULL,&(tree->c_lnL),
 				NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_rates+class],NO,NO,NULL,tree,NULL);
     }
@@ -4649,7 +4649,7 @@ void MCMC_Covarion_Switch(t_tree *tree)
   if(tree->mod->use_m4mod == NO) return;
 
   Set_Update_Eigen(YES,tree->mod);
-  MCMC_Single_Param_Generic(&(tree->mod->m4mod->delta),0.01,+100.,tree->mcmc->num_move_cov_switch,
+  MCMC_Single_Param_Generic(&(tree->mod->m4mod->delta->v),0.01,+100.,tree->mcmc->num_move_cov_switch,
 			    NULL,&(tree->c_lnL),
 			    NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_switch],
                             NO,NO,NULL,tree,NULL); 

@@ -684,20 +684,24 @@ void Set_Defaults_Model(t_mod *mod)
   mod->is_mixt_mod    = NO;
 
   mod->kappa->v        = 4.0;
-  mod->lambda->v       = 1.0;
-  mod->l_var_sigma->v  = 1.E-1;
-  mod->e_frq_weight->v = 1.0;
-  mod->r_mat_weight->v = 1.0;
+  mod->kappa->optimize = YES;
+
+  mod->lambda->v        = 1.0;
+  mod->lambda->optimize = YES;
+
+  mod->l_var_sigma->v        = 1.E-1;
+  mod->l_var_sigma->optimize = YES;
+
+  mod->e_frq_weight->v        = 1.0;
+  mod->e_frq_weight->optimize = YES;
+
+  mod->r_mat_weight->v        = 1.0;
+  mod->r_mat_weight->optimize = YES;
 
   mod->ns                = 4;
   mod->use_m4mod         = NO;
   mod->ras->gamma_median = NO;
   mod->m4mod             = NULL;
-
-  /* mod->r_mat->n_diff_rr        = 0; */
-  /* mod->r_mat->rr               = NULL; */
-  /* mod->r_mat->rr_val           = NULL; */
-  /* mod->r_mat->n_rr_per_cat     = NULL; */
 
   mod->io             = NULL;
   mod->log_l          = NO;

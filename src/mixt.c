@@ -1996,7 +1996,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
     xml_node *boot_root;
     int       pid;
     char     *s;
-
+    
     orig_align = (char *)mCalloc(T_MAX_NAME, sizeof(char));
 
     xml_boot_file_name = (char *)mCalloc(T_MAX_NAME, sizeof(char));
@@ -4150,8 +4150,7 @@ void MIXT_Cv(t_tree *mixt_tree)
     MIXT_Maxfold_Cv(mixt_tree);
     break;    
   }
-  default :
-    assert(false);
+  default : return;
   }
 }
 
@@ -4225,7 +4224,7 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
     }
 
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-        "MAXFOLD");
+        "MAXFOLD",mixt_tree->io->fp_out_stats);
 
     Free(state_probs);
     Free(site_loglk);
@@ -4313,7 +4312,7 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
     Init_Partial_Lk_Tips_Double(mixt_tree);
         
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-        "KFOLDPOS");
+        "KFOLDPOS",mixt_tree->io->fp_out_stats);
 
     Free(state_probs);
     Free(site_loglk);
@@ -4416,7 +4415,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       sum_w += weights[i];
     }
 
-    PhyML_Printf("\n. CV score: %f", sum / sum_w);
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats,"\n. CV score: %f", sum / sum_w);
 
     Free(state_probs);
     Free(site_loglk);

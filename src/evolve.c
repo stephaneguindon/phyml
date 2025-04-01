@@ -21,7 +21,9 @@ int EVOLVE_Main(int argc, char **argv)
   FILE   *fp;
   int     r_seed;
 
-  io = NULL;
+  dum = (char *)mCalloc(100, sizeof(char));
+
+  io  = NULL;
 
   io = (option *)Get_Input(argc, argv);
   if (!io)
@@ -61,32 +63,369 @@ int EVOLVE_Main(int argc, char **argv)
   tree->io                     = io;
   tree->times->scaled_pop_size = 1.E+3;
   tree->times->neff_growth     = 0.5;
-  
+
   EVOLVE_Coalescent(tree);
 
   Init_Model(tree->data, tree->mod, io);
   Set_Model_Parameters(tree->mod);
-  tree->mod->whichmodel = OTHER;
   Set_Model_Name(tree->mod);
 
   Make_Tree_For_Pars(tree);
   Make_Tree_For_Lk(tree);
   Make_Spr(tree);
 
-  EVOLVE_Seq(tree->data, tree->mod, tree);
-
-  dum = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_stats.txt");
+  fp = Openfile(dum, WRITE);
+  EVOLVE_Seq(tree->data, tree->mod, fp, tree);
+  fclose(fp);
+  
   sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
   fp = Openfile(dum, WRITE);
   Print_CSeq(fp, NO, tree->data, tree);
   fclose(fp);
-  Free(dum);
 
-  dum = (char *)mCalloc(100, sizeof(char));
   sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_tree.txt");
   fp = Openfile(dum, WRITE);
   PhyML_Fprintf(fp, "%s\n", Write_Tree(tree));
   fclose(fp);
+
+      
+
+  // Write XML configuration file for downstream PhyML analyses
+
+  xml_node *root, *nd, *ndnd, *ndndnd;
+  char     *model, *cv_type;
+
+  model = (char *)mCalloc(100, sizeof(char));
+  cv_type = (char *)mCalloc(100, sizeof(char));
+
+  strcpy(model, "GTR");
+  strcpy(cv_type, "kfold.pos");
+
+  root = XML_Make_Node("phyml");
+  XML_Init_Node(NULL, root, "phyml");
+  sprintf(dum, "%s_%s",model, cv_type);
+  root->attr = XML_Make_Attribute(NULL, "run.id",dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Add_Attribute(root, "output.file",dum);
+  XML_Add_Attribute(root, "cv.type",cv_type);
+
+  nd         = XML_Add_Node(root, "topology");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "T1");
+  XML_Add_Attribute(ndnd, "init.tree", "BioNJ");
+
+  nd         = XML_Add_Node(root, "ratematrices");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "RM1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "M1");
+  XML_Add_Attribute(ndnd, "model", model);
+
+  nd         = XML_Add_Node(root, "siterates");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "weights");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
+  XML_Add_Attribute(ndnd, "family", "freerates");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+
+  nd         = XML_Add_Node(root, "equfreqs");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "EF1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "F1");
+  XML_Add_Attribute(ndnd, "optimise.freqs", "no");
+
+  nd         = XML_Add_Node(root, "branchlengths");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "BL1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "L1");
+  XML_Add_Attribute(ndnd, "optimise.lens", "yes");
+
+  nd       = XML_Add_Node(root, "partitionelem");
+  nd->attr = XML_Make_Attribute(NULL, "id", "partition1");
+  dum      = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
+  XML_Add_Attribute(nd, "file.name", dum);
+  XML_Add_Attribute(nd, "data.type", "nt");
+  XML_Add_Attribute(nd, "interleaved", "no");
+
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1");
+
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./",io->r_seed, model, cv_type, "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+
+///
+///
+
+  strcpy(model, "GTR");
+  strcpy(cv_type, "kfold.col");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd         = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd       = XML_Search_Node_Name("instance" , NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./",io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "GTR");
+  strcpy(cv_type, "maxfold");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "HKY85");
+  strcpy(cv_type, "kfold.pos");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "HKY85");
+  strcpy(cv_type, "kfold.col");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "HKY85");
+  strcpy(cv_type, "maxfold");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "K80");
+  strcpy(cv_type, "kfold.pos");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "K80");
+  strcpy(cv_type, "kfold.col");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "K80");
+  strcpy(cv_type, "maxfold");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "JC69");
+  strcpy(cv_type, "kfold.pos");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "JC69");
+  strcpy(cv_type, "kfold.col");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "JC69");
+  strcpy(cv_type, "maxfold");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  ndnd = XML_Search_Node_Name("instance", NO, nd);
+  XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+
   Free(dum);
 
   return (-1);
@@ -193,7 +532,7 @@ void EVOLVE_Coalescent(t_tree *tree)
   Connect_One_Edge_To_Two_Nodes(tree->n_root->v[1], tree->n_root->v[2],
                                 tree->a_edges[idx_edge], tree);
   tree->e_root = tree->a_edges[idx_edge];
-  
+
   // Transform of times for exponentially growning or declining pop size
   phydbl g = tree->times->neff_growth;
   for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
@@ -219,30 +558,31 @@ void EVOLVE_Coalescent(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
+void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
 {
   int        root_state, root_rate_class;
   int        site, n_otu, ns;
-  phydbl    *orig_l;
+  phydbl    *orig_l,*weights;
   phydbl     shape, scale, var, mean, r_mult, sum;
   phydbl    *state_probs_one_site, *state_probs_all_sites;
   int        switch_to_yes;
   short int *truth;
-
+  
   orig_l = (phydbl *)mCalloc(2 * tree->n_otu - 1, sizeof(phydbl));
   for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
     orig_l[i] = tree->a_edges[i]->l->v;
 
-  data->n_otu = tree->n_otu;
-  data->io    = tree->io;
-
-  n_otu = tree->n_otu;
-  ns    = tree->mod->ns;
+  data->n_otu  = tree->n_otu;
+  data->io     = tree->io;
+  n_otu        = tree->n_otu;
+  ns           = tree->mod->ns;
 
   state_probs_all_sites =
       (phydbl *)mCalloc(ns * n_otu * data->init_len, sizeof(phydbl));
-
   truth = (short int *)mCalloc(ns * n_otu * data->init_len, sizeof(short int));
+  weights = (phydbl *)mCalloc(n_otu * data->init_len, sizeof(phydbl));
+
+  for (int i = 0; i < n_otu * data->init_len; ++i) weights[i] = 1.;
 
   if (mod->use_m4mod) tree->print_labels = YES;
 
@@ -256,8 +596,123 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
   if (!Set_Model_Parameters(mod))
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
 
+  if (tree->mod->whichmodel == GTR)
+  {
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi_unscaled->v[i] = Uni();
+
+    sum = 0.0;
+    for (int i = 0; i < mod->ns; ++i)
+      sum += tree->mod->e_frq->pi_unscaled->v[i];
+
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
+
+    tree->mod->r_mat->rr_val->v[AC] = log(Uni() * (2. - .5) + .5);
+    tree->mod->r_mat->rr_val->v[AG] = log(Uni() * (8. - 2.) + 2.);
+    tree->mod->r_mat->rr_val->v[AT] = log(Uni() * (2. - .5) + .5);
+    tree->mod->r_mat->rr_val->v[CG] = log(Uni() * (2. - .5) + .5);
+    tree->mod->r_mat->rr_val->v[CT] = log(Uni() * (8. - 2.) + 2.);
+    tree->mod->r_mat->rr_val->v[GT] = log(Uni() * (2. - .5) + .5);
+
+    tree->mod->r_mat->n_diff_rr = 6;
+    tree->mod->whichmodel       = GTR;
+    tree->mod->update_eigen     = YES;
+    Update_Eigen(tree->mod);
+  }
+  else if (tree->mod->whichmodel == HKY85)
+  {
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi_unscaled->v[i] = Uni();
+
+    sum = 0.0;
+    for (int i = 0; i < mod->ns; ++i)
+      sum += tree->mod->e_frq->pi_unscaled->v[i];
+
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
+
+    tree->mod->kappa->v = Uni() * (8. - 2.) + 2.;
+
+    tree->mod->custom_mod_string->s[0] = '0';
+    tree->mod->custom_mod_string->s[1] = '1';
+    tree->mod->custom_mod_string->s[2] = '2';
+    tree->mod->custom_mod_string->s[3] = '3';
+    tree->mod->custom_mod_string->s[4] = '4';
+    tree->mod->custom_mod_string->s[5] = '5';
+    Translate_Custom_Mod_String(tree->mod);
+
+    tree->mod->r_mat->rr_val->v[AC] = log(1.0);
+    tree->mod->r_mat->rr_val->v[AG] = log(tree->mod->kappa->v);
+    tree->mod->r_mat->rr_val->v[AT] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CG] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CT] = log(tree->mod->kappa->v);
+    tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+
+    tree->mod->r_mat->n_diff_rr = 6;
+    tree->mod->whichmodel       = GTR;
+    tree->mod->update_eigen     = YES;
+    Update_Eigen(tree->mod);
+  }
+  else if (tree->mod->whichmodel == K80)
+  {
+    tree->mod->kappa->v = Uni() * (8. - 2.) + 2.;
+
+    tree->mod->custom_mod_string->s[0] = '0';
+    tree->mod->custom_mod_string->s[1] = '1';
+    tree->mod->custom_mod_string->s[2] = '2';
+    tree->mod->custom_mod_string->s[3] = '3';
+    tree->mod->custom_mod_string->s[4] = '4';
+    tree->mod->custom_mod_string->s[5] = '5';
+    Translate_Custom_Mod_String(tree->mod);
+
+    tree->mod->r_mat->rr_val->v[AC] = log(1.0);
+    tree->mod->r_mat->rr_val->v[AG] = log(tree->mod->kappa->v);
+    tree->mod->r_mat->rr_val->v[AT] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CG] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CT] = log(tree->mod->kappa->v);
+    tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+
+    tree->mod->r_mat->n_diff_rr = 6;
+    tree->mod->whichmodel       = GTR;
+    tree->mod->update_eigen     = YES;
+    Update_Eigen(tree->mod);
+  }
+  else if (tree->mod->whichmodel == JC69)
+  {
+    tree->mod->custom_mod_string->s[0] = '0';
+    tree->mod->custom_mod_string->s[1] = '1';
+    tree->mod->custom_mod_string->s[2] = '2';
+    tree->mod->custom_mod_string->s[3] = '3';
+    tree->mod->custom_mod_string->s[4] = '4';
+    tree->mod->custom_mod_string->s[5] = '5';
+    Translate_Custom_Mod_String(tree->mod);
+
+    tree->mod->r_mat->rr_val->v[AC] = log(1.0);
+    tree->mod->r_mat->rr_val->v[AG] = log(1.0);
+    tree->mod->r_mat->rr_val->v[AT] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CG] = log(1.0);
+    tree->mod->r_mat->rr_val->v[CT] = log(1.0);
+    tree->mod->r_mat->rr_val->v[GT] = log(1.0);
+
+    tree->mod->r_mat->n_diff_rr = 6;
+    tree->mod->whichmodel       = GTR;
+    tree->mod->update_eigen     = YES;
+    Update_Eigen(tree->mod);
+  }
+
+  PhyML_Fprintf(fp_stats ? fp_stats : stdout,
+                "\n. pi: %7f %7f %7f %7f rr: %7f %7f %7f %7f %7f %7f (%5d %5d)",
+                mod->e_frq->pi->v[0], mod->e_frq->pi->v[1],
+              mod->e_frq->pi->v[2], mod->e_frq->pi->v[3],
+                mod->r_mat->rr->v[AC], mod->r_mat->rr->v[AG],
+                mod->r_mat->rr->v[AT], mod->r_mat->rr->v[CG],
+                mod->r_mat->rr->v[CT], mod->r_mat->rr->v[GT]);
+
+
   for (site = 0; site < data->init_len; ++site)
   {
+
     /* Pick the rate class */
     root_state = root_rate_class = 0;
 
@@ -277,83 +732,6 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
 
-    // if (site < (int)(0.4 * data->init_len))
-    {
-      // GTR model 
-      
-      // Set stationary frequencies
-      for (int i = 0; i < mod->ns; ++i)
-        tree->mod->e_frq->pi_unscaled->v[i] = i + 3.0;
-
-      sum = 0.0;
-      for (int i = 0; i < mod->ns; ++i)
-        sum += tree->mod->e_frq->pi_unscaled->v[i];
-
-      for (int i = 0; i < mod->ns; ++i)
-        tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
-
-      tree->mod->r_mat->n_diff_rr = 6;
-
-      tree->mod->r_mat->rr_val->v[AC] = log(1.0);
-      tree->mod->r_mat->rr_val->v[AG] = log(4.0);
-      tree->mod->r_mat->rr_val->v[AT] = log(0.5);
-      tree->mod->r_mat->rr_val->v[CG] = log(1.7);
-      tree->mod->r_mat->rr_val->v[CT] = log(9.0);
-      tree->mod->r_mat->rr_val->v[GT] = log(0.4);
-
-      tree->mod->whichmodel   = GTR;
-      tree->mod->update_eigen = YES;
-      Update_Eigen(tree->mod);
-      tree->mod->whichmodel = OTHER;
-    }
-    // {
-    //   // HKY85 model
-
-    //   // Set stationary frequencies
-    //   for (int i = 0; i < mod->ns; ++i)
-    //     tree->mod->e_frq->pi_unscaled->v[i] = i + 3.0;
-
-    //   sum = 0.0;
-    //   for (int i = 0; i < mod->ns; ++i)
-    //     sum += tree->mod->e_frq->pi_unscaled->v[i];
-
-    //   for (int i = 0; i < mod->ns; ++i)
-    //     tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
-
-    //   tree->mod->r_mat->n_diff_rr = 6;
-
-    //   tree->mod->r_mat->rr_val->v[AC] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[AG] = log(4.0);
-    //   tree->mod->r_mat->rr_val->v[AT] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[CG] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[CT] = log(4.0);
-    //   tree->mod->r_mat->rr_val->v[GT] = log(1.0);
-
-    //   tree->mod->whichmodel   = GTR;
-    //   tree->mod->update_eigen = YES;
-    //   Update_Eigen(tree->mod);
-    //   tree->mod->whichmodel = OTHER;
-    // }
-    // else // JC69
-    // {
-    //   // Set stationary frequencies
-    //   for (int i = 0; i < mod->ns; ++i)
-    //     tree->mod->e_frq->pi->v[i] = 1. / mod->ns;
-
-    //   tree->mod->r_mat->n_diff_rr = 6;
-
-    //   tree->mod->r_mat->rr_val->v[AC] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[AG] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[AT] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[CG] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[CT] = log(1.0);
-    //   tree->mod->r_mat->rr_val->v[GT] = log(1.0);
-
-    //   tree->mod->whichmodel   = GTR;
-    //   tree->mod->update_eigen = YES;
-    //   Update_Eigen(tree->mod);
-    //   tree->mod->whichmodel = OTHER;
-    // }
 
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       Update_PMat_At_Given_Edge(tree->a_edges[i], tree);
@@ -364,12 +742,6 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
         Reciproc_Assign_State(root_state, tree->io->datatype);
     tree->a_nodes[0]->c_seq->d_state[site] = root_state;
 
-    PhyML_Printf(
-        "\n. pi: %7f %7f %7f %7f rr: %7f %7f %7f %7f (%5d %5d)",
-        mod->e_frq->pi->v[0], mod->e_frq->pi->v[1], mod->e_frq->pi->v[2],
-        mod->e_frq->pi->v[3], mod->r_mat->rr->v[AC], mod->r_mat->rr->v[AG],
-        mod->r_mat->rr->v[AT], mod->r_mat->rr->v[CG], mod->r_mat->rr->v[CT],
-        mod->r_mat->rr->v[GT], site, (int)(0.8 * data->init_len));
 
     // PhyML_Printf("\n. root_state: %d root_rate_class: %d [%f %f %f %f]",
     //              root_state,
@@ -395,7 +767,7 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
       {
         state_probs_all_sites[site * n_otu * ns + tax_id * ns + state] =
             state_probs_one_site[tax_id * ns + state];
-        truth[site * n_otu * ns + tax_id * ns + state] = 0;
+        truth[site * n_otu * ns + tax_id * ns + state] = 0;                  
       }
       truth[site * n_otu * ns + tax_id * ns +
             tree->a_nodes[tax_id]->c_seq->d_state[site]] = 1;
@@ -410,11 +782,12 @@ void EVOLVE_Seq(calign *data, t_mod *mod, t_tree *tree)
     tree->a_edges[i]->l->v = orig_l[i];
   Free(orig_l);
 
-  ROC(state_probs_all_sites, truth, ns, n_otu * data->init_len, data->wght,
-      "SIM");
+  ROC(state_probs_all_sites, truth, ns, n_otu * data->init_len, weights,
+      "SIM",fp_stats ? fp_stats : stdout);
 
   Free(state_probs_all_sites);
   Free(truth);
+  Free(weights);
 
   if (switch_to_yes == YES) tree->mod->gamma_mgf_bl = YES;
 }
@@ -517,7 +890,7 @@ phydbl *EVOLVE_Site_Lk(int site_idx, int rate_class, calign *data, t_tree *tree)
     strcpy(dum_data[i]->name, data->c_seq[i]->name);
   }
 
-  tree->data      = Compact_Data(dum_data, tree->io);
+  tree->data = Compact_Data(dum_data, tree->io);
   Free_Seq(dum_data, tree->n_otu);
 
   Connect_CSeqs_To_Nodes(tree->data, tree->io, tree);
@@ -566,11 +939,11 @@ phydbl *EVOLVE_Site_Lk(int site_idx, int rate_class, calign *data, t_tree *tree)
     //                  state_prob[tax_id * ns + state],
     //                  tree->a_nodes[tax_id]->c_seq->d_state[0]);
 
-    PhyML_Printf("\n###%s,%s,%d,%g,%g", tree->mod->modelname->s,
-                 tree->a_nodes[tax_id]->name, site_idx,
-                 log(state_probs[tax_id * ns +
-                                 tree->a_nodes[tax_id]->c_seq->d_state[0]]),
-                 tree->a_nodes[tax_id]->b[0]->l->v);
+    // PhyML_Printf("\n###%s,%s,%d,%g,%g", tree->mod->modelname->s,
+    //              tree->a_nodes[tax_id]->name, site_idx,
+    //              log(state_probs[tax_id * ns +
+    //                              tree->a_nodes[tax_id]->c_seq->d_state[0]]),
+    //              tree->a_nodes[tax_id]->b[0]->l->v);
   }
 
   tree->io->init_len = ori_len;

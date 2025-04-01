@@ -2903,7 +2903,7 @@ t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree);
 void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 char D_State_To_Character(int d_state, t_tree *tree);
 void ROC(phydbl *probs, short int *truth, int nclasses, int n_obs,
-         phydbl *weights, char *tag);
+         phydbl *weights, char *tag, FILE *fp);
 phydbl AIC(t_tree *tree);
 phydbl BIC(t_tree *tree);
 void   Set_Edge_Length_Optimizer(t_tree *tree);

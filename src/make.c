@@ -1783,9 +1783,9 @@ void M4_Make_Complete(int n_h, int n_o, m4 *m4mod)
 {
   int i;
 
-  m4mod->n_h    = n_h;
-  m4mod->n_o    = n_o;
-  m4mod->n_o    = n_o;
+  m4mod->n_h = n_h;
+  m4mod->n_o = n_o;
+  m4mod->n_o = n_o;
 
   m4mod->o_rr      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
   m4mod->o_rr->v   = (phydbl *)mCalloc(n_o * n_o, sizeof(phydbl));
@@ -1797,9 +1797,10 @@ void M4_Make_Complete(int n_h, int n_o, m4 *m4mod)
   for (i = 0; i < n_h; i++)
     m4mod->o_mats[i] = (phydbl *)mCalloc(n_o * n_o, sizeof(phydbl));
 
-  m4mod->h_mat            = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
-  m4mod->h_rr             = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
-  m4mod->h_fq             = (phydbl *)mCalloc(n_h, sizeof(phydbl));
+  m4mod->h_mat   = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
+  m4mod->h_rr    = (phydbl *)mCalloc(n_h * n_h, sizeof(phydbl));
+  m4mod->h_fq    = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
+  m4mod->h_fq->v = (phydbl *)mCalloc(n_h, sizeof(phydbl));
 
   m4mod->multipl      = (vect_dbl *)mCalloc(1, sizeof(vect_dbl));
   m4mod->multipl->v   = (phydbl *)mCalloc(n_h, sizeof(phydbl));

@@ -5031,7 +5031,7 @@ option *PhyML_XML(char *xml_filename)
 
   dum          = (option *)mCalloc(1, sizeof(option));
   dum->use_xml = YES;
-
+  
   for (num_rand_tree = 0; num_rand_tree < io->mod->s_opt->n_rand_starts;
        num_rand_tree++)
   {

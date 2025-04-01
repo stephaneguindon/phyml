@@ -11758,7 +11758,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
 
   do
   {
-    EVOLVE_Seq(tree->data, tree->mod, tree);
+    EVOLVE_Seq(tree->data, tree->mod, NULL, tree);
 
     Calculate_Number_Of_Diff_States(tree);
 
@@ -12173,7 +12173,7 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b,
 // given weight (vector weights), corresponding to a number of repeats of that
 // observation.
 void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
-         phydbl *weights, char *tag)
+         phydbl *weights, char *tag, FILE *fp_out)
 {
   phydbl   *tp, *fp, *threshold, dum, area, sum_weights;
   int       granularity;
@@ -12222,8 +12222,8 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
     tp[i] = tp[i] / (sum_weights);
     fp[i] = fp[i] / ((n_classes - 1) * sum_weights);
 
-    // PhyML_Printf("\n@@@%s,%f,%f,%f", tag ? tag : "", threshold[i], tp[i],
-    //              fp[i]);
+    PhyML_Fprintf(fp_out ? fp_out : stdout,"\n@@@%s,%f,%f,%f", tag ? tag : "", threshold[i], tp[i],
+                 fp[i]);
   }
 
   // Sort tp and fp in increasing order of values of fp
@@ -12259,7 +12259,7 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
             (fp[i] - fp[i - 1]);
   }
 
-  PhyML_Printf("\n. Area under ROC curve: %f", area);
+  PhyML_Fprintf(fp_out?fp_out:stdout,"\n. Area under ROC curve: %f", area);
 }
 
 //////////////////////////////////////////////////////////////

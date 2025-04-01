@@ -1,4 +1,4 @@
-<phyml run.id="mixt" output.file="xxx" cv.type="maxfold" bootstrap="3">
+<phyml run.id="mixt" output.file="xxx" cv.type="none">
 
 	<topology>
 		<instance id="T1" init.tree="BioNJ">

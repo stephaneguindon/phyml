@@ -137,7 +137,7 @@ phydbl *CV_Tip_Cv(t_tree *tree)
   //     }
 
   ROC(state_probs_all_sites, truth, ns, tree->n_otu * tree->data->n_pattern, weights,
-      tree->mod->modelname->s);
+      tree->mod->modelname->s,NULL);
 
   Free(weights);
   

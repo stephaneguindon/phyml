@@ -159,8 +159,8 @@ am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	spr.h draw.c draw.h tbe.c tbe.h stats.c stats.h rates.c \
 	rates.h mcmc.c mcmc.h times.c times.h mg.c mg.h io.c io.h \
 	make.c make.h nexus.c nexus.h init.c init.h xml.c xml.h mixt.c \
-	mixt.h ancestral.c ancestral.h date.c date.h cv.c cv.h \
-	evolve.c evolve.h
+	mixt.h ancestral.c ancestral.h date.c date.h cv.c cv.h m4.c \
+	m4.h evolve.c evolve.h
 #am_evolve_OBJECTS = main.$(OBJEXT) \
 #	utilities.$(OBJEXT) \
 #	optimiz.$(OBJEXT) \
@@ -192,6 +192,7 @@ am__evolve_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 #	ancestral.$(OBJEXT) \
 #	date.$(OBJEXT) \
 #	cv.$(OBJEXT) \
+#	m4.$(OBJEXT) \
 #	evolve.$(OBJEXT)
 evolve_OBJECTS = $(am_evolve_OBJECTS)
 evolve_LDADD = $(LDADD)
@@ -629,7 +630,7 @@ AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -march=native -Wall -std=c99 -g
+CFLAGS = -std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
@@ -973,6 +974,7 @@ PROG = PHYML
 #ancestral.c ancestral.h\
 #date.c date.h\
 #cv.c cv.h\
+#m4.c m4.h\
 #evolve.c evolve.h
 
 # evolve_LDADD = -lm 

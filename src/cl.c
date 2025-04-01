@@ -937,6 +937,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
     case 5:
     {
       opt_m = 1;
+
+      if (io->mod->r_mat == NULL)
+      {
+        io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
+        Init_Rmat(io->mod->r_mat);
+        Make_Custom_Model(io->mod);
+      }
+
       if (!isalpha(optarg[0]))
       {
         // Custom model for DNA sequences, e.g., 000000 (or 111111, etc)
@@ -953,11 +961,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
           io->datatype        = NT;
           io->mod->ns         = 4;
           io->mod->whichmodel = CUSTOM;
-
-          io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
-          Init_Rmat(io->mod->r_mat);
-          Make_Custom_Model(io->mod);
-
           strcpy(io->mod->modelname->s, "custom");
           io->mod->kappa->optimize = NO;
           io->mod->r_mat->optimize = YES;
@@ -969,14 +972,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
           const char *d   = ",";
           char       *tok = strtok(optarg, d);
 
-          io->datatype        = NT;
-          io->mod->ns         = 4;
-          io->mod->whichmodel = GTR;
-
-          io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
-          Init_Rmat(io->mod->r_mat);
-          Make_Custom_Model(io->mod);
-
+          io->datatype             = NT;
+          io->mod->ns              = 4;
+          io->mod->whichmodel      = GTR;
           io->mod->r_mat->optimize = NO;
 
           n_rr = 0;
@@ -1158,12 +1156,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
         Free(s);
       }
 
-      if (io->mod->r_mat == NULL)
-      {
-        io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
-        Init_Rmat(io->mod->r_mat);
-        Make_Custom_Model(io->mod);
-      }
 
       Set_Model_Name(io->mod);
 
@@ -1768,7 +1760,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   }
 
 
-  if (io->mod->m4mod->alpha->optimize == NO)
+  if (io->mod->m4mod != NULL && io->mod->m4mod->alpha->optimize == NO)
   {
     io->mod->m4mod->use_cov_alpha = NO;
     io->mod->m4mod->use_cov_free  = YES;

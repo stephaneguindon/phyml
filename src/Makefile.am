@@ -305,6 +305,7 @@ mixt.c mixt.h\
 ancestral.c ancestral.h\
 date.c date.h\
 cv.c cv.h\
+m4.c m4.h\
 evolve.c evolve.h
 # evolve_LDADD = -lm 
 else
