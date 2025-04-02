@@ -4191,7 +4191,7 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
           init_char = mixt_tree->data->c_seq[tax_id]->state[site];
 
           // Hide characters in the original alignment uniformly at random
-          // CV_Hide_Align_At_Given_Pos(mixt_tree->data, tax_id, site);
+          CV_Hide_Align_At_Given_Pos(mixt_tree->data, tax_id, site);
 
           Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, mixt_tree);
 
@@ -4213,7 +4213,7 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
 
           mixt_tree->data->n_masked = 0;
           Free(mixt_tree->data->masked_pos);
-          mixt_tree->data->masked_pos = NULL;
+          // mixt_tree->data->masked_pos = NULL;
 
           Check_Ambiguities(mixt_tree->data, mixt_tree->mod->io->datatype,
                             mixt_tree->mod->io->state_len);

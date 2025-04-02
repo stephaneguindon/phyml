@@ -233,6 +233,8 @@ void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
         data->c_seq[tax_id]->is_ambigu[site] = YES;
       }
 
+      assert(data->n_masked >= 0);
+
       if (data->n_masked == 0)
       {
         // PhyML_Printf("\n. First alloc @ %p", data);
@@ -261,6 +263,8 @@ void CV_Hide_Align_At_Given_Pos(calign *data, int tax_id, int site)
   data->c_seq[tax_id]->d_state[site]   = -1;
   data->c_seq[tax_id]->is_ambigu[site] = YES;
 
+  assert(data->n_masked >= 0);
+  
   if (data->n_masked == 0)
     data->masked_pos = (int *)mCalloc(1, sizeof(int));
   else
