@@ -12179,6 +12179,8 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
   int       granularity;
   short int sorted;
 
+return;
+
   granularity = 10000;
   threshold   = (phydbl *)mCalloc(granularity, sizeof(phydbl));
   tp          = (phydbl *)mCalloc(granularity, sizeof(phydbl));
