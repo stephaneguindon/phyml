@@ -51,7 +51,7 @@ void Make_Tree_For_Lk(t_tree *tree)
 #ifndef WIN32
   if (posix_memalign(
           (void **)&tree->dot_prod, BYTE_ALIGN,
-          (size_t)tree->n_pattern * tree->mod->ns *
+          (size_t)tree->data->n_pattern * tree->mod->ns *
               MAX(tree->mod->ras->n_catg, tree->mod->n_mixt_classes) *
               sizeof(phydbl)))
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
@@ -104,7 +104,7 @@ void Make_Tree_For_Lk(t_tree *tree)
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
 #else
   tree->dot_prod = _aligned_malloc(
-      tree->n_pattern * tree->mod->ns *
+      tree->data->n_pattern * tree->mod->ns *
           MAX(tree->mod->ras->n_catg, tree->mod->n_mixt_classes) *
           sizeof(phydbl),
       BYTE_ALIGN);
@@ -138,7 +138,7 @@ void Make_Tree_For_Lk(t_tree *tree)
 #ifndef WIN32
   if (posix_memalign(
           (void **)&tree->dot_prod, BYTE_ALIGN,
-          (size_t)tree->n_pattern * tree->mod->ns *
+          (size_t)tree->data->n_pattern * tree->mod->ns *
               MAX(tree->mod->ras->n_catg, tree->mod->n_mixt_classes) *
               sizeof(phydbl)))
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
@@ -191,7 +191,7 @@ void Make_Tree_For_Lk(t_tree *tree)
     Generic_Exit(__FILE__, __LINE__, __FUNCTION__);
 #else
   tree->dot_prod = _aligned_malloc(
-      tree->n_pattern * tree->mod->ns *
+      tree->data->n_pattern * tree->mod->ns *
           MAX(tree->mod->ras->n_catg, tree->mod->n_mixt_classes) *
           sizeof(phydbl),
       BYTE_ALIGN);
