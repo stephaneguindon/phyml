@@ -4211,7 +4211,7 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
               mixt_tree->data->c_seq[tax_id]->state + site,
               mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
 
-          mixt_tree->data->n_masked = 0;
+          // mixt_tree->data->n_masked = 0;
           // Free(mixt_tree->data->masked_pos);
           // mixt_tree->data->masked_pos = NULL;
 
@@ -4226,15 +4226,15 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
         "MAXFOLD",mixt_tree->io->fp_out_stats);
 
-    Free(state_probs);
-    Free(site_loglk);
-    Free(truth);
-    Free(weights);
+    // Free(state_probs);
+    // Free(site_loglk);
+    // Free(truth);
+    // Free(weights);
 
-    state_probs = NULL;
-    site_loglk  = NULL;
-    truth       = NULL;
-    weights     = NULL;
+    // state_probs = NULL;
+    // site_loglk  = NULL;
+    // truth       = NULL;
+    // weights     = NULL;
 
     mixt_tree = mixt_tree->next_mixt;
     
