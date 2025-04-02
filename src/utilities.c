@@ -12259,7 +12259,7 @@ void ROC(phydbl *probs, short int *truth, int n_classes, int n_obs,
             (fp[i] - fp[i - 1]);
   }
 
-  PhyML_Fprintf(fp_out?fp_out:stdout,"\n. Area under ROC curve: %f", area);
+  PhyML_Fprintf(fp_out ? fp_out : stdout,"\n. Area under ROC curve: %f", area);
 }
 
 //////////////////////////////////////////////////////////////

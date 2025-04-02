@@ -1,9 +1,10 @@
 import os
 import subprocess
+import sys
 
 def launch_slurm_job(xml_file):
     # Construct the SLURM job name
-    job_name = f"phyml_{xml_file[:-4]}"
+    job_name = f"phyml"
 
     # Write the SLURM script to a file
     slurm_script = f"""#!/bin/bash
@@ -17,7 +18,7 @@ def launch_slurm_job(xml_file):
 #SBATCH --output=phyml"."_%A_%a".".out
 #SBATCH --error=phyml"."_%A_%a".".err
 
-srun /shared/home/sguindon/phyml/src/phyml --xml={xml_file}
+srun /shared/projects/phyml/phyml/src/phyml --xml={xml_file}
 """
 
     # Write the script to a file
@@ -30,8 +31,6 @@ srun /shared/home/sguindon/phyml/src/phyml --xml={xml_file}
     # Launch the SLURM job
     subprocess.run(["sbatch", "slurm_script.sh"])
 
-# Get the directory from the user
-directory = input("Enter the directory path: ")
 
 # Get the path from the command-line argument
 if len(sys.argv) != 2:
