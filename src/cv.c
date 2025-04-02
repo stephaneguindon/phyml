@@ -167,10 +167,11 @@ void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
         data->c_seq[tax_id]->is_ambigu[site] = YES;
 
         if (data->n_masked == 0)
-          data->masked_pos = (int *)mCalloc(1, sizeof(int));
-        else
-          data->masked_pos = (int *)mRealloc(data->masked_pos,
-                                             data->n_masked + 1, sizeof(int));
+          data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
+        // data->masked_pos = (int *)mCalloc(1, sizeof(int));
+        // else
+        //   data->masked_pos = (int *)mRealloc(data->masked_pos,
+        //                                      data->n_masked + 1, sizeof(int));
 
         data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
         data->n_masked++;
@@ -199,10 +200,11 @@ void CV_Hide_Align_At_Random_One_Per_Site(calign *data)
     data->c_seq[tax_id]->is_ambigu[site] = YES;
 
     if (data->n_masked == 0)
-      data->masked_pos = (int *)mCalloc(1, sizeof(int));
-    else
-      data->masked_pos =
-          (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+      data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
+    // data->masked_pos = (int *)mCalloc(1, sizeof(int));
+    // else
+    //   data->masked_pos =
+    //       (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
     data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
     data->n_masked++;
@@ -238,14 +240,15 @@ void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
       if (data->n_masked == 0)
       {
         // PhyML_Printf("\n. First alloc @ %p", data);
-        data->masked_pos = (int *)mCalloc(1, sizeof(int));
+        // data->masked_pos = (int *)mCalloc(1, sizeof(int));
+        data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
       }
-      else
-      {
+      // else
+      // {
         // PhyML_Printf("\n. Realloc @ %p", data);
-        data->masked_pos =
-            (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
-      }
+        // data->masked_pos =
+        //     (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+      // }
       
       data->masked_pos[data->n_masked] = site;
       data->n_masked++;
@@ -266,10 +269,10 @@ void CV_Hide_Align_At_Given_Pos(calign *data, int tax_id, int site)
   assert(data->n_masked >= 0);
   
   if (data->n_masked == 0)
-    data->masked_pos = (int *)mCalloc(1, sizeof(int));
-  else
-    data->masked_pos =
-        (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+    // data->masked_pos = (int *)mCalloc(1, sizeof(int));
+  data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
+  // else data->masked_pos =
+  //     (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
   data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
   data->n_masked++;
