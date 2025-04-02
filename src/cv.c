@@ -293,8 +293,6 @@ void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth,
     tax_id = floor((phydbl)tree->data->masked_pos[m] / tree->data->n_pattern);
     site   = tree->data->masked_pos[m] - tax_id * tree->data->n_pattern;
 
-    PhyML_Printf("\n. CV prob @ %d %d %d", tax_id, site,tree->data->n_masked);
-
     CV_State_Probs_Core(state_probs, truth, site_loglk, weights, n_prob_vectors,
                         tax_id, site, tree->data->c_seq[tax_id]->d_state[site],
                         tree->data->wght[site], tree);
@@ -312,7 +310,6 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
   int     ns;
   phydbl *Pij, *p_lk_left, sum;
   
-PhyML_Printf("\n. CV_State_Probs_Core: %d %d", tax_id, site);
   
   ns = tree->mod->ns;
   
@@ -320,16 +317,25 @@ PhyML_Printf("\n. CV_State_Probs_Core: %d %d", tax_id, site);
 
   if (*n_prob_vectors == 0)
   {
-    (*state_probs) = (phydbl *)mCalloc(ns * tree->data->n_pattern * tree->n_otu, sizeof(phydbl));
-    (*site_loglk)  = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
+    (*state_probs) = (phydbl *)mCalloc(ns,
                                        sizeof(phydbl));
-    (*truth) = (short int *)mCalloc(ns * tree->data->n_pattern * tree->n_otu,
-                                    sizeof(short int));
-    (*weights)     = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
+    (*site_loglk)  = (phydbl *)mCalloc(1,
                                        sizeof(phydbl));
+    (*truth)   = (short int *)mCalloc(ns,
+                                      sizeof(short int));
+    (*weights) = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
+                                   sizeof(phydbl));
+    // (*state_probs) = (phydbl *)mCalloc(ns * tree->data->n_pattern * tree->n_otu,
+    //                                    sizeof(phydbl));
+    // (*site_loglk)  = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
+    //                                    sizeof(phydbl));
+    // (*truth) = (short int *)mCalloc(ns * tree->data->n_pattern * tree->n_otu,
+    //                                 sizeof(short int));
+    // (*weights)     = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
+    //                                    sizeof(phydbl));
   }
-  // else
-/*   {
+  else
+   {
     (*state_probs) = (phydbl *)mRealloc(
         *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
     (*site_loglk) =
@@ -339,7 +345,6 @@ PhyML_Printf("\n. CV_State_Probs_Core: %d %d", tax_id, site);
     (*weights) =
         (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
   }
- */
   // PhyML_Printf("\n. state_probs: %p", state_probs);
 
   for (int tip_state = 0; tip_state < ns; ++tip_state)
