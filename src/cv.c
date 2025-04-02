@@ -326,7 +326,7 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
     (*weights)     = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
                                        sizeof(phydbl));
   }
-  else
+  // else
 /*   {
     (*state_probs) = (phydbl *)mRealloc(
         *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
