@@ -4212,7 +4212,7 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
               mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
 
           mixt_tree->data->n_masked = 0;
-          Free(mixt_tree->data->masked_pos);
+          // Free(mixt_tree->data->masked_pos);
           // mixt_tree->data->masked_pos = NULL;
 
           Check_Ambiguities(mixt_tree->data, mixt_tree->mod->io->datatype,
