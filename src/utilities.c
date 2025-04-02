@@ -14739,59 +14739,56 @@ int Number_Of_Free_Params(t_tree *mixt_tree)
   } while (tree);
 
 
-scal_dum = tree->mod->kappa;
+scal_dum = mixt_tree->is_mixt_tree == YES ? mixt_tree->next->mod->kappa : mixt_tree->mod->kappa;
 do
 {
     if (scal_dum->optimize == YES) n_params += 1;
     scal_dum = scal_dum->next;
 } while (scal_dum);
 
-scal_dum = tree->mod->lambda;
+scal_dum = mixt_tree->is_mixt_tree == YES ? mixt_tree->next->mod->lambda : mixt_tree->mod->lambda;
 do
 {
   if (scal_dum->optimize == YES) n_params += 1;
   scal_dum = scal_dum->next;
 } while (scal_dum);
 
-scal_dum = tree->mod->ras->alpha;
+scal_dum = mixt_tree->mod->ras->alpha;
 do
 {
   if (scal_dum->optimize == YES) n_params += 1;
   scal_dum = scal_dum->next;
 } while (scal_dum);
 
-vect_dum = tree->mod->e_frq->pi;
+vect_dum = mixt_tree->is_mixt_tree == YES ? mixt_tree->next->mod->e_frq->pi : mixt_tree->mod->e_frq->pi;
 do
 {
   if (vect_dum->optimize == YES) n_params += vect_dum->len - 1;
   vect_dum = vect_dum->next;
 } while (vect_dum);
 
-t_rmat *r_mat = tree->mod->r_mat;
+t_rmat *r_mat = mixt_tree->is_mixt_tree == YES ? mixt_tree->next->mod->r_mat : mixt_tree->mod->r_mat;
 do
 {
   if (r_mat->optimize == YES) n_params += r_mat->n_diff_rr;
   r_mat = r_mat->next;
 } while (r_mat);
 
-t_mod *mod = tree->mod;
+t_mod *mod = mixt_tree->mod;
 do
 {
   if (mod->s_opt->opt_br_len_mult == YES) n_params += 1;
   mod = mod->next;
 } while (mod);
 
-mod = tree->mod;
+mod = mixt_tree->mod;
 do
 {
-  if ((tree->mod->s_opt->opt_free_mixt_rates) &&
-      (tree->mod->ras->free_mixt_rates == YES) && (tree->mod->ras->n_catg > 1))
-    n_params += 2 * tree->mod->ras->n_catg - 2;
+  if ((mod->s_opt->opt_free_mixt_rates) && (mod->ras->free_mixt_rates == YES))
+    n_params += 2 * mod->ras->n_catg - 2;
 
   mod = mod->next;
 } while (mod);
-
-
 
 return (n_params);
 }

@@ -4763,12 +4763,18 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
         PhyML_Fprintf(fp, "\n   Variance of IL model:\t%20.2g",
                       tree->mod->l_var_sigma->v);
 
+      
+
       class ++;
 
       tree = tree->next;
 
       if (tree && tree->is_mixt_tree == YES) break;
     } while (tree);
+
+    PhyML_Fprintf(fp, "\n");
+    PhyML_Fprintf(fp, "\n   AIC: %20.2f", AIC(mixt_tree));
+    PhyML_Fprintf(fp, "\n   BIC: %20.2f", BIC(mixt_tree));
 
     mixt_tree = mixt_tree->next_mixt;
     if (!mixt_tree) break;

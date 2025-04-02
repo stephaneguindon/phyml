@@ -162,7 +162,7 @@ AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
+CFLAGS = -march=native -Wall -std=c99 -g
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
