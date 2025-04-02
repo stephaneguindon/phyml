@@ -313,6 +313,8 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
   phydbl *Pij, *p_lk_left, sum;
 
   ns = tree->mod->ns;
+  
+  assert(*n_prob_vectors >= 0);
 
   if (*n_prob_vectors == 0)
   {
@@ -451,6 +453,8 @@ void CV_Score_At_Hidden_Cols(phydbl **site_loglk, phydbl **weights,
     site = tree->data->masked_pos[m];
 
     // PhyML_Printf("\n. CV prob @ site %d", site);
+
+assert(*n_prob_vectors >= 0);
 
     if (*n_prob_vectors == 0)
     {
