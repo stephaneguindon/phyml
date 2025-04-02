@@ -4168,10 +4168,10 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
   int        n_prob_vectors;
   char       init_char;
   
-  state_probs = NULL;
-  site_loglk  = NULL;
-  truth       = NULL;
-  weights     = NULL;
+  // state_probs = NULL;
+  // site_loglk  = NULL;
+  // truth       = NULL;
+  // weights     = NULL;
 
   n_prob_vectors = 0;
 
@@ -4204,6 +4204,8 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
                                              &weights, &n_prob_vectors,
                                              mixt_tree);
 
+PhyML_Printf("\n. %d %d n_prob_vectors:%d", site, tax_id, n_prob_vectors);
+
           // Go back to the original alignment
           mixt_tree->data->c_seq[tax_id]->state[site] = init_char;
 
@@ -4211,9 +4213,9 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
               mixt_tree->data->c_seq[tax_id]->state + site,
               mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
 
-          // mixt_tree->data->n_masked = 0;
-          // Free(mixt_tree->data->masked_pos);
-          // mixt_tree->data->masked_pos = NULL;
+          mixt_tree->data->n_masked = 0;
+          Free(mixt_tree->data->masked_pos);
+          mixt_tree->data->masked_pos = NULL;
 
           Check_Ambiguities(mixt_tree->data, mixt_tree->mod->io->datatype,
                             mixt_tree->mod->io->state_len);
