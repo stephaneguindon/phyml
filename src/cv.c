@@ -358,6 +358,9 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
   for (int tip_state = 0; tip_state < ns; ++tip_state)
     (*truth)[*n_prob_vectors * ns + tip_state] = 0;
 
+assert(true_d_state >= 0);
+PhyML_Printf("\n. true_d_state: %d n_prob_vectors: %d", true_d_state, *n_prob_vectors);
+
   (*truth)[*n_prob_vectors * ns + true_d_state] = 1;
 
   (*weights)[*n_prob_vectors] = patt_weight;
