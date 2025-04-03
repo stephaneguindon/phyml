@@ -338,10 +338,10 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
    {
     (*state_probs) = (phydbl *)mRealloc(
         *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
-    (*site_loglk) =
-        (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
-    // (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
-    //                                  sizeof(short int));
+    // (*site_loglk) =
+    //     (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
+    (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
+                                     sizeof(short int));
     (*weights) =
         (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
   }
