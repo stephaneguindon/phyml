@@ -4198,13 +4198,6 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
           MIXT_Br_Len_Opt(mixt_tree->a_nodes[tax_id]->b[0], mixt_tree);
           // PhyML_Printf("\n. site:%12d tax_id: %12d  lnL: %15f", site, tax_id, mixt_tree->c_lnL);
 
-          // Compute likelihoods on test set (i.e., probability of each possible
-          // state at masked positions)
-          CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk,
-                                             &weights, &n_prob_vectors,
-                                             mixt_tree);
-
-PhyML_Printf("\n. %d %d n_prob_vectors:%d", site, tax_id, n_prob_vectors);
 
           // Go back to the original alignment
           mixt_tree->data->c_seq[tax_id]->state[site] = init_char;
@@ -4212,6 +4205,15 @@ PhyML_Printf("\n. %d %d n_prob_vectors:%d", site, tax_id, n_prob_vectors);
           mixt_tree->data->c_seq[tax_id]->d_state[site] = Assign_State(
               mixt_tree->data->c_seq[tax_id]->state + site,
               mixt_tree->mod->io->datatype, mixt_tree->mod->io->state_len);
+
+          // Compute likelihoods on test set (i.e., probability of each possible
+          // state at masked positions)
+          CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk,
+                                             &weights, &n_prob_vectors,
+                                             mixt_tree);
+
+          PhyML_Printf("\n. %d %d n_prob_vectors:%d", site, tax_id,
+                       n_prob_vectors);
 
           mixt_tree->data->n_masked = 0;
           Free(mixt_tree->data->masked_pos);
