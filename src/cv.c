@@ -167,16 +167,13 @@ void CV_Hide_Align_At_Random_Pos(calign *data, phydbl mask_prob)
         data->c_seq[tax_id]->is_ambigu[site] = YES;
 
         if (data->n_masked == 0)
-          data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
-        // data->masked_pos = (int *)mCalloc(1, sizeof(int));
-        // else
-        //   data->masked_pos = (int *)mRealloc(data->masked_pos,
-        //                                      data->n_masked + 1, sizeof(int));
+        data->masked_pos = (int *)mCalloc(1, sizeof(int));
+        else
+          data->masked_pos = (int *)mRealloc(data->masked_pos,
+                                             data->n_masked + 1, sizeof(int));
 
         data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
         data->n_masked++;
-
-        // PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
       }
     }
   }
@@ -200,16 +197,13 @@ void CV_Hide_Align_At_Random_One_Per_Site(calign *data)
     data->c_seq[tax_id]->is_ambigu[site] = YES;
 
     if (data->n_masked == 0)
-      data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
-    // data->masked_pos = (int *)mCalloc(1, sizeof(int));
-    // else
-    //   data->masked_pos =
-    //       (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+    data->masked_pos = (int *)mCalloc(1, sizeof(int));
+    else
+      data->masked_pos =
+          (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
     data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
     data->n_masked++;
-
-    // PhyML_Printf("\n. Mask @ %d %d", tax_id, site);
   }
 }
 
@@ -239,20 +233,16 @@ void CV_Hide_Align_At_Random_Col(calign *data, phydbl mask_prob)
 
       if (data->n_masked == 0)
       {
-        // PhyML_Printf("\n. First alloc @ %p", data);
-        // data->masked_pos = (int *)mCalloc(1, sizeof(int));
-        data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
+        data->masked_pos = (int *)mCalloc(1, sizeof(int));
       }
-      // else
-      // {
-        // PhyML_Printf("\n. Realloc @ %p", data);
-        // data->masked_pos =
-        //     (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
-      // }
+      else
+      {
+        data->masked_pos =
+            (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+      }
       
       data->masked_pos[data->n_masked] = site;
       data->n_masked++;
-      // PhyML_Printf("\n. Hiding colmun at position %4d", site);
     }
   }
 }
@@ -269,10 +259,9 @@ void CV_Hide_Align_At_Given_Pos(calign *data, int tax_id, int site)
   assert(data->n_masked >= 0);
   
   if (data->n_masked == 0)
-    // data->masked_pos = (int *)mCalloc(1, sizeof(int));
-  data->masked_pos = (int *)mCalloc(data->n_pattern * 100, sizeof(int));
-  // else data->masked_pos =
-  //     (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
+    data->masked_pos = (int *)mCalloc(1, sizeof(int));
+  else data->masked_pos =
+      (int *)mRealloc(data->masked_pos, data->n_masked + 1, sizeof(int));
 
   data->masked_pos[data->n_masked] = tax_id * data->n_pattern + site;
   data->n_masked++;
@@ -317,41 +306,27 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
 
   if (*n_prob_vectors == 0)
   {
-    // (*state_probs) = (phydbl *)mCalloc(ns,
-    //                                    sizeof(phydbl));
-    // (*site_loglk)  = (phydbl *)mCalloc(1,
-    //                                    sizeof(phydbl));
-    // (*truth)   = (short int *)mCalloc(ns,
-    //                                   sizeof(short int));
-    // (*weights) = (phydbl *)mCalloc(1,
-    //                                sizeof(phydbl));
-    (*state_probs) = (phydbl *)mCalloc(ns * tree->data->n_pattern * tree->n_otu,
-                                       sizeof(phydbl));
-    (*site_loglk)  = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
-                                       sizeof(phydbl));
-    (*truth) = (short int *)mCalloc(ns * tree->data->n_pattern * tree->n_otu,
-                                    sizeof(short int));
-    (*weights)     = (phydbl *)mCalloc(1 * tree->data->n_pattern * tree->n_otu,
-                                       sizeof(phydbl));
+    (*state_probs) = (phydbl *)mCalloc(ns, sizeof(phydbl));
+    (*site_loglk)  = (phydbl *)mCalloc(1, sizeof(phydbl));
+    (*truth)       = (short int *)mCalloc(ns, sizeof(short int));
+    (*weights)     = (phydbl *)mCalloc(1, sizeof(phydbl));
   }
   else
    {
-    (*state_probs) = (phydbl *)mRealloc(
-        *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
-    (*site_loglk) =
-        (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
-    (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
-                                     sizeof(short int));
-    (*weights) =
-        (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
+     (*state_probs) = (phydbl *)mRealloc(
+         *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
+     (*site_loglk) =
+         (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
+     (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
+                                      sizeof(short int));
+     (*weights) =
+         (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
    }
-  // PhyML_Printf("\n. state_probs: %p", state_probs);
 
   for (int tip_state = 0; tip_state < ns; ++tip_state)
     (*truth)[*n_prob_vectors * ns + tip_state] = 0;
 
 assert(true_d_state >= 0);
-PhyML_Printf("\n. true_d_state: %d n_prob_vectors: %d", true_d_state, *n_prob_vectors);
 
   (*truth)[*n_prob_vectors * ns + true_d_state] = 1;
 
