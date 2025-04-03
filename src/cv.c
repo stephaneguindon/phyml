@@ -336,15 +336,23 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
   }
   else
    {
-    (*state_probs) = (phydbl *)mRealloc(
-        *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
+    // (*state_probs) = (phydbl *)mRealloc(
+    //     *state_probs, (*n_prob_vectors + 1) * ns, sizeof(phydbl));
     // (*site_loglk) =
     //     (phydbl *)mRealloc(*site_loglk, *n_prob_vectors + 1, sizeof(phydbl));
     // (*truth) = (short int *)mRealloc(*truth, (*n_prob_vectors + 1) * ns,
     //                                  sizeof(short int));
+    // (*weights) =
+    //     (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
+    (*state_probs) = (phydbl *)mRealloc(
+        *state_probs, (10000) * ns, sizeof(phydbl));
+    (*site_loglk) =
+        (phydbl *)mRealloc(*site_loglk, 10000, sizeof(phydbl));
+    (*truth) = (short int *)mRealloc(*truth, 10000,
+                                     sizeof(short int));
     (*weights) =
-        (phydbl *)mRealloc(*weights, *n_prob_vectors + 1, sizeof(phydbl));
-  }
+        (phydbl *)mRealloc(*weights, 10000, sizeof(phydbl));
+   }
   // PhyML_Printf("\n. state_probs: %p", state_probs);
 
   for (int tip_state = 0; tip_state < ns; ++tip_state)
