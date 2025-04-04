@@ -276,16 +276,12 @@ void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth,
 {
 
   int tax_id, site;
-
-  PhyML_Printf("\n. HERE -- > %d",tree->data->n_masked);
   
    for (int m = 0; m < tree->data->n_masked; ++m)
   {
     tax_id = floor((phydbl)tree->data->masked_pos[m] / tree->data->n_pattern);
     site   = tree->data->masked_pos[m] - tax_id * tree->data->n_pattern;
-    
-    PhyML_Printf("\n. HERE");
-    
+        
     CV_State_Probs_Core(state_probs, truth, site_loglk, weights, n_prob_vectors,
                         tax_id, site, tree->data->c_seq[tax_id]->d_state[site],
                         tree->data->wght[site], tree);
