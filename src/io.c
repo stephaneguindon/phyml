@@ -4773,8 +4773,12 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
     } while (tree);
 
     PhyML_Fprintf(fp, "\n");
-    PhyML_Fprintf(fp, "\n   AIC: %20.2f", AIC(mixt_tree));
-    PhyML_Fprintf(fp, "\n   BIC: %20.2f", BIC(mixt_tree));
+    AIC(mixt_tree);
+    BIC(mixt_tree);
+    if (mixt_tree->mod->aic->print == YES)
+      PhyML_Fprintf(fp, "\n   AIC: %20.2f", mixt_tree->mod->aic->v);
+    if (mixt_tree->mod->bic->print == YES)
+      PhyML_Fprintf(fp, "\n   BIC: %20.2f", mixt_tree->mod->bic->v);
 
     mixt_tree = mixt_tree->next_mixt;
     if (!mixt_tree) break;
@@ -5123,6 +5127,14 @@ option *PhyML_XML(char *xml_filename)
       most_likely_tree     = Write_Tree(mixt_tree);
       mixt_tree->lock_topo = NO;
     }
+
+    tree = mixt_tree;
+    do
+    {
+      tree->mod->aic->print = YES;
+      tree->mod->bic->print = YES;
+      tree                  = tree->next_mixt;
+    } while (tree);
 
     tree = mixt_tree;
     do

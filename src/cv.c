@@ -276,12 +276,16 @@ void CV_State_Probs_At_Hidden_Positions(phydbl **state_probs, short int **truth,
 {
 
   int tax_id, site;
+
+  PhyML_Printf("\n. HERE -- > %d",tree->data->n_masked);
   
-  for (int m = 0; m < tree->data->n_masked; ++m)
+   for (int m = 0; m < tree->data->n_masked; ++m)
   {
     tax_id = floor((phydbl)tree->data->masked_pos[m] / tree->data->n_pattern);
     site   = tree->data->masked_pos[m] - tax_id * tree->data->n_pattern;
-
+    
+    PhyML_Printf("\n. HERE");
+    
     CV_State_Probs_Core(state_probs, truth, site_loglk, weights, n_prob_vectors,
                         tax_id, site, tree->data->c_seq[tax_id]->d_state[site],
                         tree->data->wght[site], tree);
@@ -298,10 +302,11 @@ void CV_State_Probs_Core(phydbl **state_probs, short int **truth,
 {
   int     ns;
   phydbl *Pij, *p_lk_left, sum;
-  
-  
-  ns = tree->mod->ns;
-  
+  t_tree *ori_tree;
+
+  ori_tree = tree;
+  ns       = tree->mod->ns;
+
   assert(*n_prob_vectors >= 0);
 
   if (*n_prob_vectors == 0)
@@ -380,10 +385,11 @@ assert(true_d_state >= 0);
       }
 
       tree = tree->next;
-    } while (tree && tree->is_mixt_tree == NO);
+    } while (tree != NULL && tree->is_mixt_tree == NO);
     // We only consider one partition element here.
     // Calls to this function are required for every
     // partition element.
+    tree = ori_tree;
   }
   else
   {
@@ -417,12 +423,13 @@ assert(true_d_state >= 0);
   for (int tip_state = 0; tip_state < ns; ++tip_state)
     (*state_probs)[*n_prob_vectors * ns + tip_state] /= sum;
 
-  // PhyML_Printf("\n. state_probs: %f %f %f %f truth: %d",
+
+  // PhyML_Printf("\n>>> state_probs: %f %f %f %f truth: %d",
   //              (*state_probs)[*n_prob_vectors * ns + 0],
   //              (*state_probs)[*n_prob_vectors * ns + 1],
   //              (*state_probs)[*n_prob_vectors * ns + 2],
-  //              (*state_probs)[*n_prob_vectors * ns + 3],
-  //              orig_data->c_seq[tax_id]->d_state[site]);
+              //  (*state_probs)[*n_prob_vectors * ns + 3],
+              //  tree->data->c_seq[tax_id]->d_state[site]);
 
   *n_prob_vectors += 1;
 }

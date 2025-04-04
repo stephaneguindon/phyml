@@ -3773,6 +3773,29 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+calign *MIXT_Copy_Cseq(calign *ori, option *io, t_tree *mixt_tree)
+{
+  calign *cpy;
+  t_tree *tree;
+  
+
+  cpy = Copy_Cseq(ori, io, NULL);
+
+// Propagate to trees in the mixture
+  tree = mixt_tree->next;
+  do
+  {
+    tree->data = cpy;
+    
+    tree       = tree->next;
+  } while (tree != NULL && tree->is_mixt_tree == NO);
+
+  return (cpy);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_edge *b;
@@ -4212,9 +4235,6 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
                                              &weights, &n_prob_vectors,
                                              mixt_tree);
 
-          PhyML_Printf("\n. %d %d n_prob_vectors:%d", site, tax_id,
-                       n_prob_vectors);
-
           mixt_tree->data->n_masked = 0;
           Free(mixt_tree->data->masked_pos);
           mixt_tree->data->masked_pos = NULL;
@@ -4227,18 +4247,22 @@ void MIXT_Maxfold_Cv(t_tree *mixt_tree)
       }
     }
 
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats,
+                  "\n. CV type: fast k-fold position (aka maxfold).");
+
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
-        "MAXFOLD",mixt_tree->io->fp_out_stats);
+        "MAXFOLD", mixt_tree->io->fp_out_stats);
 
     Free(state_probs);
     Free(site_loglk);
     Free(truth);
     Free(weights);
 
-    // state_probs = NULL;
-    // site_loglk  = NULL;
-    // truth       = NULL;
-    // weights     = NULL;
+    state_probs = NULL;
+    site_loglk  = NULL;
+    truth       = NULL;
+    weights     = NULL;
 
     mixt_tree = mixt_tree->next_mixt;
     
@@ -4269,52 +4293,69 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
   weights     = NULL;
   tree        = NULL;
 
-  kfold          = 5;
+  // kfold          = 5;
+  kfold          = 1;
   n_prob_vectors = 0;
-  
+
   do
   {
-    for (int i = 0; i < kfold*5; ++i)
-    {
-      // Create a copy of the original alignment
-      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
-
-      // Hide characters in the original alignment uniformly at random
-      CV_Hide_Align_At_Random_One_Per_Site(mixt_tree->data);
-
-      // Optimize all parameters on training data set (i.e., whole alignement
-      // with masked positions)
-      Init_Partial_Lk_Tips_Double(mixt_tree);
-      Global_Spr_Search(mixt_tree);
-      Set_Both_Sides(YES, mixt_tree);
-      Set_Update_Eigen(YES, mixt_tree->mod);
-      Lk(NULL, mixt_tree);
-      Set_Update_Eigen(NO, mixt_tree->mod);
-      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
-
-      // Compute likelihoods on test set (i.e., probability of each possible
-      // state at masked positions)
-      CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk, &weights,
-                                         &n_prob_vectors, mixt_tree);
-
-      // Go back to the original alignment
-      Free_Calign(mixt_tree->data);
-      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
-      Free_Calign(c_seq_cpy);
-
-      tree = mixt_tree->next;
-      do
+    // for (int i = 0; i < kfold*5; ++i)
+      for (int i = 0; i < kfold * 1; ++i)
       {
-        tree->data = tree->mixt_tree->data;
-        tree       = tree->next;
-      } while (tree && tree->is_mixt_tree == NO);
+        // Create a copy of the original alignment
+        c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
 
-      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+        // Hide characters in the original alignment uniformly at random
+        CV_Hide_Align_At_Random_One_Per_Site(mixt_tree->data);
 
-    }
+        c_seq_cpy->n_masked = mixt_tree->data->n_masked;
+        c_seq_cpy->masked_pos =
+            (int *)mCalloc(c_seq_cpy->n_masked, sizeof(int));
+        for (int i = 0; i < c_seq_cpy->n_masked; i++)
+          c_seq_cpy->masked_pos[i] = mixt_tree->data->masked_pos[i];
+
+
+
+        // Optimize all parameters on training data set (i.e., whole alignement
+        // with masked positions)
+        Init_Partial_Lk_Tips_Double(mixt_tree);
+        Global_Spr_Search(mixt_tree);
+        Set_Both_Sides(YES, mixt_tree);
+        Set_Update_Eigen(YES, mixt_tree->mod);
+        Lk(NULL, mixt_tree);
+        Set_Update_Eigen(NO, mixt_tree->mod);
+        // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+        // Go back to the original alignment
+        Free_Calign(mixt_tree->data);
+        mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io, mixt_tree);
+        Free_Calign(c_seq_cpy);
+
+        // Compute likelihoods on test set (i.e., probability of each possible
+        // state at masked positions)
+        CV_State_Probs_At_Hidden_Positions(&state_probs, &truth, &site_loglk,
+                                           &weights, &n_prob_vectors,
+                                           mixt_tree);
+
+        mixt_tree->data->n_masked = 0;
+        Free(mixt_tree->data->masked_pos);
+        mixt_tree->data->masked_pos = NULL;
+
+        tree = mixt_tree->next;
+        do
+        {
+          tree->data = tree->mixt_tree->data;
+          tree       = tree->next;
+        } while (tree && tree->is_mixt_tree == NO);
+
+        MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+      }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);
-        
+
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV type: k-fold position.");
+
     ROC(state_probs, truth, mixt_tree->mod->ns, n_prob_vectors, weights,
         "KFOLDPOS",mixt_tree->io->fp_out_stats);
 
@@ -4359,10 +4400,15 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
     for (int i = 0; i < kfold*5; ++i)
     {
       // Create a copy of the original alignment
-      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io);
+      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
 
       // Hide characters in the original alignment uniformly at random
       CV_Hide_Align_At_Random_Col(mixt_tree->data, 1. / (phydbl)kfold);
+
+      c_seq_cpy->n_masked   = mixt_tree->data->n_masked;
+      c_seq_cpy->masked_pos = (int *)mCalloc(c_seq_cpy->n_masked, sizeof(int));
+      for (int i = 0; i < c_seq_cpy->n_masked; i++)
+        c_seq_cpy->masked_pos[i] = mixt_tree->data->masked_pos[i];
 
       // Optimize all parameters on training data set (i.e., whole alignement
       // with masked positions)
@@ -4388,15 +4434,20 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       Lk(NULL, mixt_tree);
       // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
 
+      // Go back to the original alignment
+      Free_Calign(mixt_tree->data);
+      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io, mixt_tree);
+      Free_Calign(c_seq_cpy);
+
       // Compute likelihoods on test set (i.e., probability of each possible
       // state at masked positions)
       CV_Score_At_Hidden_Cols(&site_loglk, &weights, &n_prob_vectors,
                               mixt_tree);
 
-      // Go back to the original alignment
-      Free_Calign(mixt_tree->data);
-      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io);
-      Free_Calign(c_seq_cpy);
+
+      mixt_tree->data->n_masked = 0;
+      Free(mixt_tree->data->masked_pos);
+      mixt_tree->data->masked_pos = NULL;
 
       tree = mixt_tree->next;
       do
@@ -4419,7 +4470,9 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       sum_w += weights[i];
     }
 
-    PhyML_Fprintf(mixt_tree->io->fp_out_stats,"\n. CV score: %f", sum / sum_w);
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV type: k-fold column.");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. Score: %f ", sum / sum_w);
 
     Free(state_probs);
     Free(site_loglk);

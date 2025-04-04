@@ -1234,6 +1234,12 @@ t_mod *Make_Model_Basic(void)
   mod->mr = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->mr);
 
+  mod->aic = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
+  Init_Scalar_Dbl(mod->aic);
+
+  mod->bic = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
+  Init_Scalar_Dbl(mod->bic);
+
   mod->e_frq_weight = (scalar_dbl *)mCalloc(1, sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->e_frq_weight);
 

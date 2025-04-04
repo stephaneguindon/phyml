@@ -414,7 +414,7 @@ calign *Compact_Data(align **data, option *io)
   { /* Uniform state frequency distribution.*/
   }
 
-  cdata = Copy_Cseq(cdata_tmp, io);
+  cdata = Copy_Cseq(cdata_tmp, io, NULL);
 
   Free_Calign(cdata_tmp);
   Free_Prefix_Tree(proot, T_MAX_ALPHABET);
@@ -2268,11 +2268,14 @@ void Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-calign *Copy_Cseq(calign *ori, option *io)
+calign *Copy_Cseq(calign *ori, option *io, t_tree *tree)
 {
   calign *new;
   int    i, j, k, n_otu, n_rm, c_len;
   char **sp_names_in, **sp_names_out;
+
+
+if(tree != NULL && tree->is_mixt_tree == YES) return(MIXT_Copy_Cseq(ori,io,tree));
 
   n_otu = ori->n_otu;
   c_len = ori->n_pattern;
@@ -2296,6 +2299,10 @@ calign *Copy_Cseq(calign *ori, option *io)
 
   new = Make_Calign(n_otu + n_rm, c_len, io->state_len, ori->init_len,
                     sp_names_in, ori->n_rm, sp_names_out);
+  
+  Init_Calign(n_otu, c_len, ori->init_len, new);
+
+  new->n_rm = ori->n_rm;
 
   if (ori->n_masked > 0)
   {
@@ -2303,10 +2310,6 @@ calign *Copy_Cseq(calign *ori, option *io)
     new->n_masked   = ori->n_masked;
     for (i = 0; i < ori->n_masked; ++i) new->masked_pos[i] = ori->masked_pos[i];
   }
-
-  new->n_rm = ori->n_rm;
-
-  Init_Calign(n_otu, c_len, ori->init_len, new);
 
   for (i = 0; i < ori->n_rm; ++i)
   {
@@ -3915,7 +3918,7 @@ void Bootstrap(t_tree *tree)
       n_site++;
     }
 
-  boot_data = Copy_Cseq(tree->data, tree->io);
+  boot_data = Copy_Cseq(tree->data, tree->io, NULL);
 
   PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
   PhyML_Printf("  [");
@@ -11749,7 +11752,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
                                           sizeof(phydbl));
 
   orig_mod  = Copy_Model(tree->mod);
-  orig_data = Copy_Cseq(tree->data, tree->io);
+  orig_data = Copy_Cseq(tree->data, tree->io, NULL);
 
   orig_mod->io    = tree->io;
   orig_mod->s_opt = tree->mod->s_opt;
@@ -11780,7 +11783,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
     Free_Model_Basic(tree->mod);
 
     tree->mod  = Copy_Model(orig_mod);
-    tree->data = Copy_Cseq(orig_data, tree->io);
+    tree->data = Copy_Cseq(orig_data, tree->io, NULL);
 
     tree->mod->io    = orig_mod->io;
     tree->mod->s_opt = orig_mod->s_opt;

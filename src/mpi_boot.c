@@ -64,7 +64,7 @@ void Bootstrap_MPI(t_tree *tree)
 		}
 	}
 	
-	boot_data = Copy_Cseq(tree->data,tree->io);
+	boot_data = Copy_Cseq(tree->data,tree->io, NULL);
 	
 	if(Global_numTask <= 1)
 	{

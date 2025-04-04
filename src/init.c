@@ -31,6 +31,7 @@ void Init_Scalar_Dbl(scalar_dbl *p)
   p->optimize = NO;
   p->next     = NULL;
   p->prev     = NULL;
+  p->print    = NO;
 }
 
 //////////////////////////////////////////////////////////////

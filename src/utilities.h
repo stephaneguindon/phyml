@@ -586,6 +586,7 @@ typedef struct __Scalar_Dbl
   phydbl               v;
   bool                 onoff;
   bool                 optimize;
+  bool                 print;
   struct __Scalar_Dbl *next;
   struct __Scalar_Dbl *prev;
 } scalar_dbl;
@@ -1320,6 +1321,8 @@ typedef struct __Model
   vect_dbl   *Pij_rr; /*! matrix of change probabilities */
   scalar_dbl *mr;     /*! mean rate = branch length/time interval  mr =
                          -sum(i)(vct_pi[i].mat_Q[ii]) */
+  scalar_dbl *aic;
+  scalar_dbl *bic;
 
   short int
       log_l; /*! Edge lengths are actually log(Edge lengths) if log_l == YES !*/
@@ -2567,7 +2570,7 @@ void    Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree);
 void    Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d,
                                   t_tree *tree);
 void    Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data);
-calign *Copy_Cseq(calign *ori, option *io);
+calign *Copy_Cseq(calign *ori, option *io, t_tree *tree);
 int     Filexists(char *filename);
 int     Is_Invar(int patt_num, int stepsize, int datatype, calign *data);
 int     Is_Ambigu(char *state, int datatype, int stepsize);

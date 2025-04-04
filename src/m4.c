@@ -1192,7 +1192,7 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
     Warn_And_Exit("");
   }
 
-  cpy_data = Copy_Cseq(tree->data, tree->io);
+  cpy_data = Copy_Cseq(tree->data, tree->io, NULL);
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   PhyML_Printf("\n. Evolving sequences (delta=%f, alpha=%f) ...\n",
@@ -1412,7 +1412,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
     Warn_And_Exit("");
   }
 
-  cpy_data = Copy_Cseq(tree->data, tree->io);
+  cpy_data = Copy_Cseq(tree->data, tree->io, NULL);
 
   PhyML_Printf("\n. Estimate model parameters under non-switching substitution "
                "model.\n");
@@ -1565,7 +1565,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
     Warn_And_Exit("");
   }
 
-  cpy_data = Copy_Cseq(tree->data, tree->io);
+  cpy_data = Copy_Cseq(tree->data, tree->io, NULL);
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   Set_Model_Parameters(tree->mod);

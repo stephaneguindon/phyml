@@ -131,5 +131,6 @@ void MIXT_Init_Partial_Lk_Tips_Double_One_Character(int node_idx, int curr_site,
                                                     t_tree *mixt_tree);
 void MIXT_Init_Partial_Lk_Tips_Double_One_Site(int site, t_tree *mixt_tree);
 void MIXT_Cv(t_tree *mixt_tree);
+calign *MIXT_Copy_Cseq(calign *ori, option *io, t_tree *mixt_tree);
 
 #endif
