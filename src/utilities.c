@@ -14800,7 +14800,8 @@ return (n_params);
 
 phydbl AIC(t_tree * tree) 
 {
-  return (2. *(Number_Of_Free_Params(tree) - Get_Lk(tree)));
+  tree->mod->aic->v = 2. * Number_Of_Free_Params(tree) - 2. * Get_Lk(tree);
+  return (tree->mod->aic->v);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -14808,5 +14809,7 @@ phydbl AIC(t_tree * tree)
 
 phydbl BIC(t_tree * tree)
 {
-  return (Number_Of_Free_Params(tree) * tree->data->init_len  - 2. * Get_Lk(tree));
+  tree->mod->bic->v =
+      Number_Of_Free_Params(tree) * tree->data->init_len - 2. * Get_Lk(tree);
+  return (tree->mod->bic->v);
 }
