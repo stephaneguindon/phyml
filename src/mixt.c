@@ -4472,7 +4472,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
 
     PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n");
     PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV type: k-fold column.");
-    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. Score: %f ", sum / sum_w);
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV score: %f ", sum / sum_w);
 
     Free(state_probs);
     Free(site_loglk);
