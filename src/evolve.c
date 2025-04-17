@@ -121,30 +121,31 @@ int EVOLVE_Main(int argc, char **argv)
   ndnd       = XML_Add_Node(nd, "instance");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "M1");
   XML_Add_Attribute(ndnd, "model", model);
+  XML_Add_Attribute(ndnd, "optimise.rr","yes");
 
   nd         = XML_Add_Node(root, "siterates");
   nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
   ndnd       = XML_Add_Node(nd, "instance");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
   XML_Add_Attribute(ndnd, "init.value", "1.0");
-  ndnd       = XML_Add_Node(nd, "instance");
-  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
-  XML_Add_Attribute(ndnd, "init.value", "1.0");
-  ndnd       = XML_Add_Node(nd, "instance");
-  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
-  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  // ndnd       = XML_Add_Node(nd, "instance");
+  // ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  // XML_Add_Attribute(ndnd, "init.value", "1.0");
+  // ndnd       = XML_Add_Node(nd, "instance");
+  // ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  // XML_Add_Attribute(ndnd, "init.value", "1.0");
   ndnd       = XML_Add_Node(nd, "weights");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
   XML_Add_Attribute(ndnd, "family", "freerates");
   ndndnd       = XML_Add_Node(ndnd, "instance");
   ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
   XML_Add_Attribute(ndndnd, "value", "1.0");
-  ndndnd       = XML_Add_Node(ndnd, "instance");
-  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
-  XML_Add_Attribute(ndndnd, "value", "1.0");
-  ndndnd       = XML_Add_Node(ndnd, "instance");
-  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
-  XML_Add_Attribute(ndndnd, "value", "1.0");
+  // ndndnd       = XML_Add_Node(ndnd, "instance");
+  // ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  // XML_Add_Attribute(ndndnd, "value", "1.0");
+  // ndndnd       = XML_Add_Node(ndnd, "instance");
+  // ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  // XML_Add_Attribute(ndndnd, "value", "1.0");
 
   nd         = XML_Add_Node(root, "equfreqs");
   nd->attr   = XML_Make_Attribute(NULL, "id", "EF1");
@@ -166,17 +167,27 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Add_Attribute(nd, "data.type", "nt");
   XML_Add_Attribute(nd, "interleaved", "no");
 
-  ndnd       = XML_Add_Node(nd, "mixtureelem");
-  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1");
-  ndnd       = XML_Add_Node(nd, "mixtureelem");
-  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1");
-  ndnd       = XML_Add_Node(nd, "mixtureelem");
-  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1");
-  ndnd       = XML_Add_Node(nd, "mixtureelem");
-  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3");
-  ndnd       = XML_Add_Node(nd, "mixtureelem");
-  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1");
+  // ndnd       = XML_Add_Node(nd, "mixtureelem");
+  // ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1");
+  // ndnd       = XML_Add_Node(nd, "mixtureelem");
+  // ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1");
+  // ndnd       = XML_Add_Node(nd, "mixtureelem");
+  // ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1");
+  // ndnd       = XML_Add_Node(nd, "mixtureelem");
+  // ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3");
+  // ndnd       = XML_Add_Node(nd, "mixtureelem");
+  // ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1");
 
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1");
 
   sprintf(dum, "%s%d_%s_%s_%s", "./",io->r_seed, model, cv_type, "evolve_config.xml");
   fp = Openfile(dum, WRITE);
@@ -657,6 +668,17 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
   }
   else if (tree->mod->whichmodel == K80)
   {
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi_unscaled->v[i] = 1.0;
+
+    sum = 0.0;
+    for (int i = 0; i < mod->ns; ++i)
+      sum += tree->mod->e_frq->pi_unscaled->v[i];
+
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
+
+
     tree->mod->kappa->v = Uni() * (8. - 2.) + 2.;
 
     tree->mod->custom_mod_string->s[0] = '0';
@@ -681,6 +703,16 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
   }
   else if (tree->mod->whichmodel == JC69)
   {
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi_unscaled->v[i] = 1.0;
+
+    sum = 0.0;
+    for (int i = 0; i < mod->ns; ++i)
+      sum += tree->mod->e_frq->pi_unscaled->v[i];
+
+    for (int i = 0; i < mod->ns; ++i)
+      tree->mod->e_frq->pi->v[i] = tree->mod->e_frq->pi_unscaled->v[i] / sum;
+
     tree->mod->custom_mod_string->s[0] = '0';
     tree->mod->custom_mod_string->s[1] = '1';
     tree->mod->custom_mod_string->s[2] = '2';
@@ -703,13 +735,12 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
   }
 
   PhyML_Fprintf(fp_stats ? fp_stats : stdout,
-                "\n. pi: %7f %7f %7f %7f rr: %7f %7f %7f %7f %7f %7f (%5d %5d)",
+                "\n. pi: %7f %7f %7f %7f rr: %7f %7f %7f %7f %7f %7f",
                 mod->e_frq->pi->v[0], mod->e_frq->pi->v[1],
-              mod->e_frq->pi->v[2], mod->e_frq->pi->v[3],
+                mod->e_frq->pi->v[2], mod->e_frq->pi->v[3],
                 mod->r_mat->rr->v[AC], mod->r_mat->rr->v[AG],
                 mod->r_mat->rr->v[AT], mod->r_mat->rr->v[CG],
                 mod->r_mat->rr->v[CT], mod->r_mat->rr->v[GT]);
-
 
   for (site = 0; site < data->init_len; ++site)
   {
@@ -727,7 +758,8 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     shape = mean * mean / var;
     scale = var / mean;
 
-    r_mult = Rgamma(shape, scale);
+    // r_mult = Rgamma(shape, scale);
+    r_mult = 1.0; // No scaling of edge lengths -> no RAS
 
     // RAS : all edges multiplied by gamma distributed scaling factor
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
