@@ -14810,6 +14810,6 @@ phydbl AIC(t_tree * tree)
 phydbl BIC(t_tree * tree)
 {
   tree->mod->bic->v =
-      Number_Of_Free_Params(tree) * tree->data->init_len - 2. * Get_Lk(tree);
+      Number_Of_Free_Params(tree) * log(tree->data->init_len) - 2. * Get_Lk(tree);
   return (tree->mod->bic->v);
 }
