@@ -122,6 +122,7 @@ int EVOLVE_Main(int argc, char **argv)
   ndnd->attr = XML_Make_Attribute(NULL, "id", "M1");
   XML_Add_Attribute(ndnd, "model", model);
   XML_Add_Attribute(ndnd, "optimise.rr","yes");
+  XML_Add_Attribute(ndnd, "optimise.tstv", "yes");
 
   nd         = XML_Add_Node(root, "siterates");
   nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
