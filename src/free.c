@@ -1153,10 +1153,49 @@ void Free_Nexus_Parm(nexparm *parm)
 
 void XML_Free_XML_Tree(xml_node *node)
 {
-  if(!node) return;
-  if(node->child) XML_Free_XML_Tree(node->child);
-  if(node->next)  XML_Free_XML_Tree(node->next);
+  xml_node *n;
+  
+  if (!node) return;
+
+  n = NULL;
+  if (node->child) n = node->child->next;
+  while(n != NULL)
+  {
+    XML_Free_XML_Tree(n);
+    n = n->next;
+  }
+
+  if (node->child) XML_Free_XML_Tree(node->child);
+
   XML_Free_XML_Node(node);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void XML_Prune_XML_Tree(xml_node *node)
+{
+  if (node->parent)
+  {
+    xml_node *p, *n;
+    
+    p = node->parent;
+    n = NULL;
+    
+    if (p->child == node)
+    { 
+      p->child = node->next;
+      p->child->prev = NULL;
+    }
+    else 
+    {
+      n = p->child;
+      while (n->next && n->next != node) n = n->next;
+      assert(n->next);
+      n->next = n->next->next;
+      if(n->next) n->next->prev = n;
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////

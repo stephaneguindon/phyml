@@ -33,7 +33,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/Users/guindon/phyml/src/evolve",
-            "args": ["--n_otu=40", "--seq_len=1000", "r_seed=10", "-mHKY85"],
+            "args": ["--n_otu=40", "--seq_len=1000", "r_seed=10", "-mGTR", "--no_colalias", "-c1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

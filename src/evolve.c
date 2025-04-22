@@ -100,7 +100,7 @@ int EVOLVE_Main(int argc, char **argv)
   model = (char *)mCalloc(100, sizeof(char));
   cv_type = (char *)mCalloc(100, sizeof(char));
 
-  strcpy(model, "GTR");
+  strcpy(model, "noras");
   strcpy(cv_type, "kfold.pos");
 
   root = XML_Make_Node("phyml");
@@ -120,8 +120,8 @@ int EVOLVE_Main(int argc, char **argv)
   nd->attr   = XML_Make_Attribute(NULL, "id", "RM1");
   ndnd       = XML_Add_Node(nd, "instance");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "M1");
-  XML_Add_Attribute(ndnd, "model", model);
-  XML_Add_Attribute(ndnd, "optimise.rr","yes");
+  XML_Add_Attribute(ndnd, "model", "HKY85");
+  // XML_Add_Attribute(ndnd, "optimise.rr","yes");
   XML_Add_Attribute(ndnd, "optimise.tstv", "yes");
 
   nd         = XML_Add_Node(root, "siterates");
@@ -129,25 +129,13 @@ int EVOLVE_Main(int argc, char **argv)
   ndnd       = XML_Add_Node(nd, "instance");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
   XML_Add_Attribute(ndnd, "init.value", "1.0");
-  // ndnd       = XML_Add_Node(nd, "instance");
-  // ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
-  // XML_Add_Attribute(ndnd, "init.value", "1.0");
-  // ndnd       = XML_Add_Node(nd, "instance");
-  // ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
-  // XML_Add_Attribute(ndnd, "init.value", "1.0");
   ndnd       = XML_Add_Node(nd, "weights");
   ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
   XML_Add_Attribute(ndnd, "family", "freerates");
   ndndnd       = XML_Add_Node(ndnd, "instance");
   ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
   XML_Add_Attribute(ndndnd, "value", "1.0");
-  // ndndnd       = XML_Add_Node(ndnd, "instance");
-  // ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
-  // XML_Add_Attribute(ndndnd, "value", "1.0");
-  // ndndnd       = XML_Add_Node(ndnd, "instance");
-  // ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
-  // XML_Add_Attribute(ndndnd, "value", "1.0");
-
+  
   nd         = XML_Add_Node(root, "equfreqs");
   nd->attr   = XML_Make_Attribute(NULL, "id", "EF1");
   ndnd       = XML_Add_Node(nd, "instance");
@@ -195,11 +183,10 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Write_XML_Graph(fp, root);
   fclose(fp);
 
+  ///
+  ///
 
-///
-///
-
-  strcpy(model, "GTR");
+  strcpy(model,"noras");
   strcpy(cv_type, "kfold.col");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -208,9 +195,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd         = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd       = XML_Search_Node_Name("instance" , NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd         = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd       = XML_Search_Node_Name("instance" , NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./",io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -221,7 +208,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "GTR");
+  strcpy(model, "noras");
   strcpy(cv_type, "maxfold");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -230,9 +217,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -243,7 +230,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "HKY85");
+  strcpy(model, "gamma");
   strcpy(cv_type, "kfold.pos");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -252,9 +239,67 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
+
+
+  nd = XML_Search_Node_Name("siterates", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd         = XML_Add_Node(root, "siterates");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R4");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "weights");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
+  XML_Add_Attribute(ndnd, "family", "gamma");
+  XML_Add_Attribute(ndnd, "optimise.alpha", "yes");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R4");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+
+  nd = XML_Search_Node_Name("partitionelem", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd = XML_Add_Node(root, "partitionelem");
+  nd->attr = XML_Make_Attribute(NULL, "id", "partition1");
+  dum      = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
+  XML_Add_Attribute(nd, "file.name", dum);
+  XML_Add_Attribute(nd, "data.type", "nt");
+  XML_Add_Attribute(nd, "interleaved", "no");
+
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1,T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1,M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1,F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3,R4");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1,L1");
+
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -265,7 +310,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "HKY85");
+  strcpy(model, "gamma");
   strcpy(cv_type, "kfold.col");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -274,9 +319,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -287,7 +332,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "HKY85");
+  strcpy(model, "gamma");
   strcpy(cv_type, "maxfold");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -296,9 +341,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -309,7 +354,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "K80");
+  strcpy(model, "fr3");
   strcpy(cv_type, "kfold.pos");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -318,9 +363,60 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
+
+  nd = XML_Search_Node_Name("siterates", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd         = XML_Add_Node(root, "siterates");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  XML_Add_Attribute(ndnd, "init.value", "2.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  XML_Add_Attribute(ndnd, "init.value", "3.0");
+  ndnd       = XML_Add_Node(nd, "weights");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
+  XML_Add_Attribute(ndnd, "family", "freerates");
+  XML_Add_Attribute(ndnd, "optimise.freerates", "yes");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+
+  nd = XML_Search_Node_Name("partitionelem", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd       = XML_Add_Node(root, "partitionelem");
+  nd->attr = XML_Make_Attribute(NULL, "id", "partition1");
+  dum      = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
+  XML_Add_Attribute(nd, "file.name", dum);
+  XML_Add_Attribute(nd, "data.type", "nt");
+  XML_Add_Attribute(nd, "interleaved", "no");
+
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1");
+
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -331,7 +427,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "K80");
+  strcpy(model, "fr3");
   strcpy(cv_type, "kfold.col");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -340,9 +436,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -353,7 +449,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "K80");
+  strcpy(model, "fr3");
   strcpy(cv_type, "maxfold");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -362,9 +458,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -375,7 +471,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "JC69");
+  strcpy(model, "fr8");
   strcpy(cv_type, "kfold.pos");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -384,9 +480,89 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
+
+  nd = XML_Search_Node_Name("siterates", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd         = XML_Add_Node(root, "siterates");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
+  XML_Add_Attribute(ndnd, "init.value", "1.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  XML_Add_Attribute(ndnd, "init.value", "2.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  XML_Add_Attribute(ndnd, "init.value", "3.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R4");
+  XML_Add_Attribute(ndnd, "init.value", "4.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R5");
+  XML_Add_Attribute(ndnd, "init.value", "5.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R6");
+  XML_Add_Attribute(ndnd, "init.value", "6.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R7");
+  XML_Add_Attribute(ndnd, "init.value", "7.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R8");
+  XML_Add_Attribute(ndnd, "init.value", "8.0");
+  ndnd       = XML_Add_Node(nd, "weights");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
+  XML_Add_Attribute(ndnd, "family", "freerates");
+  XML_Add_Attribute(ndnd, "optimise.freerates", "yes");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R4");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R5");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R6");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R7");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R8");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+
+  nd = XML_Search_Node_Name("partitionelem",NO,root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd       = XML_Add_Node(root, "partitionelem");
+  nd->attr = XML_Make_Attribute(NULL, "id", "partition1");
+  dum      = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
+  XML_Add_Attribute(nd, "file.name", dum);
+  XML_Add_Attribute(nd, "data.type", "nt");
+  XML_Add_Attribute(nd, "interleaved", "no");
+
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1,T1,T1,T1,T1,T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1,M1,M1,M1,M1,M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1,F1,F1,F1,F1,F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3,R4,R5,R6,R7,R8");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1,L1,L1,L1,L1,L1");
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -397,7 +573,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "JC69");
+  strcpy(model, "fr8");
   strcpy(cv_type, "kfold.col");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -406,9 +582,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -419,7 +595,7 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "JC69");
+  strcpy(model, "fr8");
   strcpy(cv_type, "maxfold");
 
   sprintf(dum, "%s_%s", model, cv_type);
@@ -428,9 +604,9 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
-  nd   = XML_Search_Node_Name("ratematrices", NO, root);
-  ndnd = XML_Search_Node_Name("instance", NO, nd);
-  XML_Set_Attribute_Value(ndnd, "model", model);
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
 
   sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
           "evolve_config.xml");
@@ -749,23 +925,61 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     /* Pick the rate class */
     root_state = root_rate_class = 0;
 
-    // root_rate_class =
-    //     EVOLVE_Pick_State(mod->ras->n_catg, mod->ras->gamma_r_proba->v);
+    // // Continuous gamma distribution
+    // var = 0.001;
+    // // var  = 1;
+    // mean = 1.0;
 
-    var  = 5.0;
-    mean = 1.0;
-
-    // Set edge lengths
-    shape = mean * mean / var;
-    scale = var / mean;
+    // shape = mean * mean / var;
+    // scale = var / mean;
 
     // r_mult = Rgamma(shape, scale);
-    r_mult = 1.0; // No scaling of edge lengths -> no RAS
+
+    
+    
+    // Discrete gamma distribution
+    mod->ras->alpha->v = 1.0;
+    mod->ras->n_catg   = 4;
+    DiscreteGamma(mod->ras->gamma_r_proba->v, mod->ras->gamma_rr->v,
+                  mod->ras->alpha->v, mod->ras->alpha->v, mod->ras->n_catg,
+                  mod->ras->gamma_median);
+    root_rate_class =
+        EVOLVE_Pick_State(mod->ras->n_catg, mod->ras->gamma_r_proba->v);
+    r_mult = mod->ras->gamma_rr->v[root_rate_class];
+    PhyML_Printf("\n. COUCOU");
+
+    // FreeRates 8 classes, bimodal distribution
+    // phydbl *ui,*xi,sumu,sumux;
+    // int n_classes;
+    
+    // n_classes = 8;
+    
+    // ui = (phydbl *)mCalloc(n_classes,sizeof(phydbl));
+    // xi = (phydbl *)mCalloc(n_classes,sizeof(phydbl));
+
+    // for (int i = 0; i < n_classes; ++i) ui[i] = 1.0;
+    // for (int i = 0; i < n_classes; ++i) xi[i] = (phydbl)(i+1.);
+
+    // ui[1] = 2.;
+    // ui[4] = 2.;
+
+    // sumu = .0;
+    // for (int i = 0; i < n_classes; ++i) sumu += ui[i];
+
+    // sumux = .0;
+    // for (int i = 0; i < n_classes; ++i) sumux += ui[i]*xi[i];
+
+    // for (int i = 0; i < n_classes; ++i) xi[i] *= (sumu/sumux);
+    // for (int i = 0; i < n_classes; ++i) ui[i] *= (1.0/sumu);
+
+    // r_mult = xi[Sample_i_With_Proba_pi(ui,n_classes)];
+
+    // Free(xi);
+    // Free(ui)
 
     // RAS : all edges multiplied by gamma distributed scaling factor
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
-
 
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       Update_PMat_At_Given_Edge(tree->a_edges[i], tree);
@@ -831,19 +1045,20 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
 
 int EVOLVE_Pick_State(int n, phydbl *prob)
 {
-  int    pos;
-  phydbl uni;
+  // int    pos;
+  // phydbl uni;
 
-  do
-  {
-    pos = rand();
-    pos = (pos % n);
-    uni = (phydbl)rand();
-    uni /= (phydbl)RAND_MAX;
-    if (uni < prob[pos]) break;
-  } while (1);
+  // do
+  // {
+  //   pos = rand();
+  //   pos = (pos % n);
+  //   uni = (phydbl)rand();
+  //   uni /= (phydbl)RAND_MAX;
+  //   if (uni < prob[pos]) break;
+  // } while (1);
 
-  return (int)pos;
+  // return (int)pos;
+  return(Sample_i_With_Proba_pi(prob, n));
 }
 
 //////////////////////////////////////////////////////////////

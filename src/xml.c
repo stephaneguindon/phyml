@@ -2276,6 +2276,8 @@ void XML_Write_XML_Node(FILE *fp, int *indent, short int recurr_next,
   char     *s;
   int       i;
 
+  assert(root);
+  
   s = (char *)mCalloc((*indent) + 1, sizeof(char));
   for (i = 0; i < (*indent); ++i) s[i] = '\t';
   s[i] = '\0';

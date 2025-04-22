@@ -3108,7 +3108,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES) && (tree->mod->ras->n_catg > 1))
+      if((tree->mod->s_opt->opt_free_mixt_rates == YES) && (tree->mod->ras->free_mixt_rates == YES) && (tree->mod->ras->n_catg > 1))
         {
           if(tree->mod->s_opt->serial_free_rates == YES)
             {
