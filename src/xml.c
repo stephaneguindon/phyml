@@ -516,6 +516,8 @@ t_tree *XML_Process_Base(char *xml_filename)
         mixt_tree->mod->cv_type = MAXFOLD;
         else mixt_tree->mod->cv_type = -1;
     }
+    else
+      mixt_tree->mod->cv_type = -1;
 
     /*! Process all the mixtureelem tags in this partition element
      */

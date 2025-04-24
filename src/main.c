@@ -276,9 +276,7 @@ int main(int argc, char **argv)
               Round_Optimize(tree, ROUND_MAX);
           }
 
-          phydbl *probs = CV_Tip_Cv(tree);
-          Free(probs);
-
+        
           /* if(tree->mod->gamma_mgf_bl)
            * Best_Root_Position_IL_Model(tree); */
 
