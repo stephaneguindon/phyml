@@ -4939,7 +4939,7 @@ int Sort_String(const void *a, const void *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
+phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 {
   int     i, j, k;
   t_edge *b1, *b2;
@@ -4949,10 +4949,13 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   int      bip_size1, bip_size2, bip_size;
   int      identical;
   int      n_edges;
-
+  phydbl   diff;
+  
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
   /* WARNING: call Match_Tip_Numbers and Get_Bip before using this function. */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+  diff = .0;
 
   if (on_existing_edges_only == YES)
   {
@@ -5068,9 +5071,12 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
         }
       }
     }
-  out:;
-  }
-  return n_edges - identical;
+    out:;
+    if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1)) diff += b1->l->v;
+    // if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1)) diff += 1.;
+    }
+  return diff;
+  // return (phydbl)(n_edges - identical);
 }
 
 /*

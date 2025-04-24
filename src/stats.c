@@ -4466,7 +4466,6 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
       Exit("\n");
     }
 
-  i = 0;
   u = Uni();
   for(i=0;i<len;i++) if(cum_pi[i] > u) break;
 

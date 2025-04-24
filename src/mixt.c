@@ -4320,7 +4320,8 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
         // with masked positions)
         Init_Partial_Lk_Tips_Double(mixt_tree);
         // Global_Spr_Search(mixt_tree);
-        Optimize_Br_Len_Serie(mixt_tree->n_otu, mixt_tree);
+        // Optimize_Br_Len_Serie(mixt_tree->n_otu, mixt_tree);
+        Round_Optimize(mixt_tree,1000);
         Set_Both_Sides(YES, mixt_tree);
         Set_Update_Eigen(YES, mixt_tree->mod);
         Lk(NULL, mixt_tree);

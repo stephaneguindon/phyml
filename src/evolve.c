@@ -938,46 +938,66 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     
     
     // Discrete gamma distribution
-    mod->ras->alpha->v = 1.0;
-    mod->ras->n_catg   = 4;
-    DiscreteGamma(mod->ras->gamma_r_proba->v, mod->ras->gamma_rr->v,
-                  mod->ras->alpha->v, mod->ras->alpha->v, mod->ras->n_catg,
-                  mod->ras->gamma_median);
-    root_rate_class =
-        EVOLVE_Pick_State(mod->ras->n_catg, mod->ras->gamma_r_proba->v);
-    r_mult = mod->ras->gamma_rr->v[root_rate_class];
-    PhyML_Printf("\n. COUCOU");
 
-    // FreeRates 8 classes, bimodal distribution
-    // phydbl *ui,*xi,sumu,sumux;
+    // phydbl *ui,*xi,alpha;
     // int n_classes;
+
+    // n_classes = 4;
+    // alpha = 1.0;
     
-    // n_classes = 8;
-    
-    // ui = (phydbl *)mCalloc(n_classes,sizeof(phydbl));
+    // ui    = (phydbl *)mCalloc(n_classes, sizeof(phydbl));
     // xi = (phydbl *)mCalloc(n_classes,sizeof(phydbl));
+
+    // DiscreteGamma(ui, xi, alpha, alpha, n_classes, NO);
+        
+    // r_mult     = xi[EVOLVE_Pick_State(n_classes, ui)];
+    // Free(ui);
+    // Free(xi);
+
+
+                  // FreeRates 8 classes, bimodal distribution
+    phydbl *ui,*xi,sumu,sumux;
+    int n_classes;
+
+    n_classes = 8;
+    
+    // Unscaled frequencies
+    ui = (phydbl *)mCalloc(n_classes,sizeof(phydbl));
+    // Unscaled relative rates
+    xi = (phydbl *)mCalloc(n_classes, sizeof(phydbl));
 
     // for (int i = 0; i < n_classes; ++i) ui[i] = 1.0;
     // for (int i = 0; i < n_classes; ++i) xi[i] = (phydbl)(i+1.);
 
     // ui[1] = 2.;
     // ui[4] = 2.;
+    ui[0] = 1.0; xi[0] = 0.0;
+    ui[1] = 2.0; xi[1] = 0.3;
+    ui[2] = 3.0; xi[2] = 0.5;
+    ui[3] = 1.0; xi[3] = 1.2;
+    ui[4] = 1.0; xi[4] = 1.5;
+    ui[5] = 2.0; xi[5] = 3.0;
+    ui[6] = 0.5; xi[6] = 5.0;
+    ui[7] = 0.5; xi[7] = 8.0;
 
-    // sumu = .0;
-    // for (int i = 0; i < n_classes; ++i) sumu += ui[i];
+    sumu = .0;
+    for (int i = 0; i < n_classes; ++i) sumu += ui[i];
 
-    // sumux = .0;
-    // for (int i = 0; i < n_classes; ++i) sumux += ui[i]*xi[i];
+    sumux = .0;
+    for (int i = 0; i < n_classes; ++i) sumux += ui[i]*xi[i];
 
-    // for (int i = 0; i < n_classes; ++i) xi[i] *= (sumu/sumux);
-    // for (int i = 0; i < n_classes; ++i) ui[i] *= (1.0/sumu);
+    for (int i = 0; i < n_classes; ++i) xi[i] *= (sumu/sumux);
+    for (int i = 0; i < n_classes; ++i) ui[i] *= (1.0/sumu);
 
-    // r_mult = xi[Sample_i_With_Proba_pi(ui,n_classes)];
+    r_mult = xi[Sample_i_With_Proba_pi(ui,n_classes)];
 
-    // Free(xi);
-    // Free(ui)
+    Free(xi);
+    Free(ui);
 
-    // RAS : all edges multiplied by gamma distributed scaling factor
+    PhyML_Fprintf(fp_stats ? fp_stats : stdout, "site %d r_mult %f\n", site,
+                  r_mult);
+
+                  // RAS : all edges multiplied by gamma distributed scaling factor
     for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
       tree->a_edges[i]->l->v = orig_l[i] * r_mult;
 
@@ -1058,7 +1078,7 @@ int EVOLVE_Pick_State(int n, phydbl *prob)
   // } while (1);
 
   // return (int)pos;
-  return(Sample_i_With_Proba_pi(prob, n));
+  return((int)Sample_i_With_Proba_pi(prob, n));
 }
 
 //////////////////////////////////////////////////////////////
@@ -1073,12 +1093,13 @@ void EVOLVE_Seq_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class,
   dim1 = tree->mod->ns * tree->mod->ns;
   dim2 = tree->mod->ns;
 
-  //   PhyML_Printf("\n## L:%G %G %G %G %G",
-  //                b->l->v,
-  //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 0],
-  //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 1],
-  //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 2],
-  //                b->Pij_rr[r_class * dim1 + a_state * dim2 + 3]);
+    // PhyML_Printf("\n## L:%G r_class: %d %G %G %G %G",
+    //              b->l->v,
+    //              r_class,
+    //              b->Pij_rr[r_class * dim1 + a_state * dim2 + 0],
+    //              b->Pij_rr[r_class * dim1 + a_state * dim2 + 1],
+    //              b->Pij_rr[r_class * dim1 + a_state * dim2 + 2],
+    //              b->Pij_rr[r_class * dim1 + a_state * dim2 + 3]);
 
   d_state =
       EVOLVE_Pick_State(mod->ns, b->Pij_rr + r_class * dim1 + a_state * dim2);

@@ -474,19 +474,19 @@ int main(int argc, char **argv)
 #elif (RF)
 int main(int argc, char **argv)
 {
-  option *io;
-  int     r_seed;
+  // option *io;
+  // int     r_seed;
 
-  io = (option *)Get_Input(argc, argv);
-  if (!io) return (0);
+  // io = (option *)Get_Input(argc, argv);
+  // if (!io) return (0);
 
-  r_seed = (io->r_seed < 0) ? (time(NULL)) : (io->r_seed);
-  srand(r_seed);
-  io->r_seed = r_seed;
+  // r_seed = (io->r_seed < 0) ? (time(NULL)) : (io->r_seed);
+  // srand(r_seed);
+  // io->r_seed = r_seed;
 
-  Get_Seq(io);
-  Shuffle_Sites(io->mod->ras->pinvar->v, io->data, io->n_otu);
-  Print_Seq(stdout, io->data, io->n_otu);
+  // Get_Seq(io);
+  // Shuffle_Sites(io->mod->ras->pinvar->v, io->data, io->n_otu);
+  // Print_Seq(stdout, io->data, io->n_otu);
 
   /* t_tree *tree1, *tree2; */
   /* FILE *fp_tree1, *fp_tree2; */
@@ -514,33 +514,32 @@ int main(int argc, char **argv)
    */
   /*   } */
 
-  /*   t_tree *tree1, *tree2; */
-  /*   FILE *fp_tree1, *fp_tree2; */
-  /*   int i,j,rf,n_edges,n_common,bip_size; */
-  /*   phydbl thresh; */
-  /*   t_edge *b; */
+  t_tree *tree1, *tree2;
+  FILE *fp_tree1, *fp_tree2;
+  int i,j,rf,n_edges,n_common,bip_size;
+  phydbl thresh;
+  t_edge *b; 
 
-  /*   fp_tree1 = (FILE *)fopen(argv[1],"r"); */
-  /*   fp_tree2 = (FILE *)fopen(argv[2],"r"); */
-  /*   thresh = (phydbl)atof(argv[3]); */
+  fp_tree1 = (FILE *)fopen(argv[1],"r");
+  fp_tree2 = (FILE *)fopen(argv[2],"r");
 
-  /*   tree1 = Read_Tree_File(fp_tree1); */
-  /*   tree2 = Read_Tree_File(fp_tree2); */
+  tree1 = Read_Tree_File_Phylip(fp_tree1); 
+  tree2 = Read_Tree_File_Phylip(fp_tree2); 
 
-  /*   Get_Rid_Of_Prefix('_',tree1); */
+  // Get_Rid_Of_Prefix('_',tree1);
+  // Find_Common_Tips(tree1,tree2); 
 
-  /* /\*   Find_Common_Tips(tree1,tree2); *\/ */
+  Alloc_Bip(tree1); 
+  Alloc_Bip(tree2); 
 
-  /*   Alloc_Bip(tree1); */
-  /*   Alloc_Bip(tree2); */
+  Get_Bip(tree1->a_nodes[0],tree1->a_nodes[0]->v[0],tree1); 
+  Get_Bip(tree2->a_nodes[0],tree2->a_nodes[0]->v[0],tree2);
 
-  /*   Get_Bip(tree1->noeud[0],tree1->noeud[0]->v[0],tree1); */
-  /*   Get_Bip(tree2->noeud[0],tree2->noeud[0]->v[0],tree2); */
+  PhyML_Printf("\n. rf=%f\n",
+               .5 * (Compare_Bip(tree1, tree2, NO) + Compare_Bip(tree2, tree1, NO)));
 
-  /* /\*   PhyML_Printf("\n.
-   * rf=%f\n",Compare_Bip_On_Existing_Edges(thresh,tree1,tree2)); *\/ */
-  /*   For(i,2*tree1->n_otu-3) tree1->a_edges[i]->bip_score = 0; */
-  /*   For(i,2*tree2->n_otu-3) tree2->a_edges[i]->bip_score = 0; */
+  // for (i = 0; i < 2 * tree1->n_otu - 3; ++i) tree1->a_edges[i]->bip_score = 0;
+  // for (i = 0; i < 2 * tree2->n_otu - 3; ++i) tree2->a_edges[i]->bip_score = 0;
 
   /*   rf = 0; */
   /*   n_edges = 0; */

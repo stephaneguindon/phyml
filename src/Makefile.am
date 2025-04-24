@@ -153,7 +153,13 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 tbe.c tbe.h \
+cv.c cv.h\
 ancestral.c ancestral.h\
+m4.c m4.h\
+evolve.c evolve.h\
+times.c times.h\
+date.c date.h\
+rates.c rates.h\
 sse.c sse.h\
 avx.c avx.h
 # rf_LDADD = -lm
