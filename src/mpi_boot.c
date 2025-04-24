@@ -55,7 +55,7 @@ void Bootstrap_MPI(t_tree *tree)
 	Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 	
 	n_site = 0;
-	for(j=0;j<tree->data->crunch_len;j++)
+	for(j=0;j<tree->data->n_pattern;j++)
 	{
 		for(k=0;k<tree->data->wght[j];++k)
 		{
@@ -64,7 +64,7 @@ void Bootstrap_MPI(t_tree *tree)
 		}
 	}
 	
-	boot_data = Copy_Cseq(tree->data,tree->io);
+	boot_data = Copy_Cseq(tree->data,tree->io, NULL);
 	
 	if(Global_numTask <= 1)
 	{
@@ -104,7 +104,7 @@ void Bootstrap_MPI(t_tree *tree)
 			fflush(stderr);
 #endif
 			// Compute one bootstrap replicate	
-			for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
+			for(j=0;j<boot_data->n_pattern;j++) boot_data->wght[j] = 0;
 
 			init_len = 0;
 			for(j=0;j<boot_data->init_len;j++)
@@ -121,7 +121,7 @@ void Bootstrap_MPI(t_tree *tree)
 			}
 
 			init_len = 0;
-			for(j=0;j<boot_data->crunch_len;j++)
+			for(j=0;j<boot_data->n_pattern;j++)
 				init_len += boot_data->wght[j];
 			
 			if (init_len != tree->data->init_len)
@@ -166,7 +166,6 @@ void Bootstrap_MPI(t_tree *tree)
 			boot_tree->io                   = tree->io;
 			boot_tree->data                 = boot_data;
 			boot_tree->verbose              = VL0;
-			boot_tree->n_pattern            = boot_tree->data->crunch_len;
 			boot_tree->io->print_site_lnl   = NO;
 			boot_tree->io->print_trace      = NO;
 			boot_tree->io->print_json_trace = NO;

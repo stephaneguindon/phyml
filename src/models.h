@@ -28,7 +28,7 @@ void  PMat_Empirical(phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phy
 void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij);
 void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij);
 int GetDaa (phydbl *daa, phydbl *pi, char *file_name);
-void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat, int opt_rr);
+void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat);
 void Update_Qmat_HKY(phydbl kappa, phydbl *pi, phydbl *qmat);
 phydbl Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat);
 void Translate_Custom_Mod_String(t_mod *mod);

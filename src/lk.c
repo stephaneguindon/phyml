@@ -61,8 +61,8 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk)
       p_lk[pos+0]=p_lk[pos+1]=p_lk[pos+2]=p_lk[pos+3]=1.;break;
     default :
       {
-        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
-        Exit("\n. Init failed (data type supposed to be DNA)\n");
+        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c' at position %d.\n",state,pos);
+        assert(false);
         break;
       }
     }
@@ -110,7 +110,7 @@ void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_par
     default :
       {
         PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
-        Exit("\n. Init failed (data type supposed to be DNA)\n");
+        assert(false);
         break;
       }
     }
@@ -447,7 +447,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int npatterns = tree->n_pattern;
+  const unsigned int npatterns = tree->data->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
 
   
@@ -661,7 +661,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
    
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int npattern = tree->n_pattern;
+  const unsigned int npattern = tree->data->n_pattern;
 
   phydbl *dot_prod = tree->dot_prod;
   phydbl *expl = tree->expl;
@@ -1040,7 +1040,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   phydbl *dot_prod,*r_e_vect,*l_e_vect,*p_lk_left,*p_lk_rght,*pi;
   phydbl left,rght;
   
-  const unsigned int npattern = tree->n_pattern;
+  const unsigned int npattern = tree->data->n_pattern;
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int nsncatg = ns*ncatg;
@@ -1190,9 +1190,10 @@ phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydb
     
   if(ambiguity_check == NO)/* tip case */
     {      
+     assert(state >= 0);
       sum = .0;
       Pij += state*ns;
-      for(l=0;l<ns;++l) sum += Pij[l] * p_lk_left[l];               
+      for(l=0;l<ns;++l) sum += Pij[l] * p_lk_left[l];
       lk += sum * pi[state];
     }
   else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */
@@ -1381,7 +1382,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
       Exit("\n");
     }
 
-  n_patterns = tree->n_pattern;
+  n_patterns = tree->data->n_pattern;
 
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
@@ -1609,7 +1610,7 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int ns = tree->mod->ns;
-  const unsigned int n_patterns = tree->n_pattern;
+  const unsigned int n_patterns = tree->data->n_pattern;
 
 
   if(tree->n_root && tree->ignore_root == YES &&
@@ -1790,11 +1791,11 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   phydbl *F,len;
   eigen *eigen_struct;
 
-  tmpdata         = (calign *)mCalloc(1,sizeof(calign));
-  tmpdata->c_seq  = (align **)mCalloc(2,sizeof(align *));
-  tmpdata->obs_state_frq  = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
-  tmpdata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
-  F               = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl ));
+  tmpdata                = (calign *)mCalloc(1, sizeof(calign));
+  tmpdata->c_seq         = (align **)mCalloc(2, sizeof(align *));
+  tmpdata->obs_state_frq = (phydbl *)mCalloc(mod->ns, sizeof(phydbl));
+  tmpdata->ambigu = (short int *)mCalloc(data->n_pattern, sizeof(short int));
+  F               = (phydbl *)mCalloc(mod->ns * mod->ns, sizeof(phydbl));
   eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
 
   Set_Update_Eigen(YES,mod);
@@ -1803,8 +1804,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
 
   tmpdata->n_otu = 2;
 
-  tmpdata->crunch_len = data->crunch_len;
-  tmpdata->init_len   = data->init_len;
+  tmpdata->n_pattern = data->n_pattern;
+  tmpdata->init_len  = data->init_len;
 
   mat = NULL;
   if(mod->io->datatype == NT)           mat = (mod->whichmodel < 10)?(K80_dist(data,1E+6)):(JC69_Dist(data,mod));
@@ -2033,7 +2034,7 @@ void Unconstraint_Lk(t_tree *tree)
   int i;
 
   tree->unconstraint_lk = .0;
-  for(i=0;i<tree->data->crunch_len;i++) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
+  for(i=0;i<tree->data->n_pattern;i++) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
   tree->unconstraint_lk -= tree->data->init_len*(phydbl)log(tree->data->init_len);
 }
 
@@ -2057,44 +2058,96 @@ void Composite_Lk(t_tree *tree)
 
 void Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
-  unsigned int curr_site,i,dim1;
 
-  if(tree->is_mixt_tree == YES) return;
-  
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double(tree);
+    return;
+  }
+
+  for (int tax_id = 0; tax_id < tree->n_otu; tax_id++)
+  {
+    if (!tree->a_nodes[tax_id]->c_seq ||
+        strcmp(tree->a_nodes[tax_id]->c_seq->name, tree->a_nodes[tax_id]->name))
+    {
+      PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n",
+                    __FILE__, __LINE__, __FUNCTION__);
+      Exit("");
+    }
+  }
+
+  for (int site = 0; site < tree->data->n_pattern; site++)
+  {
+    for (int tax_id = 0; tax_id < tree->n_otu; tax_id++)
+    {
+      Init_Partial_Lk_Tips_Double_One_Character(tax_id, site, tree);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_Partial_Lk_Tips_Double_One_Character(int node_id, int site, t_tree *tree)
+{
+  int dim1;
+
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double_One_Character(node_id, site, tree);
+    return;
+  }
+
   dim1 = tree->mod->ns;
 
+  if (tree->io->datatype == NT)
+    Init_Tips_At_One_Site_Nucleotides_Float(
+        tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  else if (tree->io->datatype == AA)
+    Init_Tips_At_One_Site_AA_Float(
+        tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  else if (tree->io->datatype == GENERIC)
+    Init_Tips_At_One_Site_Generic_Float(
+        tree->a_nodes[node_id]->c_seq->state +
+            site * tree->mod->io->state_len,
+        tree->mod->ns, tree->mod->io->state_len, site * dim1,
+        tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+}
 
-  for(i=0;i<tree->n_otu;i++)
-    {
-      if(!tree->a_nodes[i]->c_seq || 
-	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
-        {
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("");
-        }
-    }
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
-    {
-      for(i=0;i<tree->n_otu;i++)
-        {          
-          if (tree->io->datatype == NT)
-            Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                                    curr_site*dim1,
-                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          else if(tree->io->datatype == AA)
-            Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                           curr_site*dim1,
-                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          
-          else if(tree->io->datatype == GENERIC)
-            Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                                                tree->mod->ns,
-                                                tree->mod->io->state_len,
-                                                curr_site*dim1,
-                                                tree->a_nodes[i]->b[0]->p_lk_tip_r);
-        }
-    }
+void Init_Partial_Lk_Tips_Double_One_Site(int site, t_tree *tree)
+{
+  int dim1;
+
+  if (tree->is_mixt_tree == YES)
+  {
+    MIXT_Init_Partial_Lk_Tips_Double_One_Site(site, tree);
+    return;
+  }
+
+  dim1 = tree->mod->ns;
+
+  for (int node_id = 0; node_id < tree->n_otu; node_id++)
+  {
+    if (tree->io->datatype == NT)
+      Init_Tips_At_One_Site_Nucleotides_Float(
+          tree->a_nodes[node_id]->c_seq->state[site], site * dim1,
+          tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+    else if (tree->io->datatype == AA)
+      Init_Tips_At_One_Site_AA_Float(tree->a_nodes[node_id]->c_seq->state[site],
+                                     site * dim1,
+                                     tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+    else if (tree->io->datatype == GENERIC)
+      Init_Tips_At_One_Site_Generic_Float(
+          tree->a_nodes[node_id]->c_seq->state +
+              site * tree->mod->io->state_len,
+          tree->mod->ns, tree->mod->io->state_len, site * dim1,
+          tree->a_nodes[node_id]->b[0]->p_lk_tip_r);
+  }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2102,69 +2155,80 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
 
 void Init_Partial_Lk_Tips_Int(t_tree *tree)
 {
-  int curr_site,i,dim1;
+  int curr_site, i, dim1;
 
-  if(tree->is_mixt_tree == YES) return;
+  if (tree->is_mixt_tree == YES) return;
 
   dim1 = tree->mod->ns;
 
-  for(i=0;i<tree->n_otu;i++)
+  for (i = 0; i < tree->n_otu; i++)
+  {
+    if (!tree->a_nodes[i]->c_seq ||
+        strcmp(tree->a_nodes[i]->c_seq->name, tree->a_nodes[i]->name))
     {
-      if(!tree->a_nodes[i]->c_seq || 
-	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
-        {
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("");
-        }
+      PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d (function '%s') \n",
+                    __FILE__, __LINE__, __FUNCTION__);
+      Exit("");
     }
+  }
 
-  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+  for (curr_site = 0; curr_site < tree->data->n_pattern; curr_site++)
+  {
+    for (i = 0; i < tree->n_otu; i++)
     {
-      for(i=0;i<tree->n_otu;i++)
-        {
-          /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
-          /* printf("\n. init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
-          if(tree->io->datatype == NT)
-            {
-              Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                                    curr_site*dim1,
-                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
-              /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
-              /* 					    curr_site*dim1, */
-              /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-            }
-          else if(tree->io->datatype == AA)
-            Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                           curr_site*dim1,
-                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
-          /* 				 curr_site*dim1,					    */
-          /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-          
-          else if(tree->io->datatype == GENERIC)
-            {
-              Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                                                  tree->mod->ns,
-                                                  tree->mod->io->state_len,
-                                                  curr_site*dim1,
-                                                  tree->a_nodes[i]->b[0]->p_lk_tip_r);
-              
-              /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
-              /* 					tree->mod->ns, */
-              /* 					tree->mod->io->state_len, */
-              /* 					curr_site*dim1, */
-              /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-            }
-#ifdef BEAGLE
-          //Recall that tip partials are stored on the branch leading
-          //to the tip, rather than on the tip itself (hence `p_lk_tip_idx`
-          //is a field of the branch (i.e. b[0]) rather than the node.
-          //Secondly, the BEAGLE's partial buffers are laid out as
-          //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
-        tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
-#endif
+      /* printf("\n. site: %3d
+       * %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
+      /* printf("\n. init at %s
+       * %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r);
+       * fflush(NULL); */
+      if (tree->io->datatype == NT)
+      {
+        Init_Tips_At_One_Site_Nucleotides_Float(
+            tree->a_nodes[i]->c_seq->state[curr_site], curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+        /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],
+         */
+        /* 					    curr_site*dim1, */
+        /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r);
+         */
       }
+      else if (tree->io->datatype == AA)
+        Init_Tips_At_One_Site_AA_Float(
+            tree->a_nodes[i]->c_seq->state[curr_site], curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+      /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
+      /* 				 curr_site*dim1,
+       */
+      /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
+
+      else if (tree->io->datatype == GENERIC)
+      {
+        Init_Tips_At_One_Site_Generic_Float(
+            tree->a_nodes[i]->c_seq->state +
+                curr_site * tree->mod->io->state_len,
+            tree->mod->ns, tree->mod->io->state_len, curr_site * dim1,
+            tree->a_nodes[i]->b[0]->p_lk_tip_r);
+
+        /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len,
+         */
+        /* 					tree->mod->ns, */
+        /* 					tree->mod->io->state_len, */
+        /* 					curr_site*dim1, */
+        /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r);
+         */
+      }
+#ifdef BEAGLE
+      // Recall that tip partials are stored on the branch leading
+      // to the tip, rather than on the tip itself (hence `p_lk_tip_idx`
+      // is a field of the branch (i.e. b[0]) rather than the node.
+      // Secondly, the BEAGLE's partial buffers are laid out as
+      // BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left,
+      // b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M
+      // branches)
+      tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
+#endif
     }
+  }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2247,7 +2311,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
-
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
       else
@@ -2432,7 +2495,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
   
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      for(j=0;j<tree->n_pattern;j++)
+      for(j=0;j<tree->data->n_pattern;j++)
         {
           tree->a_edges[i]->p_lk_loc_left[j] = j;
           tree->a_edges[i]->p_lk_loc_rght[j] = j;
@@ -2443,7 +2506,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
     {
       d = tree->a_nodes[i];
       patt_id_d = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
-      for(j=0;j<tree->n_pattern;j++)
+      for(j=0;j<tree->data->n_pattern;j++)
         {
           assert(tree->a_nodes[d->num]->c_seq);
           patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
@@ -3265,6 +3328,11 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 {
   unsigned int i,j;
 
+  assert(plk0);
+  assert(plk1);
+  assert(plk2);
+  assert(Pij1);
+  assert(Pij2);
   
   for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
 
@@ -3298,6 +3366,13 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 void Partial_Lk_Exex(const phydbl *Pij1, const int state1, const phydbl *Pij2, const int state2, const int ns, phydbl *plk0)
 {
   unsigned int i;
+
+  assert(state1 >= 0);
+  assert(state2 >= 0);
+  assert(Pij1);
+  assert(Pij2);
+  assert(plk0);
+
   for(i=0;i<ns;++i)
     {
       plk0[i] = Pij1[state1]*Pij2[state2];
@@ -3313,6 +3388,12 @@ void Partial_Lk_Exin(const phydbl *Pij1, const int state1, const phydbl *Pij2, c
 {
   unsigned int i,j;
   
+  assert(state1 >= 0);
+  assert(Pij1);
+  assert(Pij2);
+  assert(plk0);
+  assert(plk2);
+
   for(i=0;i<ns;++i)
     {
       phydbl u2 = 0.0;

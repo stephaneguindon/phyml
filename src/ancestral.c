@@ -52,7 +52,7 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
     if(tree->a_nodes[i]->tax == NO)
       {
         tree->a_nodes[i]->c_seq_anc = (align *)mCalloc(1,sizeof(align));;
-        tree->a_nodes[i]->c_seq_anc->state = (char *)mCalloc(tree->n_pattern,sizeof(char));
+        tree->a_nodes[i]->c_seq_anc->state = (char *)mCalloc(tree->data->n_pattern,sizeof(char));
       }
 
    
@@ -61,7 +61,7 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
   Lk(NULL,tree);
 
 
-  for(i=0;i<tree->n_pattern;++i)
+  for(i=0;i<tree->data->n_pattern;++i)
     {
       /* Sample the rate class from its posterior density */
       for(j=0;j<tree->mod->ras->n_catg;j++)

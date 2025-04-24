@@ -110,6 +110,8 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   
   if(tree->mmod->model_id == RW) return(-1.0);
   
+  PhyML_Printf("\n . rrw_prior_sd: %f",tree->mmod->rrw_prior_sd);
+  
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
       if(tree->mmod->model_id == RRW_GAMMA)

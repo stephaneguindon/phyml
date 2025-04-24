@@ -115,6 +115,34 @@ void Free_Node(t_node *n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_M4_Mod(m4 *mod) 
+{
+  for (int i = 0; i < mod->n_h; i++) Free(mod->o_mats[i]);
+  Free(mod->o_mats);
+  Free(mod->o_rr->v);
+  Free(mod->o_rr);
+  Free(mod->h_rr);
+  Free(mod->h_mat);
+  Free(mod->o_fq);
+
+  Free(mod->h_fq->v);
+  Free(mod->h_fq);
+
+  Free(mod->h_fq_unscaled->v);
+  Free(mod->h_fq_unscaled);
+  
+  Free(mod->multipl_unscaled->v);
+  Free(mod->multipl_unscaled);
+  
+  Free(mod->multipl->v);
+  Free(mod->multipl);
+  
+  Free_Scalar_Dbl(mod->delta);
+  Free_Scalar_Dbl(mod->alpha);
+}
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_Mat(matrix *mat)
 {
   int i;
@@ -202,16 +230,20 @@ void Free_Calign(calign *data)
   Free(data->ambigu);
   Free(data->obs_state_frq);
   Free(data->sitepatt);
-  for(i=0;i<data->n_otu;i++)
+
+  if (data->masked_pos) Free(data->masked_pos);
+  
+
+  for (i = 0; i < data->n_otu; i++)
+  {
+    Free(data->c_seq[i]->name);
+    if (data->c_seq[i]->state)
     {
-      Free(data->c_seq[i]->name);
-      if(data->c_seq[i]->state)
-        {
-          Free(data->c_seq[i]->state);
-          Free(data->c_seq[i]->d_state);
-          if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
-        }
-      Free(data->c_seq[i]);
+      Free(data->c_seq[i]->state);
+      Free(data->c_seq[i]->d_state);
+      if (data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
+    }
+    Free(data->c_seq[i]);
     }
 
 
@@ -1025,7 +1057,6 @@ void Free_Best_Spr(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_Actual_CSeq(calign *data)
 {
   int i;
@@ -1122,10 +1153,49 @@ void Free_Nexus_Parm(nexparm *parm)
 
 void XML_Free_XML_Tree(xml_node *node)
 {
-  if(!node) return;
-  if(node->child) XML_Free_XML_Tree(node->child);
-  if(node->next)  XML_Free_XML_Tree(node->next);
+  xml_node *n;
+  
+  if (!node) return;
+
+  n = NULL;
+  if (node->child) n = node->child->next;
+  while(n != NULL)
+  {
+    XML_Free_XML_Tree(n);
+    n = n->next;
+  }
+
+  if (node->child) XML_Free_XML_Tree(node->child);
+
   XML_Free_XML_Node(node);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void XML_Prune_XML_Tree(xml_node *node)
+{
+  if (node->parent)
+  {
+    xml_node *p, *n;
+    
+    p = node->parent;
+    n = NULL;
+    
+    if (p->child == node)
+    { 
+      p->child = node->next;
+      p->child->prev = NULL;
+    }
+    else 
+    {
+      n = p->child;
+      while (n->next && n->next != node) n = n->next;
+      assert(n->next);
+      n->next = n->next->next;
+      if(n->next) n->next->prev = n;
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////

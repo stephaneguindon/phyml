@@ -54,7 +54,7 @@ dnl DEFAULT_VECTOR_FLAG=""
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG="-mavx2"
 dnl DEFAULT_VECTOR_FLAG=-msse3
-dnl DEFAULT_VECTOR_FLAG="-march=native"
+DEFAULT_VECTOR_FLAG="-march=native"
 dnl DEFAULT_VECTOR_FLAG="-mtune=native"
 dnl DEFAULT_VECTOR_FLAG="-mcpu=native"
 
@@ -84,7 +84,8 @@ AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og"],
+dnl      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og"],
+      [CFLAGS="${VECTOR_FLAG} -Wall -std=c99 -g"],
       [CFLAGS="${DEFAULT_C_FLAG}"])
 
 AC_ARG_ENABLE([safemode],

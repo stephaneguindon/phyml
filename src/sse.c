@@ -26,7 +26,7 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   unsigned int site,catg;
   unsigned int i,j;
   
-  unsigned const int npattern = tree->n_pattern;
+  unsigned const int npattern = tree->data->n_pattern;
   unsigned const int ncatg = tree->mod->ras->n_catg;
   unsigned const int ns = tree->mod->ns;
   unsigned const int sz = (int)BYTE_ALIGN / 8;
@@ -276,7 +276,7 @@ void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   phydbl largest_p_lk;
   int *p_lk_loc;
   
-  const unsigned int npattern = tree->n_pattern;
+  const unsigned int npattern = tree->data->n_pattern;
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
 

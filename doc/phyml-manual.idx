@@ -1,0 +1,126 @@
+\indexentry{RAxML|hyperpage}{6}
+\indexentry{GARLI|hyperpage}{6}
+\indexentry{bug|hyperpage}{6}
+\indexentry{compilation|hyperpage}{6}
+\indexentry{MPI|hyperpage}{7}
+\indexentry{bootstrap!parallel|hyperpage}{7}
+\indexentry{run ID|hyperpage}{10}
+\indexentry{$\kappa$|hyperpage}{11}
+\indexentry{ts/tv ratio|hyperpage}{11}
+\indexentry{PAML|hyperpage}{11}
+\indexentry{PHYLIP|hyperpage}{12}
+\indexentry{invariable sites|hyperpage}{12}
+\indexentry{proportion of invariants|hyperpage}{12}
+\indexentry{gamma distribution (discrete)!mean vs. median|hyperpage}{12}
+\indexentry{gamma distribution (discrete)!number of categories|hyperpage}{12}
+\indexentry{gamma distribution (discrete)!shape parameter|hyperpage}{12}
+\indexentry{BioNJ|hyperpage}{14}
+\indexentry{command-line options!\x{--input}|hyperpage}{15}
+\indexentry{command-line options!\x{--data\_type}|hyperpage}{15}
+\indexentry{sequence format!interleaved|hyperpage}{15}
+\indexentry{sequence format!sequential|hyperpage}{15}
+\indexentry{command-line options!\x{--sequential}|hyperpage}{15}
+\indexentry{multiple data sets|hyperpage}{15}
+\indexentry{command-line options!\x{--multiple}|hyperpage}{15}
+\indexentry{command-line options!\x{--pars}|hyperpage}{15}
+\indexentry{bootstrap|hyperpage}{15}
+\indexentry{command-line options!\x{--bootstrap}|hyperpage}{15}
+\indexentry{substitution models!DNA|hyperpage}{16}
+\indexentry{substitution models!amino acids|hyperpage}{16}
+\indexentry{command-line options!\x{--model}|hyperpage}{16}
+\indexentry{command-line options!\x{--aa\_rate\_file}|hyperpage}{16}
+\indexentry{frequencies!nucleotide|hyperpage}{16}
+\indexentry{frequencies!amino-acid|hyperpage}{16}
+\indexentry{stationary frequencies|hyperpage}{16}
+\indexentry{command-line options!\x{-f}|hyperpage}{16}
+\indexentry{custom models|hyperpage}{17}
+\indexentry{$\kappa$|hyperpage}{17}
+\indexentry{ts/tv ratio|hyperpage}{17}
+\indexentry{command-line options!\x{--ts/tv}|hyperpage}{17}
+\indexentry{proportion of invariants|hyperpage}{18}
+\indexentry{invariable sites|hyperpage}{18}
+\indexentry{command-line options!\x{--pinv}|hyperpage}{18}
+\indexentry{gamma distribution (discrete)!number of categories|hyperpage}{18}
+\indexentry{command-line options!\x{--nclasses}|hyperpage}{18}
+\indexentry{gamma distribution (discrete)!shape parameter|hyperpage}{18}
+\indexentry{command-line options!\x{--alpha}|hyperpage}{18}
+\indexentry{gamma distribution (discrete)!mean vs. median|hyperpage}{18}
+\indexentry{command-line options!\x{--use\_median}|hyperpage}{18}
+\indexentry{command-line options!\x{--free\_rates}|hyperpage}{18}
+\indexentry{command-line options!\x{--il}|hyperpage}{18}
+\indexentry{covarion|hyperpage}{18}
+\indexentry{command-line options!\x{--codpos}|hyperpage}{19}
+\indexentry{NNI|hyperpage}{19}
+\indexentry{SPR|hyperpage}{19}
+\indexentry{command-line options!\x{--search}|hyperpage}{19}
+\indexentry{input tree|hyperpage}{19}
+\indexentry{user tree|hyperpage}{19}
+\indexentry{command-line options!\x{--inputtree}|hyperpage}{19}
+\indexentry{optimisation!topology|hyperpage}{19}
+\indexentry{optimisation!substitution parameters|hyperpage}{19}
+\indexentry{command-line options!\x{-o}|hyperpage}{19}
+\indexentry{random tree|hyperpage}{19}
+\indexentry{command-line options!\x{--rand\_start}|hyperpage}{19}
+\indexentry{command-line options!\x{--n\_rand\_starts}|hyperpage}{19}
+\indexentry{random number|hyperpage}{19}
+\indexentry{command-line options!\x{--r\_seed}|hyperpage}{19}
+\indexentry{likelihood!print site likelihood|hyperpage}{20}
+\indexentry{command-line options!\x{--print\_site\_lk}|hyperpage}{20}
+\indexentry{command-line options!\x{--print\_trace}|hyperpage}{20}
+\indexentry{command-line options!\x{--json\_trace}|hyperpage}{20}
+\indexentry{run ID|hyperpage}{20}
+\indexentry{command-line options!\x{--run\_id}|hyperpage}{20}
+\indexentry{command-line options!\x{--no\_memory\_check}|hyperpage}{20}
+\indexentry{command-line options!\x{--no\_colalias}|hyperpage}{20}
+\indexentry{command-line options!\x{--constrained\_lens}|hyperpage}{20}
+\indexentry{command-line  options!\x{--constraint\_file}|hyperpage}{21}
+\indexentry{command-line options!\x{--quiet}|hyperpage}{21}
+\indexentry{command-line options!\x{--ancestral}|hyperpage}{21}
+\indexentry{command-line options!\x{--leave\_duplicates}|hyperpage}{21}
+\indexentry{command-line options!\x{--xml}|hyperpage}{21}
+\indexentry{MPI|hyperpage}{21}
+\indexentry{bootstrap!parallel|hyperpage}{21}
+\indexentry{PHYLIP|hyperpage}{22}
+\indexentry{NEXUS|hyperpage}{22}
+\indexentry{sequential|hyperpage}{22}
+\indexentry{interleaved|hyperpage}{22}
+\indexentry{binary characters|hyperpage}{23}
+\indexentry{Newick format|hyperpage}{26}
+\indexentry{multiple data sets|hyperpage}{27}
+\indexentry{PAML|hyperpage}{27}
+\indexentry{MPEE|hyperpage}{29}
+\indexentry{ancestral reconstruction|hyperpage}{29}
+\indexentry{XML|hyperpage}{31}
+\indexentry{mixture models|hyperpage}{31}
+\indexentry{partitionned analysis|hyperpage}{32}
+\indexentry{data partitions|hyperpage}{32}
+\indexentry{multiple-gene analysis|hyperpage}{32}
+\indexentry{BEST|hyperpage}{33}
+\indexentry{STEM|hyperpage}{33}
+\indexentry{*BEAST|hyperpage}{33}
+\indexentry{mixture   models|hyperpage}{38}
+\indexentry{partitionned analysis|hyperpage}{38}
+\indexentry{data partitions|hyperpage}{38}
+\indexentry{XML options!{\tt phyml} component|hyperpage}{40}
+\indexentry{XML options!{\tt topology} component|hyperpage}{41}
+\indexentry{XML options!{\tt ratematrices} component|hyperpage}{42}
+\indexentry{XML options!{\tt equfreqs} component|hyperpage}{43}
+\indexentry{XML options!{\tt branchlengths} component|hyperpage}{44}
+\indexentry{XML options!{\tt siterates} component|hyperpage}{44}
+\indexentry{FreeRate|hyperpage}{45}
+\indexentry{XML options!{\tt partitionelem}   component|hyperpage}{46}
+\indexentry{XML options!{\tt mixtureelem} component|hyperpage}{46}
+\indexentry{lg4x|hyperpage}{48}
+\indexentry{CAT model|hyperpage}{51}
+\indexentry{PhyTime|hyperpage}{56}
+\indexentry{PhyTime!calibration|hyperpage}{57}
+\indexentry{PhyTime!lineagerates|hyperpage}{57}
+\indexentry{PhyTime!clade|hyperpage}{58}
+\indexentry{MRCA|hyperpage}{60}
+\indexentry{Tracer|hyperpage}{63}
+\indexentry{BEAST|hyperpage}{63}
+\indexentry{Icylog|hyperpage}{63}
+\indexentry{PhyloGeo|hyperpage}{67}
+\indexentry{PhyREX|hyperpage}{68}
+\indexentry{RRW (model)|hyperpage}{69}
+\indexentry{relaxed clock (model)|hyperpage}{71}

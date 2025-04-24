@@ -2072,13 +2072,13 @@ phydbl *Covariance_Matrix(t_tree *tree)
 
   cov      = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
   mean     = (phydbl *)mCalloc(    dim,sizeof(phydbl));
-  ori_wght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  ori_wght = (int *)mCalloc(tree->data->n_pattern,sizeof(int));
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
   
-  for(i=0;i<tree->data->crunch_len;i++) ori_wght[i] = tree->data->wght[i];
+  for(i=0;i<tree->data->n_pattern;i++) ori_wght[i] = tree->data->wght[i];
 
   n_site = 0;
-  for(i=0;i<tree->data->crunch_len;i++) For(j,tree->data->wght[i])
+  for(i=0;i<tree->data->n_pattern;i++) For(j,tree->data->wght[i])
     {
       site_num[n_site] = i;
       n_site++;
@@ -2090,7 +2090,7 @@ phydbl *Covariance_Matrix(t_tree *tree)
     {
       For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = .1;
 
-      for(i=0;i<tree->data->crunch_len;i++) tree->data->wght[i] = 0;
+      for(i=0;i<tree->data->n_pattern;i++) tree->data->wght[i] = 0;
 
       for(i=0;i<tree->data->init_len;i++)
 	{
@@ -2130,7 +2130,7 @@ phydbl *Covariance_Matrix(t_tree *tree)
 /*       PhyML_Printf("\n"); */
 /*     } */
 
-  for(i=0;i<tree->data->crunch_len;i++) tree->data->wght[i] = ori_wght[i];
+  for(i=0;i<tree->data->n_pattern;i++) tree->data->wght[i] = ori_wght[i];
 
   Free(mean);
   Free(ori_wght);
@@ -2682,10 +2682,10 @@ phydbl *Hessian_Seo(t_tree *tree)
   site_hessian = (phydbl *)mCalloc((int)dim*dim,sizeof(phydbl));
   gradient     = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
   ori_bl       = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
-  plus         = (phydbl *)mCalloc((int)dim*tree->n_pattern,sizeof(phydbl));
-  plusplus     = (phydbl *)mCalloc((int)dim*tree->n_pattern,sizeof(phydbl));
-  minus        = (phydbl *)mCalloc((int)dim*tree->n_pattern,sizeof(phydbl));
-  zero         = (phydbl *)mCalloc((int)dim*tree->n_pattern,sizeof(phydbl));
+  plus         = (phydbl *)mCalloc((int)dim*tree->data->n_pattern,sizeof(phydbl));
+  plusplus     = (phydbl *)mCalloc((int)dim*tree->data->n_pattern,sizeof(phydbl));
+  minus        = (phydbl *)mCalloc((int)dim*tree->data->n_pattern,sizeof(phydbl));
+  zero         = (phydbl *)mCalloc((int)dim*tree->data->n_pattern,sizeof(phydbl));
   inc_plus     = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
   inc_minus    = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
   inc          = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
@@ -2761,7 +2761,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	{
 	  tree->a_edges[i]->l->v += inc[i];
 	  Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->data->n_pattern;j++) plus[i*tree->data->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	}
     }
@@ -2774,7 +2774,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	{
 	  tree->a_edges[i]->l->v -= inc[i];
 	  Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) minus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->data->n_pattern;j++) minus[i*tree->data->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	}
     }
@@ -2785,15 +2785,15 @@ phydbl *Hessian_Seo(t_tree *tree)
       if(is_ok[i] == NO)
 	{
 	  Lk(tree->a_edges[i],tree);	
-	  for(j=0;j<tree->n_pattern;j++) zero[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->data->n_pattern;j++) zero[i*tree->data->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v += inc[i];
 	  lnL1 = Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->data->n_pattern;j++) plus[i*tree->data->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v += inc[i];
 	  lnL2 = Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plusplus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->data->n_pattern;j++) plusplus[i*tree->data->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v = ori_bl[i];	
 
@@ -2802,20 +2802,20 @@ phydbl *Hessian_Seo(t_tree *tree)
 
   For(i,dim*dim) hessian[i] = 0.0;
 
-  for(k=0;k<tree->n_pattern;k++)
+  for(k=0;k<tree->data->n_pattern;k++)
     {
       for(i=0;i<dim;i++) 
 	{
 	  if(is_ok[i] == YES)
-	    gradient[i] = (plus[i*tree->n_pattern+k] - minus[i*tree->n_pattern+k])/(inc[i] + inc[i]); 
+	    gradient[i] = (plus[i*tree->data->n_pattern+k] - minus[i*tree->data->n_pattern+k])/(inc[i] + inc[i]); 
 	  else
-	    gradient[i] = (4.*plus[i*tree->n_pattern+k] - plusplus[i*tree->n_pattern+k] - 3.*zero[i*tree->n_pattern+k])/(inc[i] + inc[i]);
+	    gradient[i] = (4.*plus[i*tree->data->n_pattern+k] - plusplus[i*tree->data->n_pattern+k] - 3.*zero[i*tree->data->n_pattern+k])/(inc[i] + inc[i]);
 	  
 	  /* if(is_ok[i] == NO) */
 	  /*   printf("\n. i=%d site=%d l=%G plus=%G plusplus=%G zero=%G num=%f grad=%G", */
 	  /* 	   i,k,tree->a_edges[i]->l->v, */
-	  /* 	   plus[i*tree->n_pattern+k],plusplus[i*tree->n_pattern+k],zero[i*tree->n_pattern+k], */
-	  /* 	   (4.*plus[i*tree->n_pattern+k] - plusplus[i*tree->n_pattern+k] - 3.*zero[i*tree->n_pattern+k]), */
+	  /* 	   plus[i*tree->data->n_pattern+k],plusplus[i*tree->data->n_pattern+k],zero[i*tree->data->n_pattern+k], */
+	  /* 	   (4.*plus[i*tree->data->n_pattern+k] - plusplus[i*tree->data->n_pattern+k] - 3.*zero[i*tree->data->n_pattern+k]), */
 	  /* 	   gradient[i]); */
 
 	}
@@ -4466,7 +4466,6 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
       Exit("\n");
     }
 
-  i = 0;
   u = Uni();
   for(i=0;i<len;i++) if(cum_pi[i] > u) break;
 
