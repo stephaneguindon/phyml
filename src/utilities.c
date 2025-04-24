@@ -4976,6 +4976,8 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
     b1        = tree1->a_edges[i];
     bip_size1 = MIN(b1->left->bip_size[b1->l_r], b1->rght->bip_size[b1->r_l]);
 
+    j = 0;
+
     if (bip_size1 > 1 && ((on_existing_edges_only == YES && b1->does_exist) ||
                           (on_existing_edges_only == NO)))
     {
