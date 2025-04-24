@@ -15,7 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#define _POSIX_C_SOURCE 200112L
+// #define _POSIX_C_SOURCE 200112L
 
 #include <assert.h>
 #include <ctype.h>

@@ -1,7 +1,8 @@
 {
     "files.associations": {
-        "lk.h": "c",
-        "utilities.h": "c"
+      "lk.h": "c",
+      "utilities.h": "c",
+      "cl.h": "c"
     },
     "C_Cpp.loggingLevel": "Debug",
     "C_Cpp.default.compilerPath": "/usr/bin/clang",
