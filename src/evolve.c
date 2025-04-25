@@ -107,7 +107,7 @@ int EVOLVE_Main(int argc, char **argv)
   XML_Init_Node(NULL, root, "phyml");
   sprintf(dum, "%s_%s",model, cv_type);
   root->attr = XML_Make_Attribute(NULL, "run.id",dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Add_Attribute(root, "output.file",dum);
   XML_Add_Attribute(root, "cv.type",cv_type);
 
@@ -191,7 +191,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -213,7 +213,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -230,12 +230,12 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "gamma");
+  strcpy(model, "dg4");
   strcpy(cv_type, "kfold.pos");
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -310,12 +310,12 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "gamma");
+  strcpy(model, "dg4");
   strcpy(cv_type, "kfold.col");
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -332,12 +332,139 @@ int EVOLVE_Main(int argc, char **argv)
   ///
   ///
 
-  strcpy(model, "gamma");
+  strcpy(model, "dg4");
   strcpy(cv_type, "maxfold");
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "dg4i");
+  strcpy(cv_type, "kfold.pos");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id",dum);
+  sprintf(dum, "%d", io->r_seed);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+
+  nd = XML_Search_Node_Name("siterates", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd         = XML_Add_Node(root, "siterates");
+  nd->attr   = XML_Make_Attribute(NULL, "id", "SR1");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R1");
+  XML_Add_Attribute(ndnd, "init.value", "0.0");
+  XML_Add_Attribute(ndnd, "value", "0.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R2");
+  XML_Add_Attribute(ndnd, "init.value", "2.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R3");
+  XML_Add_Attribute(ndnd, "init.value", "3.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R4");
+  XML_Add_Attribute(ndnd, "init.value", "4.0");
+  ndnd       = XML_Add_Node(nd, "instance");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "R5");
+  XML_Add_Attribute(ndnd, "init.value", "5.0");
+  ndnd       = XML_Add_Node(nd, "weights");
+  ndnd->attr = XML_Make_Attribute(NULL, "id", "D1");
+  XML_Add_Attribute(ndnd, "family", "gamma+inv");
+  XML_Add_Attribute(ndnd, "optimise.alpha", "yes");
+  XML_Add_Attribute(ndnd, "optimise.pinv", "yes");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R1");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R2");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R3");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R4");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+  ndndnd       = XML_Add_Node(ndnd, "instance");
+  ndndnd->attr = XML_Make_Attribute(NULL, "appliesto", "R5");
+  XML_Add_Attribute(ndndnd, "value", "1.0");
+
+  nd = XML_Search_Node_Name("partitionelem", NO, root);
+  XML_Prune_XML_Tree(nd);
+  XML_Free_XML_Tree(nd);
+  nd = XML_Add_Node(root, "partitionelem");
+  nd->attr = XML_Make_Attribute(NULL, "id", "partition1");
+  dum      = (char *)mCalloc(100, sizeof(char));
+  sprintf(dum, "%s%d%s", "./", io->r_seed, "_evolve_data.txt");
+  XML_Add_Attribute(nd, "file.name", dum);
+  XML_Add_Attribute(nd, "data.type", "nt");
+  XML_Add_Attribute(nd, "interleaved", "no");
+
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "T1,T1,T1,T1,T1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "M1,M1,M1,M1,M1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "F1,F1,F1,F1,F1");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "R1,R2,R3,R4,R5");
+  ndnd       = XML_Add_Node(nd, "mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL, "list", "L1,L1,L1,L1,L1");
+
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+  ///
+  ///
+
+  strcpy(model, "dg4i");
+  strcpy(cv_type, "kfold.col");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d", io->r_seed);
+  XML_Set_Attribute_Value(root, "output.file", dum);
+  XML_Set_Attribute_Value(root, "cv.type", cv_type);
+
+  // nd   = XML_Search_Node_Name("ratematrices", NO, root);
+  // ndnd = XML_Search_Node_Name("instance", NO, nd);
+  // XML_Set_Attribute_Value(ndnd, "model", model);
+
+  sprintf(dum, "%s%d_%s_%s_%s", "./", io->r_seed, model, cv_type,
+          "evolve_config.xml");
+  fp = Openfile(dum, WRITE);
+  XML_Write_XML_Graph(fp, root);
+  fclose(fp);
+
+  ///
+  ///
+
+  strcpy(model, "dg4i");
+  strcpy(cv_type, "maxfold");
+
+  sprintf(dum, "%s_%s", model, cv_type);
+  XML_Set_Attribute_Value(root, "run.id", dum);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -359,7 +486,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -432,7 +559,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -454,7 +581,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -476,7 +603,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -578,7 +705,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -600,7 +727,7 @@ int EVOLVE_Main(int argc, char **argv)
 
   sprintf(dum, "%s_%s", model, cv_type);
   XML_Set_Attribute_Value(root, "run.id", dum);
-  sprintf(dum, "%d_%s_%s", io->r_seed, model, cv_type);
+  sprintf(dum, "%d", io->r_seed);
   XML_Set_Attribute_Value(root, "output.file", dum);
   XML_Set_Attribute_Value(root, "cv.type", cv_type);
 
@@ -925,9 +1052,9 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     /* Pick the rate class */
     root_state = root_rate_class = 0;
 
-    // // Continuous gamma distribution
-    // var = 0.001;
-    // // var  = 1;
+    // Continuous gamma distribution
+    // var = 1.E-6;
+    // var  = 1;
     // mean = 1.0;
 
     // shape = mean * mean / var;
@@ -937,8 +1064,7 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
 
     
     
-    // Discrete gamma distribution
-
+    // // Discrete gamma distribution
     // phydbl *ui,*xi,alpha;
     // int n_classes;
 
@@ -955,7 +1081,31 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     // Free(xi);
 
 
-                  // FreeRates 8 classes, bimodal distribution
+    
+    // Discrete gamma distribution + invariants
+    // phydbl *ui, *xi, alpha, pinv, u;
+    // int     n_classes;
+
+    // n_classes = 4;
+    // alpha     = 1.0;
+    // pinv      = 0.1;
+    // u         = Uni();
+
+    // if (u < pinv)
+    //   r_mult = 0.0;
+    // else
+    // {
+    //   ui = (phydbl *)mCalloc(n_classes, sizeof(phydbl));
+    //   xi = (phydbl *)mCalloc(n_classes, sizeof(phydbl));
+
+    //   DiscreteGamma(ui, xi, alpha, alpha, n_classes, NO);
+
+    //   r_mult = xi[EVOLVE_Pick_State(n_classes, ui)];
+    //   Free(ui);
+    //   Free(xi);
+    // }
+
+    // FreeRates 8 classes, bimodal distribution
     phydbl *ui,*xi,sumu,sumux;
     int n_classes;
 
