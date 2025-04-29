@@ -4947,8 +4947,7 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   /*   int *bip1,*bip2; */
   t_node **bip1, **bip2;
   int      bip_size1, bip_size2, bip_size;
-  int      identical;
-  int      n_edges;
+  // int      identical, n_edges;
   phydbl   diff;
   
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -4957,20 +4956,21 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 
   diff = .0;
 
-  if (on_existing_edges_only == YES)
-  {
-    n_edges = 0;
-    for (i = 0; i < 2 * tree1->n_otu - 3; ++i)
-      if (tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist)
-        n_edges++;
-    n_edges -= tree1->n_otu;
-  }
-  else
-  {
-    n_edges = tree1->n_otu - 3;
-  }
+  // if (on_existing_edges_only == YES)
+  // {
+  //   n_edges = 0;
+  //   for (i = 0; i < 2 * tree1->n_otu - 3; ++i)
+  //     if (tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist)
+  //       n_edges++;
+  //   n_edges -= tree1->n_otu;
+  // }
+  // else
+  // {
+  //   n_edges = tree1->n_otu - 3;
+  // }
 
-  identical = 0;
+  // identical = 0;
+
   for (i = 0; i < 2 * tree1->n_otu - 3; ++i)
   {
     b1        = tree1->a_edges[i];
@@ -5066,7 +5066,7 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
             {
               b1->bip_score++;
               b2->bip_score++;
-              identical++;
+              // identical++;
               goto out;
             }
           }

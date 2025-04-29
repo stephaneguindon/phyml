@@ -8,7 +8,7 @@
 #define DEBUG 1
 
 /* EVOLVE tag on */
-#define EVOLVE 1
+/* #undef EVOLVE */
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 /* #undef HAVE_DOPRNT */
@@ -88,7 +88,7 @@
 #define PACKAGE_NAME "PhyML"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PhyML 3.3.20241207"
+#define PACKAGE_STRING "PhyML 3.3.20250429"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "phyml"
@@ -97,10 +97,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.3.20241207"
+#define PACKAGE_VERSION "3.3.20250429"
 
 /* PHYML tag on */
-/* #undef PHYML */
+#define PHYML 1
 
 /* PHYREX tag on */
 /* #undef PHYREX */
@@ -129,7 +129,7 @@
 #define UNIX 1
 
 /* Version number of package */
-#define VERSION "3.3.20241207"
+#define VERSION "3.3.20250429"
 
 /* WIN32 tag on */
 /* #undef WIN32 */

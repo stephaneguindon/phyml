@@ -162,7 +162,7 @@ AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
+CFLAGS = -std=gnu99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
@@ -192,16 +192,16 @@ OBJEXT = o
 PACKAGE = phyml
 PACKAGE_BUGREPORT = stephane.guindon@lirmm.fr
 PACKAGE_NAME = PhyML
-PACKAGE_STRING = PhyML 3.3.20241207
+PACKAGE_STRING = PhyML 3.3.20250429
 PACKAGE_TARNAME = phyml
 PACKAGE_URL = 
-PACKAGE_VERSION = 3.3.20241207
+PACKAGE_VERSION = 3.3.20250429
 PATH_SEPARATOR = :
 PDFLATEX = pdflatex
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = 
-VERSION = 3.3.20241207
+VERSION = 3.3.20250429
 abs_builddir = /Users/guindon/phyml/doc
 abs_srcdir = /Users/guindon/phyml/doc
 abs_top_builddir = /Users/guindon/phyml

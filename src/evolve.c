@@ -863,8 +863,11 @@ void EVOLVE_Coalescent(t_tree *tree)
 
   phydbl L                = TIMES_Tree_Length(tree);
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / L * (2 * tree->n_otu - 2);
-  tree->rates->model_id   = STRICTCLOCK;
+  // tree->rates->clock_r    = 0.1 / L * (2 * tree->n_otu - 2);
+  tree->rates->clock_r    = 0.01 / L * (2 * tree->n_otu - 2);
+  tree->rates->model_id   = GAMMA;
+
+  for (int i = 0; i < 2 * tree->n_otu - 1; ++i) tree->rates->br_r[i] = Rgamma(1., 1.);
 
   RATES_Update_Edge_Lengths(tree);
 
@@ -876,14 +879,15 @@ void EVOLVE_Coalescent(t_tree *tree)
 
 void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
 {
-  int        root_state, root_rate_class;
-  int        site, n_otu, ns;
-  phydbl    *orig_l,*weights;
-  phydbl     shape, scale, var, mean, r_mult, sum;
+  int     root_state, root_rate_class;
+  int     site, n_otu, ns;
+  phydbl *orig_l, *weights;
+  // phydbl     shape, scale, var, mean;
+  phydbl     r_mult, sum;
   phydbl    *state_probs_one_site, *state_probs_all_sites;
   int        switch_to_yes;
   short int *truth;
-  
+
   orig_l = (phydbl *)mCalloc(2 * tree->n_otu - 1, sizeof(phydbl));
   for (int i = 0; i < 2 * tree->n_otu - 1; ++i)
     orig_l[i] = tree->a_edges[i]->l->v;

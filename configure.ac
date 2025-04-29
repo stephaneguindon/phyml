@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20241207" | tr -d '\n'"]),[stephane.guindon@lirmm.fr])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20250429" | tr -d '\n'"]),[stephane.guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/main.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
@@ -75,7 +75,7 @@ dnl AC_PROG_LIBTOOL
 
 
 dnl DEFAULT_C_FLAG="-fno-inline-functions -fno-inline-functions-called-once -fno-optimize-sibling-calls -O2 -fno-omit-frame-pointer -g ${VECTOR_FLAG}"
-DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=gnu99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O2 ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-pthread  -O3 -g -ffunction-sections -fdata-sections"

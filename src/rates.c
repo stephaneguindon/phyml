@@ -1369,7 +1369,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
     {
       tree->rates->cur_l[d->num] = dt*rd*cr*Z;
     }
-  
+
   if(tree->rates->model_id == THORNE)
     {
       rr = (ra+rd)/2.;          

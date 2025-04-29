@@ -2329,9 +2329,7 @@ void MIXT_RATES_Update_Edge_Lengths(t_tree *mixt_tree)
   tree = mixt_tree->next;
   do
   {
-#if (defined PHYREX || PHYTIME || PHYREXSIM)
     RATES_Update_Edge_Lengths(tree);
-#endif
     tree = tree->next;
   } while (tree);
 }
