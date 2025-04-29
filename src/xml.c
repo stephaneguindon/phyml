@@ -1392,6 +1392,9 @@ int XML_Add_Character(int c, char **bufptr, char **buffer, int *bufsize)
   if (*bufptr >= (*buffer + *bufsize - 4))
   {
     // Increase the size of the buffer...
+    int delta;
+
+    delta = (*bufptr - *buffer);
 
     if (*bufsize < 1024)
       (*bufsize) *= 2;
@@ -1406,7 +1409,7 @@ int XML_Add_Character(int c, char **bufptr, char **buffer, int *bufsize)
       Exit("\n");
     }
 
-    *bufptr = newbuffer + (*bufptr - *buffer);
+    *bufptr = newbuffer + delta;
     *buffer = newbuffer;
   }
 
