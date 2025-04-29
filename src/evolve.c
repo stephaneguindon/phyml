@@ -863,8 +863,8 @@ void EVOLVE_Coalescent(t_tree *tree)
 
   phydbl L                = TIMES_Tree_Length(tree);
   tree->rates->bl_from_rt = YES;
-  // tree->rates->clock_r    = 0.1 / L * (2 * tree->n_otu - 2);
-  tree->rates->clock_r    = 0.01 / L * (2 * tree->n_otu - 2);
+  tree->rates->clock_r    = 0.1 / L * (2 * tree->n_otu - 2);
+  // tree->rates->clock_r    = 0.01 / L * (2 * tree->n_otu - 2);
   tree->rates->model_id   = GAMMA;
 
   for (int i = 0; i < 2 * tree->n_otu - 1; ++i) tree->rates->br_r[i] = Rgamma(1., 1.);
@@ -882,7 +882,6 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
   int     root_state, root_rate_class;
   int     site, n_otu, ns;
   phydbl *orig_l, *weights;
-  // phydbl     shape, scale, var, mean;
   phydbl     r_mult, sum;
   phydbl    *state_probs_one_site, *state_probs_all_sites;
   int        switch_to_yes;
@@ -1057,14 +1056,16 @@ void EVOLVE_Seq(calign *data, t_mod *mod, FILE *fp_stats, t_tree *tree)
     root_state = root_rate_class = 0;
 
     // Continuous gamma distribution
-    // var = 1.E-6;
-    // var  = 1;
-    // mean = 1.0;
+  // phydbl     shape, scale, var, mean;
 
-    // shape = mean * mean / var;
-    // scale = var / mean;
+  //   // var = 1.E-6;
+  //   var  = 1;
+  //   mean = 1.0;
 
-    // r_mult = Rgamma(shape, scale);
+  //   shape = mean * mean / var;
+  //   scale = var / mean;
+
+  //   r_mult = Rgamma(shape, scale);
 
     
     
