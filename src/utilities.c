@@ -14562,13 +14562,13 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
     if (tree->e_root->left == w)
     {
       tree->e_root->left = v;
-      assert(tree->e_root->rght->v[tree->e_root->r_l] = w);
+      assert(tree->e_root->rght->v[tree->e_root->r_l] == w);
       tree->e_root->rght->v[tree->e_root->r_l] = v;
     }
     else if (tree->e_root->rght == w)
     {
       tree->e_root->rght = v;
-      assert(tree->e_root->left->v[tree->e_root->l_r] = w);
+      assert(tree->e_root->left->v[tree->e_root->l_r] == w);
       tree->e_root->left->v[tree->e_root->l_r] = v;
     }
     else
