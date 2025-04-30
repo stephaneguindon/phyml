@@ -121,7 +121,7 @@ int create_beagle_instance(t_tree *tree, int quiet, option* io)
                                   num_partials,               /**< Number of partial buffer (input) */
     /* PhyML uses partials */     0,              			  /**< Number of compact state representation buffers to create (input) */
                                   tree->mod->ns,              /**< Number of states in the continuous-time Markov chain (input) */
-                                  tree->n_pattern,            /**< Number of site patterns to be handled by the instance (input) */
+                                  tree->data->n_pattern,            /**< Number of site patterns to be handled by the instance (input) */
                                   1,                          /**< Number of rate matrix eigen-decomposition,state freqs, and category weight buffers*/
                                   num_branches,               /**< Number of rate matrix buffers (input) */
                                   num_rate_catg,              /**< Number of rate categories (input) */
@@ -147,8 +147,8 @@ int create_beagle_instance(t_tree *tree, int quiet, option* io)
         //        Print_Tip_Partials(tree, tree->a_nodes[i]);
         if(tree->a_nodes[i]->tax)
           {
-            assert(tree->a_nodes[i]->c_seq->len == tree->n_pattern); // number of compacts sites == number of distinct site patterns
-            double* tip = short_to_double(tree->a_nodes[i]->b[0]->p_lk_tip_r, tree->n_pattern*tree->mod->ns); //The tip states are stored on the branch leading to the tip
+            assert(tree->a_nodes[i]->c_seq->len == tree->data->n_pattern); // number of compacts sites == number of distinct site patterns
+            double* tip = short_to_double(tree->a_nodes[i]->b[0]->p_lk_tip_r, tree->data->n_pattern*tree->mod->ns); //The tip states are stored on the branch leading to the tip
             //Recall we store tip partials on the branch leading to the tip, rather than the tip itself.
             int ret = beagleSetTipPartials(beagle_inst, tree->a_nodes[i]->b[0]->p_lk_tip_idx, tip);
             if(ret<0){
@@ -161,7 +161,7 @@ int create_beagle_instance(t_tree *tree, int quiet, option* io)
       }
     
     //Set the pattern weights
-    double* pwts = int_to_double(tree->data->wght,tree->n_pattern); //BTW, These weights are absolute counts, and not freqs
+    double* pwts = int_to_double(tree->data->wght,tree->data->n_pattern); //BTW, These weights are absolute counts, and not freqs
     int ret = beagleSetPatternWeights(beagle_inst, pwts);
     if(ret<0){
       fprintf(stderr, "beagleSetPatternWeights() on instance %i failed:%i\n\n",beagle_inst,ret);
@@ -358,7 +358,7 @@ if(ret<0){
     Exit("");
   }
   //Transform
-  for(i=0;i<tree->n_pattern;++i)
+  for(i=0;i<tree->data->n_pattern;++i)
     tree->cur_site_lk[i]=exp(tree->cur_site_lk[i]);
 }
 

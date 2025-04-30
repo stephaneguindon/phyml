@@ -153,7 +153,13 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 tbe.c tbe.h \
+cv.c cv.h\
 ancestral.c ancestral.h\
+m4.c m4.h\
+evolve.c evolve.h\
+times.c times.h\
+date.c date.h\
+rates.c rates.h\
 sse.c sse.h\
 avx.c avx.h
 # rf_LDADD = -lm
@@ -186,6 +192,11 @@ tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
+rates.c rates.h\
+date.c date.h\
+times.c times.h\
+cv.c cv.h\
+evolve.c evolve.h\
 mpi_boot.c mpi_boot.h
 # phyml_mpi_LDADD = -lm
 else
@@ -296,7 +307,12 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-mixt.c mixt.h
+mixt.c mixt.h\
+ancestral.c ancestral.h\
+date.c date.h\
+cv.c cv.h\
+m4.c m4.h\
+evolve.c evolve.h
 # evolve_LDADD = -lm 
 else
 if WANT_PHYREX
@@ -443,7 +459,13 @@ sse.c sse.h\
 avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
-mixt.c mixt.h
+mixt.c mixt.h \
+evolve.c evolve.h\
+rates.c rates.h\
+date.c date.h\
+times.c times.h\
+m4.c m4.h\
+cv.c cv.h
 # phyml_LDADD = -lm
 endif
 endif

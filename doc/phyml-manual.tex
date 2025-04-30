@@ -1319,23 +1319,26 @@ likelihood. Hence we have:
 \end{eqnarray*}
 where $\mathcal{M}_i$, $\mathcal{F}_i$ and $\mathcal{R}_i$ are the number of rate matrices,
 vector of equilibrium frequencies and relative rates that apply to partition element $i$
-respectively. $\mathcal{I}(m,f,r,i)$ is an indicator function that takes value 1 if the combination
+respectively. $K_i$ is the number of classes in the mixture that applies to partition element $i$. $\mathcal{I}(m,f,r,i)$ is an indicator function that takes value 1 if the combination
 $M_m$, $F_f$ and $R_r$ is acually defined in the model for this particular partition element
-$i$. Its value is 0 otherwise. In the example given in section \ref{sec:mixtures} $\{R_1,R_2,R_3\}$
-is the  set of substitution  rates, $\{M_1,M_2\}$ the set of rate matrices and $\{F_1,F_2\}$ the set  of vectors of equilibrium frequencies.  We then
-define the first class of the mixture model  as $\mathcal{C}_1 = \{R_1,M_1,F_1\}$, a second class as
+$i$. Its value is 0 otherwise. We therefore have $\sum_m \sum_f \sum_r \mathcal{I}(m,f,r,i) = K_i$. 
+
+In the example given in section \ref{sec:mixtures}, $\{R_1,R_2,R_3\}$
+is the  set of substitution  rates, $\{M_1,M_2\}$ the set of rate matrices and $\{F_1,F_2\}$ the set  of vectors of equilibrium frequencies.  We thus have a total of $3 \times 2 \times 2$ ways of combining the rates, matrices and frequencies, potentially making up a mixture model with 12 classes.
+But we
+define the first class of our mixture model  as $\mathcal{C}_1 = \{R_1,M_1,F_1\}$, a second class as
 $\mathcal{C}_2  = \{R_2,M_1,F_1\}$ and the third as $\mathcal{C}_3  = \{R_3,M_2,F_2\}$. Hence, we
 have $\mathcal{I}(1,1,1,i)$, $\mathcal{I}(1,1,2,i)$ and $\mathcal{I}(2,2,3,i)$ equal to one while
 the nine other values that this indicator function takes, corresponding to the possible combinations of
 two vectors of frequencies, two  matrices and three rates, are all zero.
 
 As stated before, our implementation assumes that the different components of a mixture are
-independant. In other words, we have $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \Pr(M_m^{(i)}) \times
+independant. In other words, we have $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) \propto \Pr(M_m^{(i)}) \times
 \Pr(F_f^{(i)}) \times \Pr(R_r^{(i)})$. In practice, the joint probability
 $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)})$ is obtained as follows:
 \begin{eqnarray*}
-\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \frac{\Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)})}{
-  \sum_{m,f,r} \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) \mathcal{I}(m,f,r,i)}
+\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \frac{\Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) \mathcal{I}(m,f,r,i)}{
+  \sum_{a,b,c} \Pr(M_a^{(i)}) \Pr(F_b^{(i)}) \Pr(R_c^{(i)}) \mathcal{I}(a,b,c,i)}
 \label{equ:weights}
 \end{eqnarray*}
 The probabilities $\Pr(M_m^{(i)})$, $\Pr(F_f^{(i)})$ and $\Pr(R_r^{(i)})$, also called `weights', can be fixed or estimated

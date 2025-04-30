@@ -544,11 +544,11 @@ void PhyTime_XML(char *xml_file)
 
   RATES_Fill_Lca_Table(tree);
 
-  tree -> mod         = mod;                                                                    
-  tree -> io          = io;
-  tree -> data        = cdata;
-  tree -> n_pattern   = tree -> data -> crunch_len / tree -> io -> state_len;
-  
+  tree->mod             = mod;
+  tree->io              = io;
+  tree->data            = cdata;
+  tree->data->n_pattern = tree->data->n_pattern / tree->io->state_len;
+
   Set_Both_Sides(YES, tree);
   Make_Tree_For_Pars(tree);
   Make_Tree_For_Lk(tree);

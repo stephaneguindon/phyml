@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20241207" | tr -d '\n'"]),[stephane.guindon@lirmm.fr])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20250429" | tr -d '\n'"]),[stephane.guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/main.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
@@ -43,8 +43,8 @@ fi
 AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
+# AC_FUNC_MALLOC
+# AC_FUNC_REALLOC
 AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
@@ -54,7 +54,7 @@ dnl DEFAULT_VECTOR_FLAG=""
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG="-mavx2"
 dnl DEFAULT_VECTOR_FLAG=-msse3
-dnl DEFAULT_VECTOR_FLAG="-march=native"
+DEFAULT_VECTOR_FLAG="-march=native"
 dnl DEFAULT_VECTOR_FLAG="-mtune=native"
 dnl DEFAULT_VECTOR_FLAG="-mcpu=native"
 
@@ -75,7 +75,7 @@ dnl AC_PROG_LIBTOOL
 
 
 dnl DEFAULT_C_FLAG="-fno-inline-functions -fno-inline-functions-called-once -fno-optimize-sibling-calls -O2 -fno-omit-frame-pointer -g ${VECTOR_FLAG}"
-DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=gnu99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O2 ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-pthread  -O3 -g -ffunction-sections -fdata-sections"
@@ -84,7 +84,8 @@ AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og"],
+dnl      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og"],
+      [CFLAGS="${VECTOR_FLAG} -Wall -std=c99 -g"],
       [CFLAGS="${DEFAULT_C_FLAG}"])
 
 AC_ARG_ENABLE([safemode],

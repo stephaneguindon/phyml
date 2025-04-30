@@ -244,8 +244,8 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 	{
 	  io->datatype = GENERIC;
 	  io->mod->whichmodel = JC69;
-	  io->mod->s_opt->opt_kappa  = NO;
-	  io->mod->s_opt->opt_lambda = NO;
+	  io->mod->kappa->optimize  = NO;
+	  io->mod->lambda->optimize = NO;
 	  io->mod->ns = 2;
 	  io->alphabet[0][0] = '0'; io->alphabet[0][1] = '\0';
 	  io->alphabet[1][0] = '1'; io->alphabet[1][1] = '\0';

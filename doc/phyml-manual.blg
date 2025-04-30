@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/MacPorts 2022.62882_3)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: phyml-manual.aux
+The style file: ./naturemag.bst
+Database file #1: ./ref.bib
+You've used 57 entries,
+            2348 wiz_defined-function locations,
+            1305 strings with 17635 characters,
+and the built_in function-call counts, 23998 in all, are:
+= -- 1789
+> -- 520
+< -- 3
++ -- 257
+- -- 130
+* -- 2827
+:= -- 2574
+add.period$ -- 171
+call.type$ -- 57
+change.case$ -- 64
+chr.to.int$ -- 0
+cite$ -- 57
+duplicate$ -- 2165
+empty$ -- 2217
+format.name$ -- 174
+if$ -- 4983
+int.to.chr$ -- 0
+int.to.str$ -- 57
+missing$ -- 473
+newline$ -- 293
+num.names$ -- 63
+pop$ -- 344
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 527
+stack$ -- 0
+substring$ -- 1273
+swap$ -- 2157
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 127
+width$ -- 59
+write$ -- 633
