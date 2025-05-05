@@ -4304,7 +4304,8 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
         c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
 
         // Hide characters in the original alignment uniformly at random
-        CV_Hide_Align_At_Random_One_Per_Site(mixt_tree->data);
+        // CV_Hide_Align_At_Random_One_Per_Site(mixt_tree->data);
+        CV_Hide_Align_At_Random_Pos(mixt_tree->data, (phydbl)(1. / kfold));
 
         c_seq_cpy->n_masked = mixt_tree->data->n_masked;
         c_seq_cpy->masked_pos =
