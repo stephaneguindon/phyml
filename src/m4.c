@@ -233,7 +233,7 @@ int M4_main(int argc, char **argv)
         }
 
         /* Launch bootstrap analysis */
-        if (io->do_boot || io->do_tbe)
+        if (io->do_boot || io->do_tbe || io->do_bayesboot)
         {
           if (!io->quiet)
             PhyML_Printf(

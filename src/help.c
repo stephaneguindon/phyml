@@ -130,6 +130,10 @@ void Usage(void)
   PhyML_Printf("\t\tComputes TBE instead of FBP (standard) bootstrap support\n");
   PhyML_Printf("\t\tHas no effect with -b <= 0\n");
 
+  PhyML_Printf("%s\n\t--bayesian_bootstrap%s\n",BOLD,FLAT);
+  PhyML_Printf("\t\tComputes Bayesian Bootstrap instead of FBP (standard) bootstrap support\n");
+  PhyML_Printf("\t\tHas no effect with -b <= 0\n");
+
   #endif
 
   PhyML_Printf("%s\n\t-m (or --model) %smodel%s\n",BOLD,LINE,FLAT);
