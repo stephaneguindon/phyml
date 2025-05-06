@@ -4333,10 +4333,10 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
         Free_Calign(c_seq_cpy);
 
         MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
-        Init_Partial_Lk_Tips_Double(mixt_tree);
-        Set_Both_Sides(YES, mixt_tree);
-        Set_Update_Eigen(YES, mixt_tree->mod);
-        Lk(NULL, mixt_tree);
+        // Init_Partial_Lk_Tips_Double(mixt_tree);
+        // Set_Both_Sides(YES, mixt_tree);
+        // Set_Update_Eigen(YES, mixt_tree->mod);
+        // Lk(NULL, mixt_tree);
         // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
 
         // Compute likelihoods on test set (i.e., probability of each possible
