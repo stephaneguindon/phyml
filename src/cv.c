@@ -355,16 +355,20 @@ assert(true_d_state >= 0);
       Pij       = tree->a_nodes[tax_id]->b[0]->Pij_rr;
       p_lk_left = tree->a_nodes[tax_id]->b[0]->p_lk_left + site * ns;
 
-      // PhyML_Printf("\n. ncatg: %d truth: %d p_lk_left: %f %f %f %f Pij: %f %f
-      // %f %f",
-      //              tree->mod->ras->n_catg,
-      //              orig_data->c_seq[tax_id]->d_state[site],
-      //              p_lk_left[0],
-      //              p_lk_left[1], p_lk_left[2], p_lk_left[3],
-      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 0],
-      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 1],
-      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 2],
-      //              Pij[orig_data->c_seq[tax_id]->d_state[site] * ns + 3]);
+//       PhyML_Printf("\n. site: %d ncatg: %d p: %f rr: %f truth: %d p_lk_left: %g %g %g %g Pij: %f %f %f %f",
+// site,
+//               tree->mixt_tree->mod->ras->n_catg,
+//           tree->mixt_tree->mod->ras->gamma_r_proba
+//               ->v[tree->mod->ras->parent_class_number],
+//           tree->mixt_tree->mod->ras->gamma_rr
+//               ->v[tree->mod->ras->parent_class_number],
+//           tree->data->c_seq[tax_id]->d_state[site], 
+//           p_lk_left[0], p_lk_left[1],
+//           p_lk_left[2], p_lk_left[3],
+//           Pij[tree->data->c_seq[tax_id]->d_state[site] * ns + 0],
+//           Pij[tree->data->c_seq[tax_id]->d_state[site] * ns + 1],
+//           Pij[tree->data->c_seq[tax_id]->d_state[site] * ns + 2],
+//           Pij[tree->data->c_seq[tax_id]->d_state[site] * ns + 3]);
 
       for (int tip_state = 0; tip_state < ns; ++tip_state)
       {
@@ -416,6 +420,8 @@ assert(true_d_state >= 0);
   for (int tip_state = 0; tip_state < ns; ++tip_state)
     sum += (*state_probs)[*n_prob_vectors * ns + tip_state];
 
+// PhyML_Printf("\n>>> sum: %f", sum);
+
   for (int tip_state = 0; tip_state < ns; ++tip_state)
     (*state_probs)[*n_prob_vectors * ns + tip_state] /= sum;
 
@@ -424,8 +430,8 @@ assert(true_d_state >= 0);
   //              (*state_probs)[*n_prob_vectors * ns + 0],
   //              (*state_probs)[*n_prob_vectors * ns + 1],
   //              (*state_probs)[*n_prob_vectors * ns + 2],
-              //  (*state_probs)[*n_prob_vectors * ns + 3],
-              //  tree->data->c_seq[tax_id]->d_state[site]);
+  //              (*state_probs)[*n_prob_vectors * ns + 3],
+  //              tree->data->c_seq[tax_id]->d_state[site]);
 
   *n_prob_vectors += 1;
 }

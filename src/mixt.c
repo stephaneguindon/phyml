@@ -4297,8 +4297,8 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
 
   do
   {
-    for (int i = 0; i < kfold*5; ++i)
-      // for (int i = 0; i < kfold * 1; ++i)
+    // for (int i = 0; i < kfold*5; ++i)
+      for (int i = 0; i < 1; ++i)
       {
         // Create a copy of the original alignment
         c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
@@ -4319,18 +4319,25 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
         // with masked positions)
         Init_Partial_Lk_Tips_Double(mixt_tree);
         // Global_Spr_Search(mixt_tree);
-        // Optimize_Br_Len_Serie(mixt_tree->n_otu, mixt_tree);
         Round_Optimize(mixt_tree,ROUND_MAX);
+        // Optimize_Br_Len_Serie(mixt_tree->n_otu, mixt_tree);
+
         Set_Both_Sides(YES, mixt_tree);
         Set_Update_Eigen(YES, mixt_tree->mod);
         Lk(NULL, mixt_tree);
         Set_Update_Eigen(NO, mixt_tree->mod);
-        // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
 
         // Go back to the original alignment
         Free_Calign(mixt_tree->data);
         mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io, mixt_tree);
         Free_Calign(c_seq_cpy);
+
+        MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+        Init_Partial_Lk_Tips_Double(mixt_tree);
+        Set_Both_Sides(YES, mixt_tree);
+        Set_Update_Eigen(YES, mixt_tree->mod);
+        Lk(NULL, mixt_tree);
+        // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
 
         // Compute likelihoods on test set (i.e., probability of each possible
         // state at masked positions)
@@ -4349,7 +4356,6 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
           tree       = tree->next;
         } while (tree && tree->is_mixt_tree == NO);
 
-        MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
       }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);
@@ -4398,7 +4404,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
 
   do
   {
-    for (int i = 0; i < kfold*5; ++i)
+    for (int i = 0; i < kfold; ++i)
     {
       // Create a copy of the original alignment
       c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
@@ -4421,30 +4427,24 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       Set_Update_Eigen(NO, mixt_tree->mod);
       // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
 
-      // Fill in hidden sites with original data
-      for (int site = 0; site < mixt_tree->data->n_masked; site++)
-        for (int tax_id = 0; tax_id < mixt_tree->n_otu; ++tax_id)
-          mixt_tree->data->c_seq[tax_id]
-              ->state[mixt_tree->data->masked_pos[site]] =
-              c_seq_cpy->c_seq[tax_id]
-                  ->state[mixt_tree->data->masked_pos[site]];
-
-      Init_Partial_Lk_Tips_Double(mixt_tree);
-      Set_Both_Sides(NO, mixt_tree);
-      Set_Update_Eigen(NO, mixt_tree->mod);
-      Lk(NULL, mixt_tree);
-      // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
 
       // Go back to the original alignment
       Free_Calign(mixt_tree->data);
       mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io, mixt_tree);
       Free_Calign(c_seq_cpy);
 
+      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      Set_Both_Sides(NO, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+
       // Compute likelihoods on test set (i.e., probability of each possible
       // state at masked positions)
       CV_Score_At_Hidden_Cols(&site_loglk, &weights, &n_prob_vectors,
                               mixt_tree);
-
 
       mixt_tree->data->n_masked = 0;
       Free(mixt_tree->data->masked_pos);
@@ -4457,7 +4457,6 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
         tree       = tree->next;
       } while (tree && tree->is_mixt_tree == NO);
 
-      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
     }
 
     Init_Partial_Lk_Tips_Double(mixt_tree);
