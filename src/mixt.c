@@ -4420,6 +4420,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
       // Optimize all parameters on training data set (i.e., whole alignement
       // with masked positions)
       Init_Partial_Lk_Tips_Double(mixt_tree);
+      // Round_Optimize(mixt_tree,ROUND_MAX);
       Global_Spr_Search(mixt_tree);
       Set_Both_Sides(YES, mixt_tree);
       Set_Update_Eigen(YES, mixt_tree->mod);
