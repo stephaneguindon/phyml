@@ -4291,14 +4291,14 @@ void MIXT_Kfold_Pos_Cv(t_tree *mixt_tree)
   weights     = NULL;
   tree        = NULL;
 
-  kfold          = 5;
+  kfold          = 10;
   // kfold          = 1;
   n_prob_vectors = 0;
 
   do
   {
     // for (int i = 0; i < kfold*5; ++i)
-      for (int i = 0; i < 1; ++i)
+      for (int i = 0; i < 5; ++i)
       {
         // Create a copy of the original alignment
         c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
