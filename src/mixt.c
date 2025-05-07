@@ -4399,7 +4399,7 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
   weights     = NULL;
   tree        = NULL;
 
-  kfold          = 5;
+  kfold          = 10;
   n_prob_vectors = 0;
 
   do
