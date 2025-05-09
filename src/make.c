@@ -1170,8 +1170,7 @@ void Make_Custom_Model(t_mod *mod)
     PhyML_Printf("\n== Err. in file %s at line %d\n", __FILE__, __LINE__);
     Warn_And_Exit("");
   }
-  
-  
+
   if (!mod->r_mat->rr->v)
     mod->r_mat->rr->v =
         (phydbl *)mCalloc(mod->ns * (mod->ns - 1) / 2, sizeof(phydbl));
@@ -1290,6 +1289,7 @@ void Make_Model_Complete(t_mod *mod)
   {
     mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
     Init_Rmat(mod->r_mat);
+    Make_Custom_Model(mod);
   }
 
   if (!mod->e_frq)

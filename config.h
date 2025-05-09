@@ -8,7 +8,7 @@
 #define DEBUG 1
 
 /* EVOLVE tag on */
-#define EVOLVE 1
+/* #undef EVOLVE */
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 /* #undef HAVE_DOPRNT */
@@ -25,16 +25,8 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
-/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
-   to 0 otherwise. */
-#define HAVE_MALLOC 1
-
 /* Define to 1 if you have the `pow' function. */
 #define HAVE_POW 1
-
-/* Define to 1 if your system has a GNU libc compatible `realloc' function,
-   and to 0 otherwise. */
-#define HAVE_REALLOC 1
 
 /* Define to 1 if you have the `rint' function. */
 #define HAVE_RINT 1
@@ -100,7 +92,7 @@
 #define PACKAGE_VERSION "3.3.20250429"
 
 /* PHYML tag on */
-/* #undef PHYML */
+#define PHYML 1
 
 /* PHYREX tag on */
 /* #undef PHYREX */
@@ -142,12 +134,6 @@
 #ifndef __cplusplus
 /* #undef inline */
 #endif
-
-/* Define to rpl_malloc if the replacement function should be used. */
-/* #undef malloc */
-
-/* Define to rpl_realloc if the replacement function should be used. */
-/* #undef realloc */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */

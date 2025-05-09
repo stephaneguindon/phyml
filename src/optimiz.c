@@ -3102,8 +3102,6 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
   phydbl lk_before, lk_after;
   tree = mixt_tree;
 
-  /* PhyML_Printf("\n. Optimizing Free_Rate --> %f",mixt_tree->next->a_edges[0]->l->v); */
-
   lk_before = lk_after = UNLIKELY;
 
   do
@@ -3119,7 +3117,27 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               Optimize_Free_Rate_Rr(tree,fast,verbose);
               lk_after = mixt_tree->c_lnL;
 
-              if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
+
+              if (lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
+              {
+                PhyML_Fprintf(stderr, "\n. lk_before: %f lk_after: %f diff: %G",
+                              lk_before, lk_after, lk_before - lk_after);
+                PhyML_Fprintf(stderr, "\n. Err. in file %s at line %d\n",
+                              __FILE__, __LINE__);
+                Exit("");
+              }
+            }        
+          else
+            {
+                fast = YES;
+                lk_before = mixt_tree->c_lnL;
+                Optimize_Free_Rate_Weights(tree,fast,verbose);
+                lk_after = mixt_tree->c_lnL;
+                Optimize_Free_Rate_Rr(tree,fast,verbose);
+                lk_after = mixt_tree->c_lnL;
+
+
+                if (lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
                   PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
                   PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
@@ -3230,8 +3248,10 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
         {
           phydbl a,c;
           
-          a = tree->mod->ras->gamma_rr_unscaled->v[i] - 2.0;
-          c = tree->mod->ras->gamma_rr_unscaled->v[i] + 2.0;
+          // a = tree->mod->ras->gamma_rr_unscaled->v[i] - 2.0;
+          // c = tree->mod->ras->gamma_rr_unscaled->v[i] + 2.0;
+          a = - 2.0;
+          c = + 2.0;
                     
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                            a,c,
@@ -3258,8 +3278,10 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
         {
           phydbl a,c;
           
-          a = tree->mod->ras->gamma_rr_unscaled->v[i] - 2.0;
-          c = tree->mod->ras->gamma_rr_unscaled->v[i] + 2.0;
+          // a = tree->mod->ras->gamma_rr_unscaled->v[i] - 2.0;
+          // c = tree->mod->ras->gamma_rr_unscaled->v[i] + 2.0;
+          a = - 2.0;
+          c = + 2.0;
                     
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                            a,c,
@@ -3302,8 +3324,10 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
     {
       phydbl a,c;
       
-      a = tree->mod->ras->gamma_r_proba_unscaled->v[i] - 2.0;
-      c = tree->mod->ras->gamma_r_proba_unscaled->v[i] + 2.0;
+      // a = tree->mod->ras->gamma_r_proba_unscaled->v[i] - 2.0;
+      // c = tree->mod->ras->gamma_r_proba_unscaled->v[i] + 2.0;
+      a = - 2.0;
+      c = + 2.0;
 
       Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
                        a,c,
@@ -3311,6 +3335,7 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
                        tree->mod->s_opt->brent_it_max,
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk,NULL,tree,NULL,NO,NO);      
+
 
       if(fast == YES)
         {

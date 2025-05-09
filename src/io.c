@@ -4552,7 +4552,9 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   int    *link_efrq, *link_rmat, *link_lens;
   phydbl  r_mat_weight_sum, e_frq_weight_sum;
 
-  PhyML_Fprintf(fp, "\n. Starting tree: %s",
+  PhyML_Fprintf(fp, "\n. Random seed: %d",mixt_tree->io->r_seed);
+
+  PhyML_Fprintf(fp, "\n\n. Starting tree: %s",
                 mixt_tree->io->in_tree == 2 ? mixt_tree->io->in_tree_file
                                             : "BioNJ");
 
