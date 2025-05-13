@@ -48,6 +48,11 @@ the GNU public licence. See http://www.opensource.org for details.
 extern int n_sec1;
 extern int n_sec2;
 
+#define TREE_COMP_RF_PLUS_LENGTH 0
+#define TREE_COMP_RF_PLAIN 1
+#define TREE_COMP_LENGTH_SHARED_EDGES 2
+#define TREE_COMP_LENGTH_EXTERNAL_EDGES 3
+
 #define HAVERSINE 0
 #define MANHATTAN 1
 #define EUCLIDEAN 2
@@ -2617,7 +2622,7 @@ void    Get_Bip(t_node *a, t_node *d, t_tree *tree);
 void    Alloc_Bip(t_tree *tree);
 int     Sort_Phydbl_Increase(const void *a, const void *b);
 int     Sort_String(const void *a, const void *b);
-phydbl  Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only, phydbl tree2_brlen_cutoff);
+phydbl  Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only, int comparison_criterion, phydbl tree2_brlen_cutoff);
 void    Compare_Bip_Distance(t_tree *tree1, t_tree *tree2);
 void    Match_Tip_Numbers(t_tree *tree1, t_tree *tree2);
 void    Test_Multiple_Data_Set_Format(option *io);

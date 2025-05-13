@@ -533,8 +533,13 @@ int main(int argc, char **argv)
   Get_Bip(tree1->a_nodes[0],tree1->a_nodes[0]->v[0],tree1); 
   Get_Bip(tree2->a_nodes[0],tree2->a_nodes[0]->v[0],tree2);
 
-  PhyML_Printf("\n. rf=%f\n",
-               .5 * (Compare_Bip(tree1, tree2, NO) + Compare_Bip(tree2, tree1, NO)));
+  PhyML_Printf("\n. RFxLENGTH=%f",
+               .5 * (Compare_Bip(tree1, tree2, NO, TREE_COMP_RF_PLUS_LENGTH) + Compare_Bip(tree2, tree1, NO, TREE_COMP_RF_PLUS_LENGTH)));
+  PhyML_Printf("\n. PLAIN RF=%f",.5 * (Compare_Bip(tree1, tree2, NO, TREE_COMP_RF_PLAIN) + Compare_Bip(tree2, tree1, NO, TREE_COMP_RF_PLAIN)));
+  // PhyML_Printf("\n. INT LENGTHS=%f",.5 * (Compare_Bip(tree1, tree2, NO, TREE_COMP_LENGTH_SHARED_EDGES) + Compare_Bip(tree2, tree1, NO, TREE_COMP_LENGTH_SHARED_EDGES)));
+  // PhyML_Printf("\n. EXT LENGTHS=%f",.5 * (Compare_Bip(tree1, tree2, NO, TREE_COMP_LENGTH_EXTERNAL_EDGES) + Compare_Bip(tree2, tree1, NO, TREE_COMP_LENGTH_EXTERNAL_EDGES)));
+  PhyML_Printf("\n. INT LENGTHS=%f",(Compare_Bip(tree1, tree2, NO, TREE_COMP_LENGTH_SHARED_EDGES)));
+  PhyML_Printf("\n. EXT LENGTHS=%f",(Compare_Bip(tree1, tree2, NO, TREE_COMP_LENGTH_EXTERNAL_EDGES)));
 
   // for (i = 0; i < 2 * tree1->n_otu - 3; ++i) tree1->a_edges[i]->bip_score = 0;
   // for (i = 0; i < 2 * tree2->n_otu - 3; ++i) tree2->a_edges[i]->bip_score = 0;
