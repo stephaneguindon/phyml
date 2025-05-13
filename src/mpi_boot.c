@@ -225,7 +225,7 @@ void Bootstrap_MPI(t_tree *tree)
 				boot_tree->a_nodes[0]->v[0],
 				boot_tree);
 			
-			if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO);
+			if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO, TREE_COMP_RF_PLAIN);
 			else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
 			else assert(FALSE);
 			

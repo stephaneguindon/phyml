@@ -4059,7 +4059,7 @@ void Bootstrap(t_tree *tree)
     Get_Bip(boot_tree->a_nodes[0], boot_tree->a_nodes[0]->v[0], boot_tree);
 
     if (tree->io->do_boot)
-      Compare_Bip(tree, boot_tree, NO);
+      Compare_Bip(tree, boot_tree, NO, TREE_COMP_RF_PLAIN);
     else if (tree->io->do_tbe)
       Compare_Bip_Distance(tree, boot_tree);
     else
@@ -4939,37 +4939,20 @@ int Sort_String(const void *a, const void *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
+phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only, int comparison_criterion)
 {
   int     i, j, k;
   t_edge *b1, *b2;
-  /*   char **bip1,**bip2; */
-  /*   int *bip1,*bip2; */
   t_node **bip1, **bip2;
   int      bip_size1, bip_size2, bip_size;
-  // int      identical, n_edges;
-  phydbl   diff;
+  phydbl   diff,n_obs;
   
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
   /* WARNING: call Match_Tip_Numbers and Get_Bip before using this function. */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
   diff = .0;
-
-  // if (on_existing_edges_only == YES)
-  // {
-  //   n_edges = 0;
-  //   for (i = 0; i < 2 * tree1->n_otu - 3; ++i)
-  //     if (tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist)
-  //       n_edges++;
-  //   n_edges -= tree1->n_otu;
-  // }
-  // else
-  // {
-  //   n_edges = tree1->n_otu - 3;
-  // }
-
-  // identical = 0;
+n_obs = .0;
 
   for (i = 0; i < 2 * tree1->n_otu - 3; ++i)
   {
@@ -4978,8 +4961,7 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 
     j = 0;
 
-    if (bip_size1 > 1 && ((on_existing_edges_only == YES && b1->does_exist) ||
-                          (on_existing_edges_only == NO)))
+    if ((on_existing_edges_only == YES && b1->does_exist) || (on_existing_edges_only == NO))
     {
       for (j = 0; j < 2 * tree2->n_otu - 3; ++j)
       {
@@ -4987,13 +4969,13 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
         bip_size2 =
             MIN(b2->left->bip_size[b2->l_r], b2->rght->bip_size[b2->r_l]);
 
-        if (bip_size2 > 1 &&
-            ((on_existing_edges_only == YES && b2->does_exist) ||
-             (on_existing_edges_only == NO)))
+        if ((on_existing_edges_only == YES && b2->does_exist) || (on_existing_edges_only == NO))
         {
           if (bip_size1 == bip_size2)
           {
             bip_size = bip_size1;
+          
+            // PhyML_Printf("\n. bip_size1 = %d bip_size2 = %d\n", bip_size1, bip_size2);
 
             if (b1->left->bip_size[b1->l_r] == b1->rght->bip_size[b1->r_l])
             {
@@ -5053,12 +5035,12 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
               bip2 = b2->rght->bip_node[b2->r_l];
             }
 
-            if (bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
+            // if (bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
 
             for (k = 0; k < bip_size; k++)
             {
-              /* 			  if(strcmp(bip1[k],bip2[k])) break; */
-              if (bip1[k]->num != bip2[k]->num) break;
+              // PhyML_Printf("\n. TREE1: %s TREE2: %s (%d %d)\n", bip1[k]->name, bip2[k]->name, bip1[k]->num, bip2[k]->num);
+              if(strcmp(bip1[k]->name,bip2[k]->name)) break;
             }
 
             if (k ==
@@ -5067,6 +5049,7 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
               b1->bip_score++;
               b2->bip_score++;
               // identical++;
+              // PhyML_Printf("\n. SAME FOUND");
               goto out;
             }
           }
@@ -5074,12 +5057,50 @@ phydbl Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
       }
     }
     out:;
-    if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1)) diff += b1->l->v;
-    // if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1)) diff += 1.;
+      // PhyML_Printf("\n j: %d %d\n", j,2 * tree2->n_otu - 3);
+      if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1) &&
+          (comparison_criterion == TREE_COMP_RF_PLUS_LENGTH))
+      {
+        diff += b1->l->v;
+      }
+
+      if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1) &&
+          (comparison_criterion == TREE_COMP_RF_PLAIN))
+      {
+        diff += 1.0;
+      }
+
+      if ((j != 2 * tree2->n_otu - 3) && (bip_size1 > 1) &&
+          (comparison_criterion == TREE_COMP_LENGTH_SHARED_EDGES))
+      {
+        diff += pow(b1->l->v - b2->l->v, 2);
+        // diff += b1->l->v - b2->l->v;
+        n_obs += 1.0;
+        // if ((j == 2 * tree2->n_otu - 3) && (bip_size1 > 1) &&
+        //     (comparison_criterion == TREE_COMP_LENGTH_SHARED_EDGES))
+        //   diff += pow(b1->l->v - 0.0, 2);
+      }
+
+      if ((j != 2 * tree2->n_otu - 3) && (bip_size1 == 1) &&
+          (comparison_criterion == TREE_COMP_LENGTH_EXTERNAL_EDGES))
+      {
+        diff += pow(b1->l->v - b2->l->v, 2);
+        // diff += b1->l->v - b2->l->v;
+        n_obs += 1.0;
+      }
     }
+
+if(comparison_criterion == TREE_COMP_RF_PLUS_LENGTH || comparison_criterion == TREE_COMP_RF_PLAIN)
   return diff;
-  // return (phydbl)(n_edges - identical);
+else if(comparison_criterion == TREE_COMP_LENGTH_SHARED_EDGES || comparison_criterion == TREE_COMP_LENGTH_EXTERNAL_EDGES)
+  return diff/n_obs;
+
+return -1.;
+// return (phydbl)(n_edges - identical);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 /*
    Computes min transfer distance between branches of tree1 and tree2
@@ -10981,7 +11002,7 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   for (i = 0; i < 2 * small_tree->n_otu - 3; ++i)
     small_tree->a_edges[i]->bip_score = 0;
 
-  diffs = Compare_Bip(small_tree, big_tree_cpy, NO);
+  diffs = Compare_Bip(small_tree, big_tree_cpy, NO, TREE_COMP_RF_PLAIN);
 
   /* printf("\n"); */
   /* printf("\n. %s",Write_Tree(big_tree_cpy)); */
