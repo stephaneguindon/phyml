@@ -8679,7 +8679,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree, int print)
   n_all_disks = 0;
   do
     {
-      if(disk->age_fixed == NO && !(disk->ldsk && disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
+      if(disk->age_fixed == NO && !(disk->ldsk && disk->ldsk->n_next > 1 && tree->a_edges[0]->l->optimize == NO))
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -8998,7 +8998,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree, int print)
     {
       if(disk && disk->ldsk && disk->ldsk->n_next >= 1 && disk->age_fixed == NO)
         {
-          if(!(disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
+          if(!(disk->ldsk->n_next > 1 && tree->a_edges[0]->l->optimize == NO))
             {
               if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
               else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));

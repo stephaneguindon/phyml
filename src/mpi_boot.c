@@ -212,7 +212,7 @@ void Bootstrap_MPI(t_tree *tree)
 			}
 			else
 			{
-				if (boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
+				if (boot_tree->mod->s_opt->opt_subst_param || boot_tree->a_edges[0]->l->optimize == YES)
 					Round_Optimize(boot_tree,ROUND_MAX);
 				else
 					Lk(NULL,boot_tree);

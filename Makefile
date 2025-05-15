@@ -207,7 +207,7 @@ AUTOCONF = ${SHELL} '/Users/guindon/phyml/missing' autoconf
 AUTOHEADER = ${SHELL} '/Users/guindon/phyml/missing' autoheader
 AUTOMAKE = ${SHELL} '/Users/guindon/phyml/missing' automake-1.16
 AWK = awk
-CC = gcc
+CC = mpicc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -std=gnu99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline -march=native
 CPPFLAGS = 

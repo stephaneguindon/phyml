@@ -814,7 +814,6 @@ void PHYREX_XML(char *xml_filename)
           DATE_Assign_Primary_Calibration(aux_tree);
           
           aux_tree->data = mixt_tree->data;
-          aux_tree->n_pattern = mixt_tree->n_pattern;
           Connect_CSeqs_To_Nodes(mixt_tree->data,mixt_tree->io,aux_tree);
           Share_Lk_Struct(mixt_tree->next,aux_tree);
           

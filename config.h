@@ -68,7 +68,7 @@
 #define HAVE_VPRINTF 1
 
 /* MPI tag on */
-/* #undef MPI */
+#define MPI 1
 
 /* Name of package */
 #define PACKAGE "phyml"

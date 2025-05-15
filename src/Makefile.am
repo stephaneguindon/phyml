@@ -191,6 +191,7 @@ mixt.c mixt.h\
 tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
+m4.c m4.h\
 ancestral.c ancestral.h\
 rates.c rates.h\
 date.c date.h\
@@ -355,6 +356,9 @@ rrw.c rrw.h\
 ibm.c ibm.h\
 iwn.c iwn.h\
 iou.c iou.h\
+m4.c m4.h\
+evolve.c evolve.h\
+cv.c cv.h\
 velocity.c velocity.h
 # phyrex_LDADD = -lm 
 else

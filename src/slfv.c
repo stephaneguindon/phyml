@@ -1789,7 +1789,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   Make_Tree_For_Pars(tree);
   Make_Tree_For_Lk(tree);
   Make_Spr(tree);
-  EVOLVE_Seq(tree->data,tree->mod,tree);
+  EVOLVE_Seq(tree->data,tree->mod,stdout,tree);
   
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_data.txt");
@@ -2332,7 +2332,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       PhyML_Printf("\n. #@# tree: %s",s);
       Free(s);
 
-      EVOLVE_Seq(tree->data,tree->mod,tree);
+      EVOLVE_Seq(tree->data,tree->mod,stdout,tree);
       
       t_dsk *disk = tree->young_disk->prev;
       while(disk->prev)
