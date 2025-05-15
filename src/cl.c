@@ -133,6 +133,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"print_mat_and_exit", no_argument, NULL, 84},
       {"seq_len", required_argument, NULL, 85},
       {"n_otu", required_argument, NULL, 86},
+      {"bayesian_bootstrap",  no_argument,NULL,87},
       {0, 0, 0, 0}};
 
   io->datatype = UNDEFINED;
@@ -183,6 +184,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
     switch (c)
     {
+    case 87 :
+    {
+      io->do_tbe = NO;
+      io->do_boot = NO;
+      io->do_bayesboot = YES;
+      io->do_alrt = NO;
+      break;
+    }
     case 86:
     {
       int n_otu;
@@ -238,6 +247,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->do_tbe  = YES;
       io->do_boot = NO;
       io->do_alrt = NO;
+      io->do_bayesboot = NO;
       break;
     }
     case 79:
@@ -251,7 +261,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->print_json_trace = YES;
       break;
     }
-
     case 77:
     {
       char *tmp;
@@ -1148,7 +1157,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
         Free(s);
       }
 
-
       Set_Model_Name(io->mod);
 
       if (io->mod->r_mat == NULL)
@@ -1220,17 +1228,19 @@ int Read_Command_Line(option *io, int argc, char **argv)
         }
         else if (atoi(optarg) == 0)
         {
-          io->do_alrt    = NO;
-          io->do_tbe     = NO;
-          io->do_boot    = NO;
-          io->ratio_test = 0;
+          io->do_alrt      = NO;
+          io->do_tbe       = NO;
+          io->do_boot      = NO;
+          io->do_bayesboot = NO;
+          io->ratio_test   = 0;
         }
         else
         {
-          io->do_alrt    = YES;
-          io->do_tbe     = NO;
-          io->do_boot    = NO;
-          io->ratio_test = -(int)atoi(optarg);
+          io->do_alrt      = YES;
+          io->do_tbe       = NO;
+          io->do_boot      = NO;
+          io->do_bayesboot = NO;
+          io->ratio_test   = -(int)atoi(optarg);
         }
       }
       break;
@@ -1721,12 +1731,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
   if (io->do_tbe == YES)
   {
-    io->do_alrt = NO;
-    io->do_boot = NO;
+    io->do_alrt      = NO;
+    io->do_boot      = NO;
+    io->do_bayesboot = NO;
   }
   else
   {
-    if (io->do_alrt == NO && io->n_boot_replicates > 0) io->do_boot = YES;
+    if (io->do_alrt == NO && io->n_boot_replicates > 0 && io->do_bayesboot == NO) io->do_boot = YES;
   }
 
 #ifndef PHYML
@@ -1759,7 +1770,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
     if (!scanf("%c", &choix)) Exit("\n");
     Exit("\n");
   }
-
 
   if (io->mod->m4mod != NULL && io->mod->m4mod->alpha->optimize == NO)
   {
@@ -1819,7 +1829,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
     io->fp_out_trees = Openfile(io->out_trees_file, 1);
   }
 
-  if ((io->print_boot_trees) && (io->do_boot == YES || io->do_tbe == YES) &&
+  if ((io->print_boot_trees) && (io->do_boot == YES || io->do_bayesboot == YES || io->do_tbe == YES) &&
       (io->fp_in_align != NULL))
   {
     strcpy(io->out_boot_tree_file, io->in_align_file);
