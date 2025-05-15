@@ -1036,7 +1036,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
           io->datatype             = NT;
           io->mod->ns              = 4;
           io->mod->whichmodel      = GTR;
-          io->mod->r_mat->optimize = YES;
         }
         else if (strcmp(s, "DAYHOFF") == 0)
         {
@@ -1152,14 +1151,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       Set_Model_Name(io->mod);
 
-
       if (io->mod->r_mat == NULL)
       {
         io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
         Init_Rmat(io->mod->r_mat);
         Make_Custom_Model(io->mod);
       }
-      PhyML_Printf("\n HERE 2 \n");
+
+      if (io->mod->whichmodel == GTR) io->mod->r_mat->optimize = YES;
 
       break;
     }
