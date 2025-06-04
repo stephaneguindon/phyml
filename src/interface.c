@@ -505,7 +505,7 @@ void Launch_Interface_Data_Type(option *io)
     }
 #endif
 
-    if ((io->do_boot || io->do_tbe) && (io->n_data_sets > 1))
+    if ((io->do_boot || io->do_bayesboot || io->do_tbe) && (io->n_data_sets > 1))
     {
       PhyML_Printf(
           "\n. Bootstrap option is not allowed with multiple data sets !\n");
@@ -1759,11 +1759,12 @@ void Launch_Interface_Branch_Support(option *io)
 
   PhyML_Printf("\n");
 
-  strcpy(s, (io->do_boot || io->do_tbe) ? ("yes") : ("no"));
+  strcpy(s, (io->do_boot || io->do_bayesboot || io->do_tbe) ? ("yes") : ("no"));
   if (io->n_boot_replicates > 0)
-    sprintf(s + strlen(s), " (%d replicate%s%s)", io->n_boot_replicates,
+    sprintf(s + strlen(s), " (%d replicate%s%s%s)", io->n_boot_replicates,
             (io->n_boot_replicates > 1) ? ("s") : (""),
-            (io->do_tbe) ? (", TBE") : (""));
+            (io->do_tbe) ? (", TBE") : (""),
+            (io->do_bayesboot) ? (", BAYES_BOOT") : (""));
 
   /*   PhyML_Printf("                [+] " */
   PhyML_Printf("                [B] "
@@ -1908,27 +1909,60 @@ void Launch_Interface_Branch_Support(option *io)
       case 'Y':
       case 'y':
       {
-        io->do_tbe  = YES;
-        io->do_boot = NO;
+        io->do_tbe       = YES;
+        io->do_boot      = NO;
+        io->do_bayesboot = NO;
         break;
       }
       case 'N':
       case 'n':
       {
-        io->do_tbe  = NO;
-        io->do_boot = YES;
+        io->do_tbe       = NO;
+        io->do_boot      = YES;
+        io->do_bayesboot = NO;
         break;
       }
       }
+
+      PhyML_Printf("\n. Compute Bayesian Bootstrap instead of FBP/TBE ? (%s) > ",
+                  (io->do_bayesboot)?("Y/n"):("y/N"));
+
+      if(!scanf("%c",&answer)) Exit("\n");
+      if(answer == '\n') 
+        answer = (io->do_bayesboot)?('Y'):('N');
+      else 
+        getchar();
+
+      switch(answer)
+      {
+      case 'Y' : 
+      case 'y' :
+      {
+        io->do_tbe       = NO;
+        io->do_boot      = NO;
+        io->do_bayesboot = YES;
+        break;
+      }
+      case 'N' : 
+      case 'n' :
+      {
+      io->do_tbe       = NO;
+      io->do_boot      = YES;
+      io->do_bayesboot = NO;
+      break;
+      }
+      }
+
       Free(r);
     }
     break;
   }
   case 'A':
   {
-    io->do_boot = NO;
-    io->do_tbe  = NO;
-    io->do_alrt = YES;
+    io->do_boot       = NO;
+    io->do_tbe        = NO;
+    io->do_bayesboot  = NO;
+    io->do_alrt       = YES;
 
     io->n_boot_replicates = 0;
 

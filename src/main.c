@@ -348,7 +348,7 @@ int main(int argc, char **argv)
           PhyML_Fprintf(io->fp_out_tree, "%s\n", most_likely_tree);
 
         /* Launch bootstrap analysis */
-        if (io->do_boot || io->do_tbe)
+        if (io->do_boot || io->do_tbe || io->do_bayesboot)
         {
           if (!io->quiet)
             PhyML_Printf(

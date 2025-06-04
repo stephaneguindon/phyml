@@ -141,7 +141,7 @@ phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta, int *err);
 phydbl Manhattan_Distance(t_geo_coord *x, t_geo_coord *y);
 phydbl Haversine_Distance(t_geo_coord *x, t_geo_coord *y);
 int *Reverse(int *v, int len);
-
+phydbl* Dirichlet(int n_sites);
 
 
 

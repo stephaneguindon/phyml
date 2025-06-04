@@ -212,7 +212,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
   Match_Tip_Numbers(tree,ori_tree);
   
-  rf = (phydbl)Compare_Bip(ori_tree,tree,NO,TREE_COMP_RF_PLAIN)/(tree->n_otu-3);
+  rf = (phydbl)Compare_Bip(ori_tree,tree,NO,TREE_COMP_RF_PLAIN,-1)/(tree->n_otu-3);
   PhyML_Printf("\n. rf: %f",rf);
   
   phydbl scale;

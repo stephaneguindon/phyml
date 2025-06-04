@@ -910,7 +910,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available,
 
       if (tree->io && tree->io->print_support_val == YES)
       {
-        if (tree->io->do_boot == YES)
+        if (tree->io->do_boot == YES || tree->io->do_bayesboot == YES)
         {
           sprintf(*s_tree + (int)strlen(*s_tree), "%.0f",
                   fils->b[p]->support_val);
@@ -3230,6 +3230,11 @@ void Print_Settings(option *io)
 
   PhyML_Printf("\n        . Nb of bootstrapped data sets:\t\t\t %d",
                io->n_boot_replicates);
+
+  if (io->do_bayesboot)
+    PhyML_Printf("\n        . Compute Bayesian Bootstrap:\t\t\t yes");
+  if (io->do_tbe)
+    PhyML_Printf("\n        . Compute TBE:\t\t\t yes");
 
   if (io->n_boot_replicates > 0)
     PhyML_Printf("\n        . Compute approximate likelihood ratio test:\t no");
@@ -6796,7 +6801,7 @@ void Collect_Edge_Support_Values(t_tree *tree)
 
   for (i = 0; i < 2 * tree->n_otu - 3; ++i)
   {
-    if (tree->io->do_boot == YES)
+    if (tree->io->do_boot == YES || tree->io->do_bayesboot == YES)
     {
       tree->a_edges[i]->support_val = (phydbl)tree->a_edges[i]->bip_score;
     }
