@@ -550,6 +550,16 @@ void Launch_Interface_Data_Type(option *io)
       strcpy(io->mod->modelname->s, "HKY85");
       strcpy(io->nt_or_cd, "nucleotides");
     }
+
+    if(io->mod->r_mat != NULL) Free_Rmat(io->mod->r_mat);
+    io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
+    Init_Rmat(io->mod->r_mat);
+    Make_Custom_Model(io->mod);
+
+    if(io->mod->e_frq != NULL) Free_Efrq(io->mod->e_frq);
+    io->mod->e_frq = (t_efrq *)Make_Efrq(io->mod->ns);
+    Init_Efrq(NULL, io->mod->e_frq);
+
     break;
   }
   case '-':
@@ -586,18 +596,25 @@ void Launch_Interface_Model(option *io)
   char  choix;
   char *s;
 
+
   s = (char *)mCalloc(100, sizeof(char));
 
   Clear();
   Print_Banner(stdout);
   if (io->config_multigene) Print_Data_Set_Number(io, stdout);
 
-  io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
-  Init_Rmat(io->mod->r_mat);
+  if (io->mod->r_mat == NULL)
+  {
+    io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
+    Init_Rmat(io->mod->r_mat);
+    Make_Custom_Model(io->mod);
+  }
 
-  io->mod->e_frq = (t_efrq *)Make_Efrq(io->mod->ns);
-  Init_Efrq(NULL,io->mod->e_frq);
-
+  if (io->mod->e_frq == NULL)
+  {
+    io->mod->e_frq = (t_efrq *)Make_Efrq(io->mod->ns);
+    Init_Efrq(NULL, io->mod->e_frq);
+  }
 
   PhyML_Printf("\n\n");
 
@@ -645,21 +662,21 @@ void Launch_Interface_Model(option *io)
         if (io->mod->e_frq->type == EMPIRICAL)
         {
           PhyML_Printf("                [E] "
-                       "......... Equilibrium frequencies "
+                       ".......................... Equilibrium frequencies "
                        " %-15s \n",
                        "empirical");
         }
         else if (io->mod->e_frq->type == USER)
         {
           PhyML_Printf("                [E] "
-                       "......... Equilibrium frequencies "
+                       ".......................... Equilibrium frequencies "
                        " %-15s \n",
                        "user-defined");
         }
         else if (io->mod->e_frq->type == ML)
         {
           PhyML_Printf("                [E] "
-                       "......... Equilibrium frequencies "
+                       ".......................... Equilibrium frequencies "
                        " %-15s \n",
                        "optimized");
         }
@@ -685,17 +702,17 @@ void Launch_Interface_Model(option *io)
 
     if (io->mod->e_frq->type == EMPIRICAL)
       PhyML_Printf("                [F] "
-                   ". Amino acid frequencies "
+                   "........................... Amino acid frequencies "
                    " %-15s \n",
                    "empirical");
     else if (io->mod->e_frq->type == MODEL)
       PhyML_Printf("                [F] "
-                   ". Amino acid frequencies "
+                   "........................... Amino acid frequencies "
                    " %-15s \n",
                    "model");
     else if (io->mod->e_frq->type == ML)
       PhyML_Printf("                [F] "
-                   ". Amino acid frequencies "
+                   "........................... Amino acid frequencies "
                    " %-15s \n",
                    "optimized");
   }
@@ -733,6 +750,7 @@ void Launch_Interface_Model(option *io)
                  " %-15s \n",
                  s);
   }
+
 
   strcpy(s, io->mod->ras->pinvar->optimize ? "estimated" : "fixed");
   strcat(s, io->mod->ras->pinvar->optimize ? "" : " (p-invar = ");
@@ -1131,7 +1149,6 @@ void Launch_Interface_Model(option *io)
         answer = 'Y';
       else
         getchar();
-      break;
     }
     else
     {
@@ -1141,7 +1158,6 @@ void Launch_Interface_Model(option *io)
         answer = 'N';
       else
         getchar();
-      break;
     }
  
     n_trial = 0;
@@ -1226,8 +1242,7 @@ void Launch_Interface_Model(option *io)
       if (answer == '\n')
         answer = 'Y';
       else
-        getchar();
-      break;
+        getchar();      
     }
 else    {
       PhyML_Printf("\n. Optimise ts/tv ratio ? [N/y] ");
@@ -1236,7 +1251,6 @@ else    {
         answer = 'N';
       else
         getchar();
-      break;
     }
 
     n_trial = 0;
@@ -1297,6 +1311,7 @@ else    {
       Warn_And_Exit(
           "\n. 'F' is not a valid choice with these model settings.\n");
     }
+    PhyML_Printf("\n. FFFFFF %d",io->mod->e_frq->type);
 
     if (io->mod->e_frq->type == EMPIRICAL)
       io->mod->e_frq->type = ML;
@@ -1306,6 +1321,7 @@ else    {
       io->mod->e_frq->type = MODEL;
     else if (io->mod->e_frq->type == MODEL)
       io->mod->e_frq->type = EMPIRICAL;
+    PhyML_Printf("\n< FFFFFF %d",io->mod->e_frq->type);
 
     break;
   }
@@ -1422,7 +1438,9 @@ else    {
     {
       io->mod->whichmodel = JC69;
     }
+
     Set_Model_Name(io->mod);
+
     break;
   }
   case '-':
