@@ -5124,7 +5124,10 @@ n_obs = .0;
 if(comparison_criterion == TREE_COMP_RF_PLUS_LENGTH || comparison_criterion == TREE_COMP_RF_PLAIN)
   return diff;
 else if(comparison_criterion == TREE_COMP_LENGTH_SHARED_EDGES || comparison_criterion == TREE_COMP_LENGTH_EXTERNAL_EDGES)
-  return diff/n_obs;
+  {
+    if (n_obs == 0) return (+INFINITY);
+    else return diff / n_obs;
+  }
 
 return -1.;
 // return (phydbl)(n_edges - identical);

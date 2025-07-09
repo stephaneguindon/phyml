@@ -740,6 +740,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           assert(lk > .0);
           
           dlk /= lk;
+
           dlnlk += tree->data->wght[site] * dlk;
           lnlk += tree->data->wght[site] * (log(lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]);
         }
