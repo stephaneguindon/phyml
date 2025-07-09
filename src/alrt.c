@@ -876,6 +876,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
           }
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
+      Lk(b_fcus,tree);
 
       if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -892,7 +893,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
 /* 	 b_fcus->num, */
 /* 	 b_fcus->l->v, */
 /* 	 lk_init, */
-/* 	 tree->c_lnL, */
+/* 	 t  ree->c_lnL, */
 /* 	 lk_init-tree->c_lnL, */
 /* 	 v1->num,v2->num,v3->num,v4->num);       */
 
