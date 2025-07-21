@@ -451,7 +451,7 @@ void CV_Score_At_Hidden_Cols(phydbl **site_loglk, phydbl **weights,
 
     // PhyML_Printf("\n. CV prob @ site %d", site);
 
-assert(*n_prob_vectors >= 0);
+    assert(*n_prob_vectors >= 0);
 
     if (*n_prob_vectors == 0)
     {
@@ -469,7 +469,8 @@ assert(*n_prob_vectors >= 0);
     (*site_loglk)[*n_prob_vectors] = tree->c_lnL_sorted[site];
     (*weights)[*n_prob_vectors]    = tree->data->wght[site];
 
-    // PhyML_Printf(" lnL: %15g w: %12f #: %d site: %d", (*site_loglk)[*n_prob_vectors],
+    // PhyML_Printf(" lnL: %15g w: %12f #: %d site: %d",
+    // (*site_loglk)[*n_prob_vectors],
     //              (*weights)[*n_prob_vectors],*n_prob_vectors,site);
 
     (*n_prob_vectors)++;

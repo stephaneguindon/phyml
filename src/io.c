@@ -5092,6 +5092,8 @@ option *PhyML_XML(char *xml_filename)
     Lk(NULL, mixt_tree);
     Set_Update_Eigen(NO, mixt_tree->mod);
 
+    if (mixt_tree->mod->cv_type == KFOLD_FAST) MIXT_Cv(mixt_tree);
+
     if (mixt_tree->mod->s_opt->opt_topo)
     {
       Global_Spr_Search(mixt_tree);
@@ -5154,7 +5156,7 @@ option *PhyML_XML(char *xml_filename)
     MIXT_Init_T_End(mixt_tree);
     Print_Data_Structure(YES, mixt_tree->io->fp_out_stats, mixt_tree);
 
-    MIXT_Cv(mixt_tree);
+    if (mixt_tree->mod->cv_type != KFOLD_FAST) MIXT_Cv(mixt_tree);
 
     Free_Best_Spr(mixt_tree);
     Free_Spr_List_One_Edge(mixt_tree);

@@ -4155,13 +4155,13 @@ void MIXT_Cv(t_tree *mixt_tree)
   {
   case KFOLD_POS : 
   {
-    PhyML_Printf("\n. Performing K-fold cross-validation\n");
+    PhyML_Printf("\n. Performing k-fold cross-validation\n");
     MIXT_Kfold_Pos_Cv(mixt_tree);
     break;
   }
   case KFOLD_COL:
   {
-    PhyML_Printf("\n. Performing leave-one-column-out cross-validation\n");
+    PhyML_Printf("\n. Performing k-fold cross-validation\n");
     MIXT_Kfold_Col_Cv(mixt_tree);
     break;
   }
@@ -4170,6 +4170,16 @@ void MIXT_Cv(t_tree *mixt_tree)
     PhyML_Printf("\n. Performing leave-one-column x one-sequence-out cross-validation\n");
     MIXT_Maxfold_Cv(mixt_tree);
     break;    
+  }
+  case KFOLD_FAST:
+  {
+    PhyML_Printf("\n. Performing fast k-fold cross-validation\n");
+    MIXT_Kfold_Fast_Cv(mixt_tree);
+    break;
+  }
+  case NO_FOLD:
+  {
+    break;
   }
   default : return;
   }
@@ -4493,3 +4503,113 @@ void MIXT_Kfold_Col_Cv(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Plain cross-validation routine whereby columns are hidden uniformly at random.
+void MIXT_Kfold_Fast_Cv(t_tree *mixt_tree)
+{
+  phydbl    *state_probs, *site_loglk, *weights;
+  short int *truth;
+  calign    *c_seq_cpy;
+  int        kfold;
+  int        n_prob_vectors;
+  t_tree    *tree;
+
+  state_probs = NULL;
+  site_loglk  = NULL;
+  truth       = NULL;
+  weights     = NULL;
+  tree        = NULL;
+
+  kfold          = 1;
+  n_prob_vectors = 0;
+
+  do
+  {
+    for (int i = 0; i < kfold; ++i)
+    {
+      // Create a copy of the original alignment
+      c_seq_cpy = Copy_Cseq(mixt_tree->data, mixt_tree->io, mixt_tree);
+
+      // Hide characters in the original alignment uniformly at random
+      CV_Hide_Align_At_Random_Col(mixt_tree->data, 1. / (phydbl)kfold);
+
+      c_seq_cpy->n_masked   = mixt_tree->data->n_masked;
+      c_seq_cpy->masked_pos = (int *)mCalloc(c_seq_cpy->n_masked, sizeof(int));
+      for (int i = 0; i < c_seq_cpy->n_masked; i++)
+        c_seq_cpy->masked_pos[i] = mixt_tree->data->masked_pos[i];
+
+      // Optimize all parameters on training data set (i.e., whole alignement
+      // with masked positions)
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      // Round_Optimize(mixt_tree,ROUND_MAX);
+      Global_Spr_Search(mixt_tree);
+      Set_Both_Sides(YES, mixt_tree);
+      Set_Update_Eigen(YES, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      // PhyML_Printf("\n. i:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+
+      // Go back to the original alignment
+      Free_Calign(mixt_tree->data);
+      mixt_tree->data = Copy_Cseq(c_seq_cpy, mixt_tree->io, mixt_tree);
+      Free_Calign(c_seq_cpy);
+
+      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+      Init_Partial_Lk_Tips_Double(mixt_tree);
+      Set_Both_Sides(NO, mixt_tree);
+      Set_Update_Eigen(NO, mixt_tree->mod);
+      Lk(NULL, mixt_tree);
+      // PhyML_Printf("\n. j:%d  lnL: %f", i, mixt_tree->c_lnL);
+
+
+      // Compute likelihoods on test set (i.e., probability of each possible
+      // state at masked positions)
+      CV_Score_At_Hidden_Cols(&site_loglk, &weights, &n_prob_vectors,
+                              mixt_tree);
+
+      mixt_tree->data->n_masked = 0;
+      Free(mixt_tree->data->masked_pos);
+      mixt_tree->data->masked_pos = NULL;
+
+      tree = mixt_tree->next;
+      do
+      {
+        tree->data = tree->mixt_tree->data;
+        tree       = tree->next;
+      } while (tree && tree->is_mixt_tree == NO);
+
+    }
+
+    Init_Partial_Lk_Tips_Double(mixt_tree);
+
+    phydbl sum   = 0.0;
+    phydbl sum_w = 0.0;
+    for (int i = 0; i < n_prob_vectors; ++i)
+    {
+      // PhyML_Printf("\n. loglk: %15g", site_loglk[i]);
+      sum += site_loglk[i] * weights[i];
+      sum_w += weights[i];
+    }
+
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV type: k-fold fast.");
+    PhyML_Fprintf(mixt_tree->io->fp_out_stats, "\n. CV score: %f ", sum / sum_w);
+
+    Free(state_probs);
+    Free(site_loglk);
+    Free(truth);
+    Free(weights);
+
+    state_probs = NULL;
+    site_loglk  = NULL;
+    truth       = NULL;
+    weights     = NULL;
+
+
+    mixt_tree = mixt_tree->next_mixt;
+
+  } while (mixt_tree != NULL);
+}

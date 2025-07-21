@@ -8,7 +8,7 @@
 #define DEBUG 1
 
 /* EVOLVE tag on */
-#define EVOLVE 1
+/* #undef EVOLVE */
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 /* #undef HAVE_DOPRNT */
@@ -92,7 +92,7 @@
 #define PACKAGE_VERSION "3.3.20250429"
 
 /* PHYML tag on */
-/* #undef PHYML */
+#define PHYML 1
 
 /* PHYREX tag on */
 /* #undef PHYREX */

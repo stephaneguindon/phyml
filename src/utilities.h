@@ -375,6 +375,8 @@ static inline int isinf_ld(long double x) { return isnan(x - x); }
 #define KFOLD_POS 0
 #define KFOLD_COL 1
 #define MAXFOLD 2
+#define KFOLD_FAST 3
+#define NO_FOLD 4
 
 #define MASK_TYPE_POSITION                                                     \
   0 // Individual positions (i.e., site x taxon) are masked
