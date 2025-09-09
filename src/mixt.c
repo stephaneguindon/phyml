@@ -4150,7 +4150,7 @@ void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 void MIXT_Cv(t_tree *mixt_tree)
 {
   PhyML_Printf("\n");
-  
+
   switch (mixt_tree->mod->cv_type)
   {
   case KFOLD_POS : 
@@ -4524,6 +4524,7 @@ void MIXT_Kfold_Fast_Cv(t_tree *mixt_tree)
 
   kfold          = 1;
   n_prob_vectors = 0;
+
 
   do
   {

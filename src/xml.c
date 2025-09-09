@@ -514,7 +514,9 @@ t_tree *XML_Process_Base(char *xml_filename)
         mixt_tree->mod->cv_type = KFOLD_COL;
       else if (!strcmp(cv, "maxfold"))
         mixt_tree->mod->cv_type = MAXFOLD;
-        else mixt_tree->mod->cv_type = -1;
+      else if (!strcmp(cv, "kfold.fast"))
+        mixt_tree->mod->cv_type = KFOLD_FAST;
+      else mixt_tree->mod->cv_type = -1;
     }
     else
       mixt_tree->mod->cv_type = -1;
