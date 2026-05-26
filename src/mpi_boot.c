@@ -74,16 +74,23 @@ void Bootstrap_MPI(t_tree *tree)
 		PhyML_Printf("\n. strictly greater than 1 (it is equal to %d here).",Global_numTask);
 		assert(FALSE);
 	}
+	iterations_per_process = tree->io->n_boot_replicates / Global_numTask;
+	// When number of bootstrap is not multiple of the number of tasks, provide one more iteration
+	if (tree->io->n_boot_replicates % Global_numTask != 0) 
+    {
+      iterations_per_process++;
+      tree->io->n_boot_replicates = iterations_per_process * Global_numTask; // Update the number of bootstrap replicates to be a multiple of the number of tasks
+		  PhyML_Printf("\n\n. The number of bootstrap replicates was updated to %d to be a multiple of the number of tasks.",tree->io->n_boot_replicates);
+    }
+
+
 	if (Global_myRank == 0)
 	{
 		PhyML_Printf("\n\n. Non parametric bootstrap analysis %s\n\n",(tree->io->do_bayesboot ? "(Bayesian Bootstrap)" : "(Frequentist Bootstrap)"));
 		PhyML_Printf("\n  [");
 	}
 	
-	iterations_per_process = tree->io->n_boot_replicates / Global_numTask;
-	// When number of bootstrap is not multiple of the number of tasks, provide one more iteration
-	if (tree->io->n_boot_replicates % Global_numTask != 0) iterations_per_process++;
-	
+
 	// Bip score
 	if (Global_myRank == 0) 
 	{
@@ -238,9 +245,9 @@ void Bootstrap_MPI(t_tree *tree)
 				boot_tree->a_nodes[0]->v[0],
 				boot_tree);
 			
-			if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO,TREE_COMP_RF_PLAIN,-1);
+			if(tree->io->do_boot)           Compare_Bip(tree,boot_tree,NO,TREE_COMP_RF_PLAIN,-1.0);
 			else if(tree->io->do_bayesboot) Compare_Bip(tree,boot_tree, NO, TREE_COMP_RF_PLAIN, 0.1/n_site);
-			else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
+			else if(tree->io->do_tbe)       Compare_Bip_Distance(tree, boot_tree);
 			else assert(FALSE);
 			
 			Check_Br_Lens(boot_tree);
